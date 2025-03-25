@@ -1,0 +1,115 @@
+package util
+
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerializationException
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.descriptors.buildClassSerialDescriptor
+import kotlinx.serialization.descriptors.element
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
+import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonDecoder
+import kotlinx.serialization.json.JsonEncoder
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.jsonArray
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
+
+object DatabaseUtil {
+    private const val PROJECT_ID = "we-are-spine"
+    const val DATABASE_URL = "https://firestore.googleapis.com/v1/projects/$PROJECT_ID/databases/(default)/documents"
+}
+
+@Serializable(with = DatabaseValueSerializer::class)
+sealed class DatabaseValue {
+    @Serializable
+    data class StringValue(val stringValue: String) : DatabaseValue()
+
+    @Serializable
+    data class ArrayValue(val values: List<StringValue>) : DatabaseValue()
+}
+
+@Serializable
+data class DatabaseRequest(val fields: Map<String,DatabaseValue>)
+
+@Serializable
+data class DatabaseResponse(val name: String)
+
+@Serializable
+data class DatabaseDocumentsResponse(
+    val documents: List<DatabaseDocument> = emptyList()
+)
+
+@Serializable
+data class DatabaseDocument(
+    val name: String,
+    val fields: Map<String, DatabaseValue>
+)
+
+object DatabaseValueSerializer : KSerializer<DatabaseValue> {
+    override val descriptor: SerialDescriptor = buildClassSerialDescriptor("DatabaseValue") {
+        element<String>("stringValue", isOptional = true)
+        element<JsonObject>("arrayValue", isOptional = true)
+    }
+
+    override fun serialize(encoder: Encoder, value: DatabaseValue) {
+        val jsonEncoder = encoder as? JsonEncoder
+            ?: throw SerializationException("This class can be saved only by JSON")
+        val jsonElement = when (value) {
+            is DatabaseValue.StringValue -> JsonObject(mapOf("stringValue" to JsonPrimitive(value.stringValue)))
+            is DatabaseValue.ArrayValue -> {
+                val arrayObj = JsonObject(
+                    mapOf("values" to JsonArray(value.values.map {
+                        JsonObject(
+                            mapOf(
+                                "stringValue" to JsonPrimitive(
+                                    it.stringValue
+                                )
+                            )
+                        )
+                    }))
+                )
+                JsonObject(mapOf("arrayValue" to arrayObj))
+            }
+        }
+        jsonEncoder.encodeJsonElement(jsonElement)
+    }
+
+    override fun deserialize(decoder: Decoder): DatabaseValue {
+        val jsonDecoder = decoder as? JsonDecoder
+            ?: throw SerializationException("This class can be loaded only by JSON")
+        val element = jsonDecoder.decodeJsonElement()
+
+        if (element is JsonObject) {
+            return when {
+                "stringValue" in element -> {
+                    val value = element["stringValue"]?.jsonPrimitive?.content
+                        ?: throw SerializationException("Missing stringValue content")
+                    DatabaseValue.StringValue(value)
+                }
+
+                "arrayValue" in element -> {
+                    val arrayObj = element["arrayValue"]?.jsonObject
+                        ?: throw SerializationException("arrayValue must be a JSON object")
+                    val valuesArray = arrayObj["values"]?.jsonArray
+                        ?: throw SerializationException("arrayValue must contain a values array")
+                    val values = valuesArray.map { jsonElem ->
+                        // Expect each element to be an object with key "stringValue"
+                        val obj = jsonElem.jsonObject
+                        val str = obj["stringValue"]?.jsonPrimitive?.content
+                            ?: throw SerializationException("Missing stringValue in array element")
+                        DatabaseValue.StringValue(str)
+                    }
+                    DatabaseValue.ArrayValue(values)
+                }
+
+                else -> throw SerializationException("Unknown DatabaseValue type: $element")
+            }
+        } else {
+            throw SerializationException("Expected JsonObject but found $element")
+        }
+    }
+
+}

@@ -4,6 +4,7 @@ plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
+    alias(libs.plugins.jetbrains.kotlin.serialization)
 }
 
 kotlin {
@@ -21,10 +22,27 @@ kotlin {
             implementation(compose.components.uiToolingPreview)
             implementation(libs.androidx.lifecycle.viewmodel)
             implementation(libs.androidx.lifecycle.runtime.compose)
+
+            implementation(libs.jetbrains.compose.navigation)
+            implementation(libs.kotlinx.serialization.json)
+
+            implementation(libs.koin.compose)
+            implementation(libs.koin.compose.viewmodel)
+            api(libs.koin.core)
+
+            implementation(libs.bundles.ktor)
+            implementation(libs.bundles.coil)
+
+            api(libs.datastore.preferences)
+            api(libs.datastore)
         }
         desktopMain.dependencies {
             implementation(compose.desktop.currentOs)
             implementation(libs.kotlinx.coroutines.swing)
+            implementation(libs.ktor.client.okhttp)
+
+            implementation("org.bouncycastle:bctls-jdk15on:1.70")
+            implementation("org.conscrypt:conscrypt-openjdk-uber:2.5.2")
         }
     }
 }
@@ -33,18 +51,10 @@ kotlin {
 compose.desktop {
     application {
         mainClass = "com.wrscpanel.in.MainKt"
-
         nativeDistributions {
-//            targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
-            targetFormats( TargetFormat.Exe,TargetFormat.Msi)
+            targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = "com.wrscpanel.in"
             packageVersion = "1.0.0"
-
-            windows{
-                menuGroup = "WrsControlPanel"
-                shortcut = true
-                perUserInstall = true
-            }
         }
     }
 }
