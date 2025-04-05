@@ -1,10 +1,11 @@
 package doctor.domain
 
 import core.domain.DataError
+import core.domain.Result
 import kotlinx.coroutines.flow.Flow
-import  core.domain.Result
+import java.io.File
 
 interface DoctorRepository {
-    fun getAllDoctors(): Flow<Result<List<DoctorsMaster>, DataError.Remote>>
-    suspend fun addDoctorToDatabase(doctor: DoctorsMaster): Flow<Result<Unit, DataError.Remote>>
+    suspend fun getAllDoctors(): Flow<Result<List<DoctorsMaster>, DataError.Remote>>
+    suspend fun addDoctorToDatabase(doctor: DoctorsMaster, imageFile: File): Flow<Result<Unit, DataError.Remote>>
 }

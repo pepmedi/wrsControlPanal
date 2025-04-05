@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import services.domain.ServicesMaster
 import services.domain.ServicesRepository
+import java.io.File
 
 class DoctorViewModal(
     private val doctorRepository: DoctorRepository,
@@ -73,10 +74,10 @@ class DoctorViewModal(
         }
     }
 
-    fun addDoctor(doctorsMaster: DoctorsMaster) {
+    fun addDoctor(doctorsMaster: DoctorsMaster,file: File) {
         viewModelScope.launch {
             _doctorSubmissionState.value = DoctorSubmissionState.Loading // Show loading
-            doctorRepository.addDoctorToDatabase(doctorsMaster)
+            doctorRepository.addDoctorToDatabase(doctorsMaster,file)
                 .collect { result ->
                     _doctorSubmissionState.value = when (result) {
                         is Result.Success -> DoctorSubmissionState.Success

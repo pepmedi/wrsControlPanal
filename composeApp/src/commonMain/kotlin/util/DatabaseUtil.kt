@@ -20,6 +20,9 @@ import kotlinx.serialization.json.jsonPrimitive
 object DatabaseUtil {
     private const val PROJECT_ID = "we-are-spine"
     const val DATABASE_URL = "https://firestore.googleapis.com/v1/projects/$PROJECT_ID/databases/(default)/documents"
+    const val STORAGE_BUCKET = "we-are-spine.firebasestorage.app"
+    const val DATABASE_QUERY_URL =
+        "https://firestore.googleapis.com/v1/projects/$PROJECT_ID/databases/(default)/documents:runQuery"
 }
 
 @Serializable(with = DatabaseValueSerializer::class)
@@ -46,6 +49,11 @@ data class DatabaseDocumentsResponse(
 data class DatabaseDocument(
     val name: String,
     val fields: Map<String, DatabaseValue>
+)
+
+@Serializable
+data class DatabaseQueryResponse(
+    val document: DatabaseDocument? = null
 )
 
 object DatabaseValueSerializer : KSerializer<DatabaseValue> {

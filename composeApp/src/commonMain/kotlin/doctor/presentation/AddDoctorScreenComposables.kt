@@ -65,6 +65,7 @@ fun AddDoctorScreen(viewModal: DoctorViewModal = koinViewModel(), onBackClick: (
 
     var consultantFee by remember { mutableStateOf("") }
     var review by remember { mutableStateOf("") }
+    var speciality by remember { mutableStateOf("") }
     var imageBitmap1 by remember { mutableStateOf<ImageBitmap?>(null) }
     var imageFile1 by remember { mutableStateOf<File?>(null) }
     var snackBarMessage by remember { mutableStateOf("") }
@@ -95,6 +96,7 @@ fun AddDoctorScreen(viewModal: DoctorViewModal = koinViewModel(), onBackClick: (
         if (selectedServices.isEmpty()) errors.add("Services is required.")
         if (consultantFee.isBlank()) errors.add("Consultation Fee is required.")
         if (review.isBlank()) errors.add("Review is required.")
+        if (speciality.isBlank()) errors.add("Speciality is required.")
 
         if (errors.isNotEmpty()) {
             scope.launch {
@@ -147,7 +149,7 @@ fun AddDoctorScreen(viewModal: DoctorViewModal = koinViewModel(), onBackClick: (
                     item {
                         TextInputField(
                             value = selectedHospitals.joinToString(", ") { it.name },
-                            onValueChange = {  },
+                            onValueChange = { },
                             label = "Hospital",
                             icon = Icons.Default.Person,
                             enabled = false,
@@ -158,7 +160,7 @@ fun AddDoctorScreen(viewModal: DoctorViewModal = koinViewModel(), onBackClick: (
                     item {
                         TextInputField(
                             value = selectedServices.joinToString(", ") { it.name },
-                            onValueChange = {  },
+                            onValueChange = { },
                             label = "Services",
                             icon = Icons.Default.Person,
                             enabled = false,
@@ -179,6 +181,15 @@ fun AddDoctorScreen(viewModal: DoctorViewModal = koinViewModel(), onBackClick: (
                         TextInputField(
                             value = review,
                             onValueChange = { review = it },
+                            label = "Doctor Experience",
+                            icon = Icons.Default.Person,
+                        )
+                    }
+
+                    item {
+                        TextInputField(
+                            value = speciality,
+                            onValueChange = { speciality = it },
                             label = "Doctor Experience",
                             icon = Icons.Default.Person,
                         )
@@ -209,21 +220,24 @@ fun AddDoctorScreen(viewModal: DoctorViewModal = koinViewModel(), onBackClick: (
                                 onClick = {
                                     if (validateForm()) {
                                         scope.launch {
-                                            viewModal.addDoctor(
-                                                doctorsMaster = DoctorsMaster(
-                                                    id = "",
-                                                    name = doctorName,
-                                                    experience = doctorExperience,
-                                                    profilePic = "",
-                                                    age = age,
-                                                    services = selectedServices.map { it.id },
-                                                    hospital = selectedHospitals.map { it.id },
-                                                    consltFee = consultantFee,
-                                                    reviews = review,
-                                                    updatedAt = getCurrentTimeStamp(),
-                                                    createdAt = getCurrentTimeStamp()
+                                            imageFile1?.let {
+                                                viewModal.addDoctor(
+                                                    doctorsMaster = DoctorsMaster(
+                                                        id = "",
+                                                        name = doctorName,
+                                                        experience = doctorExperience,
+                                                        profilePic = "",
+                                                        age = age,
+                                                        services = selectedServices.map { it.id },
+                                                        hospital = selectedHospitals.map { it.id },
+                                                        consltFee = consultantFee,
+                                                        reviews = review,
+                                                        updatedAt = getCurrentTimeStamp(),
+                                                        createdAt = getCurrentTimeStamp()
+                                                    ),
+                                                    file = it
                                                 )
-                                            )
+                                            }
                                         }
                                     }
                                 }) {
@@ -240,14 +254,14 @@ fun AddDoctorScreen(viewModal: DoctorViewModal = koinViewModel(), onBackClick: (
                     HospitalListDialog(
                         hospitalList = hospitalListState.value,
                         onDismiss = { showHospitalList = false },
-                        onSubmit = {selectedHospitals = it}
+                        onSubmit = { selectedHospitals = it }
                     )
                 }
 
-                if(showServiceList){
+                if (showServiceList) {
                     ServicesListDialog(
                         serviceList = servicesListState.value,
-                        onDismiss = {showServiceList = false},
+                        onDismiss = { showServiceList = false },
                         onSubmit = {
                             selectedServices = it
                         }
