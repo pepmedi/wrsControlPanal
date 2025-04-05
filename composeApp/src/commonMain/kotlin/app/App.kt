@@ -11,11 +11,9 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
 import dashboard.DashboardApp
-import dashboard.DashboardScreenUi
-import doctor.presentation.AddDoctorScreen
 import doctor.presentation.DoctorListScreenRoot
 import org.jetbrains.compose.ui.tooling.preview.Preview
-import user.UserRole
+import controlPanalUser.domain.UserRole
 
 @Composable
 @Preview

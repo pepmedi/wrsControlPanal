@@ -32,11 +32,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import app.Route
 import updateInfo.presentation.UpdateInfoScreen
-import user.UserRole
+import controlPanalUser.domain.UserRole
+import controlPanalUser.presentation.PanelUserCreationScreenRoot
 
 @Composable
-fun DashboardApp(userRole: UserRole,onLogout: () -> Unit) {
+fun DashboardApp(userRole: UserRole, onLogout: () -> Unit) {
     var selectedItem by remember { mutableStateOf(SidebarItem.DASHBOARD) }
     MaterialTheme {
         Row(modifier = Modifier.fillMaxSize()) {
@@ -81,11 +83,11 @@ fun DashboardApp(userRole: UserRole,onLogout: () -> Unit) {
                 when (selectedItem) {
                     SidebarItem.DASHBOARD -> DashboardScreenUi()
                     SidebarItem.UPDATE_INFO -> UpdateInfoScreen()
-//                    "Shop" -> ShopScreen(userMaster, userRole)
+//                    SidebarItem.APP_USERS -> ShopScreen(userMaster, userRole)
 //                    "Product" -> ProductScreen(userMaster, userRole)
 //                    "Shop Video" -> ShopVideosScreenUi(userRole)
 //                    "Banner" -> BannerScreen()
-//                    "C-Panel Users" -> UsersProfileScreen()
+                    SidebarItem.CPANEL_USERS -> PanelUserCreationScreenRoot()
 //                    "Shop Approval" -> ShopApprovalScreenUi()
 //                    "Product Approval" -> ProductApprovalScreenUi()
 //                    "Shop Video Approval" -> ShopVideoApprovalScreen()

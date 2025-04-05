@@ -28,6 +28,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.traceEventEnd
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -57,7 +58,7 @@ fun ServicesListDialog(
         onCloseRequest = onDismiss,
         title = "Select Services",
         state = rememberDialogState(size = DpSize(500.dp, 500.dp)), // Window size
-        resizable = false
+        resizable = true
     ) {
         Surface(
             modifier = Modifier.fillMaxWidth()

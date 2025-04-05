@@ -7,4 +7,5 @@ object DatabaseCollection {
     const val SERVICES = "services"
     const val APPOINTMENTS = "appointments"
     const val FAVORITES = "favorites"
+    const val PANEL_USER = "panelUser"
 }

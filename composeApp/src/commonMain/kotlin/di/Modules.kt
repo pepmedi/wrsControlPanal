@@ -1,6 +1,9 @@
 package di
 
 
+import controlPanalUser.domain.PanelUserRepository
+import controlPanalUser.presentation.PanelUserCreationViewModal
+import controlPanalUser.repository.PanelUserRepositoryImpl
 import core.data.HttpClientFactory
 import doctor.domain.DoctorRepository
 import doctor.presentation.DoctorViewModal
@@ -24,8 +27,10 @@ val sharedModule = module {
     singleOf(::DoctorRepositoryImpl).bind<DoctorRepository>()
     singleOf(::DefaultHospitalRepository).bind<HospitalRepository>()
     singleOf(::ServicesRepositoryImpl).bind<ServicesRepository>()
+    singleOf(::PanelUserRepositoryImpl).bind<PanelUserRepository>()
 
     viewModel { DoctorViewModal(get(),get(),get()) }
     viewModel{HospitalViewModal(get())}
     viewModel { ServicesViewModal(get()) }
+    viewModel { PanelUserCreationViewModal(get(),get()) }
 }

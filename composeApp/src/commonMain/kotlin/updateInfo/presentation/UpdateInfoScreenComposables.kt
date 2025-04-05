@@ -30,6 +30,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import controlPanalUser.presentation.PanelUserCreationScreenRoot
 import doctor.presentation.AddDoctorScreen
 import hospital.presentation.AddHospitalScreen
 import org.jetbrains.compose.resources.DrawableResource
