@@ -39,7 +39,7 @@ import core.ImageSelector
 import core.domain.DataError
 import core.domain.Result
 import doctor.domain.DoctorSubmissionState
-import doctor.domain.DoctorsMaster
+import doctor.domain.DoctorMaster
 import doctor.presentation.components.TextInputField
 import hospital.domain.HospitalMaster
 import hospital.presentation.components.HospitalListDialog
@@ -222,7 +222,7 @@ fun AddDoctorScreen(viewModal: DoctorViewModal = koinViewModel(), onBackClick: (
                                         scope.launch {
                                             imageFile1?.let {
                                                 viewModal.addDoctor(
-                                                    doctorsMaster = DoctorsMaster(
+                                                    doctorsMaster = DoctorMaster(
                                                         id = "",
                                                         name = doctorName,
                                                         experience = doctorExperience,
@@ -275,7 +275,7 @@ fun AddDoctorScreen(viewModal: DoctorViewModal = koinViewModel(), onBackClick: (
 @Composable
 fun DoctorListScreenRoot(
     viewModal: DoctorViewModal = koinViewModel(),
-    onDoctorClick: (DoctorsMaster) -> Unit
+    onDoctorClick: (DoctorMaster) -> Unit
 ) {
     val list = viewModal.doctorList.collectAsStateWithLifecycle()
     DoctorListScreen(list.value, onDoctorClick = {
@@ -286,8 +286,8 @@ fun DoctorListScreenRoot(
 
 @Composable
 fun DoctorListScreen(
-    doctorState: Result<List<DoctorsMaster>, DataError.Remote>,
-    onDoctorClick: (DoctorsMaster) -> Unit
+    doctorState: Result<List<DoctorMaster>, DataError.Remote>,
+    onDoctorClick: (DoctorMaster) -> Unit
 ) {
 
     Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
@@ -316,7 +316,7 @@ fun DoctorListScreen(
 }
 
 @Composable
-fun DoctorItem(doctor: DoctorsMaster, onDoctorClick: (DoctorsMaster) -> Unit) {
+fun DoctorItem(doctor: DoctorMaster, onDoctorClick: (DoctorMaster) -> Unit) {
     Card(
         modifier = Modifier
             .fillMaxWidth()

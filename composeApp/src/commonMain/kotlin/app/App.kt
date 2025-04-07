@@ -32,7 +32,7 @@ fun App(prefs:DataStore<Preferences>) {
                     exitTransition = { slideOutHorizontally() },
                     popEnterTransition = { slideInHorizontally() }
                 ) {
-                    DashboardApp(UserRole.ADMIN, onLogout = {})
+//                    DashboardApp(UserRole.ADMIN, onLogout = {})
                 }
 
                 composable<Route.DoctorListScreenRoot>(

@@ -121,3 +121,28 @@ object DatabaseValueSerializer : KSerializer<DatabaseValue> {
     }
 
 }
+
+fun buildCustomDatabaseQuery(
+    collection: String,
+    conditions: Map<String, String>,
+    limit: Int = 1
+): String {
+    val filters = conditions.map { (field, value) ->
+        """{"fieldFilter": {"field": {"fieldPath": "$field"}, "op": "EQUAL", "value": {"stringValue": "$value"}}}"""
+    }.joinToString(",")
+
+    return """
+        {
+            "structuredQuery": {
+                "from": [{"collectionId": "$collection"}],
+                "where": {
+                    "compositeFilter": {
+                        "op": "AND",
+                        "filters": [$filters]
+                    }
+                },
+                "limit": $limit
+            }
+        }
+    """.trimIndent()
+}

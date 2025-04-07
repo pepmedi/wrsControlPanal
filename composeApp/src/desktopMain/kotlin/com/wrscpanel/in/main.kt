@@ -1,14 +1,20 @@
 package com.wrscpanel.`in`
 
 import DATA_STORE_FILE_NAME
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import app.App
 import com.plcoding.bookpedia.di.initKoin
+import controlPanalUser.domain.UserMasterControlPanel
+import controlPanalUser.domain.UserRole
+import controlPanalUser.repository.SessionManager
 import createDataStore
-
-//fun DashboardApp(userMaster: UserMasterControlPanel, userRole: UserRole, onLogout: () -> Unit) {
-
+import dashboard.DashboardApp
+import login.presentation.LoginScreen
 
 fun main() {
     val prefs = createDataStore {
@@ -20,29 +26,27 @@ fun main() {
             onCloseRequest = ::exitApplication,
             title = "We Are Spine Control Panel",
         ) {
-            App(
-                prefs = prefs
-            )
-//        var isLoggedIn by remember { mutableStateOf(false) } // Track login state
-//        var isAdmin by remember { mutableStateOf(UserRole.EMPLOYEE) }
-////        var userMaster by remember { mutableStateOf(UserMasterControlPanel()) }
+//            App(
+//                prefs = prefs
+//            )
+            var isLoggedIn by remember { mutableStateOf(false) } // Track login state
+            var userMaster by remember { mutableStateOf(UserMasterControlPanel()) }
 //
-////        if (isLoggedIn) {
-//            // Show the Dashboard after successful login
-//            DashboardApp( isAdmin) {
-//                isLoggedIn = false
-//                isAdmin = UserRole.EMPLOYEE
-////                userMaster = UserMasterControlPanel()
-//            }
-////        } else {
-////            // Show the Login Screen
-////            LoginScreen { status, _, role, user ->
-////                // Perform login validation here if needed
-////                isLoggedIn = status
-////                isAdmin = role
-////                userMaster = user
-////            }
-////        }
+            if (isLoggedIn) {
+                // Show the Dashboard after successful login
+                SessionManager.currentUser?.let {
+                    DashboardApp(it,SessionManager.currentUser?.role ?: UserRole.EMPLOYEE) {
+                        isLoggedIn = false
+                        userMaster = UserMasterControlPanel()
+                    }
+                }
+            } else {
+
+                LoginScreen { status ->
+                    // Perform login validation here if needed
+                    isLoggedIn = status
+                }
+            }
         }
     }
 }

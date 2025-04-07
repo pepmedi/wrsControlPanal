@@ -73,7 +73,16 @@ class PanelUserCreationViewModal(
             }
 
             is PanelUserCreationAction.OnCreateUserButtonClicked -> {
-                registerUser()
+                if (_state.value.isFormValid) {
+                    registerUser()
+                } else {
+                    _state.update {
+                        it.copy(
+                            isError = _state.value.getErrorMessage(),
+                            isLoading = false
+                        )
+                    }
+                }
             }
 
             is PanelUserCreationAction.OnShowDoctorListClicked -> {
@@ -88,6 +97,8 @@ class PanelUserCreationViewModal(
                 }
             }
 
+            is PanelUserCreationAction.OnErrorMessageChange -> _state.update { it.copy(isError = "") }
+
             else -> Unit
         }
     }
@@ -101,7 +112,7 @@ class PanelUserCreationViewModal(
                     isActive = if (_state.value.isActive) "0" else "1",
                     empType = _state.value.empType,
                     doctorId = _state.value.selectedDoctor.id,
-                    permissions = _state.value.permissions.keys,
+                    permissions = _state.value.permissions.filter { it.value }.keys.toSet(),
                     createdAt = getCurrentTimeStamp(),
                     updatedAt = getCurrentTimeStamp()
                 )

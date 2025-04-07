@@ -41,4 +41,5 @@ object HttpClientFactory {
             }
         }
     }
+    val json = Json { ignoreUnknownKeys = true }
 }

@@ -13,3 +13,11 @@ fun hexToComposeColor(hex: String): Color {
     val colorInt = hex.removePrefix("#").toLong(16) or 0x00000000FF000000
     return Color(colorInt)
 }
+
+val BackgroundColors = listOf(
+    Color(0xFFE3F2FD), // Light Blue
+    Color(0xFFFFEBEE), // Light Red
+    Color(0xFFE8F5E9), // Light Green
+    Color(0xFFFFF3E0), // Light Orange
+    Color(0xFFF3E5F5)  // Light Purple
+)

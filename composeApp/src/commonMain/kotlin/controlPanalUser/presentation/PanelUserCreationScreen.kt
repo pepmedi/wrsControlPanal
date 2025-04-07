@@ -21,6 +21,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -32,7 +33,11 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -40,22 +45,37 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import controlPanalUser.domain.PanelUserCreationAction
 import controlPanalUser.domain.PanelUserCreationUiState
 import controlPanalUser.domain.UserRole
 import controlPanalUser.domain.component.DoctorListDialog
+import core.ErrorSnackBar
 import doctor.presentation.components.TextInputField
 import org.koin.compose.viewmodel.koinViewModel
 import util.Util.toNameFormat
 
 @Composable
-fun PanelUserCreationScreenRoot(viewModal: PanelUserCreationViewModal = koinViewModel()) {
+fun PanelUserCreationScreenRoot(
+    viewModal: PanelUserCreationViewModal = koinViewModel(),
+    onBack: () -> Unit
+) {
 
     val state by viewModal.state.collectAsStateWithLifecycle()
 
 
+    LaunchedEffect(state.isSuccess) {
+        if (state.isSuccess) {
+            onBack()
+        }
+    }
+
     PanelUserCreationScreen(state = state,
         onAction = { action ->
+            when (action) {
+                is PanelUserCreationAction.OnBackButtonClicked -> onBack()
+                else -> Unit
+            }
             viewModal.onAction(action)
         })
 
@@ -66,6 +86,11 @@ fun PanelUserCreationScreen(
     state: PanelUserCreationUiState,
     onAction: (PanelUserCreationAction) -> Unit
 ) {
+    var snackBarMessage by remember { mutableStateOf("") }
+
+    LaunchedEffect(state.isError) {
+        snackBarMessage = state.isError
+    }
 
     MaterialTheme {
         Scaffold(containerColor = Color.White) { paddingValue ->
@@ -76,7 +101,8 @@ fun PanelUserCreationScreen(
                 Card(
                     elevation = CardDefaults.cardElevation(8.dp),
                     shape = RoundedCornerShape(16.dp),
-                    modifier = Modifier.padding(16.dp)
+                    modifier = Modifier.padding(16.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color.White)
                 ) {
                     LazyColumn(
                         modifier = Modifier
@@ -205,6 +231,22 @@ fun PanelUserCreationScreen(
                                 }
                             }
                         }
+
+                        item {
+                            Button(
+                                onClick = { onAction(PanelUserCreationAction.OnBackButtonClicked) },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 8.dp),
+                                shape = RoundedCornerShape(5.dp),
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = Color.Gray,
+                                    contentColor = Color.Black
+                                )
+                            ) {
+                                Text(text = "Cancel", fontSize = 20.sp)
+                            }
+                        }
                     }
                 }
 
@@ -212,6 +254,16 @@ fun PanelUserCreationScreen(
                     DoctorListDialog(doctorList = state.doctorList,
                         onDismiss = { onAction(PanelUserCreationAction.OnShowDoctorListClicked(false)) },
                         onSubmit = { onAction(PanelUserCreationAction.OnSelectedDoctorChanged(it)) })
+                }
+
+                if (snackBarMessage.isNotEmpty()) {
+                    ErrorSnackBar(
+                        snackBarMessage,
+                        modifier = Modifier.align(Alignment.BottomCenter)
+                            .padding(start = 20.dp, end = 20.dp, bottom = 20.dp),
+                        onDismiss = {
+                            onAction(PanelUserCreationAction.OnErrorMessageChange)
+                        })
                 }
             }
         }

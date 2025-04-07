@@ -14,7 +14,7 @@ object Util {
     }
 
     fun String.toMobileFormat(): String {
-        return "+91$this"
+        return if (this.startsWith("+91")) this else "+91$this"
     }
 
     fun String.toOtpMobileFormat(): String {

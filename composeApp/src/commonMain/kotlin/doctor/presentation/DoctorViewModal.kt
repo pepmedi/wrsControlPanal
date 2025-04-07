@@ -6,7 +6,7 @@ import core.domain.DataError
 import core.domain.Result
 import doctor.domain.DoctorRepository
 import doctor.domain.DoctorSubmissionState
-import doctor.domain.DoctorsMaster
+import doctor.domain.DoctorMaster
 import hospital.domain.HospitalMaster
 import hospital.domain.HospitalRepository
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -23,8 +23,8 @@ class DoctorViewModal(
 ) : ViewModel() {
 
     private val _doctorList =
-        MutableStateFlow<Result<List<DoctorsMaster>, DataError.Remote>>(Result.Success(emptyList()))
-    val doctorList: StateFlow<Result<List<DoctorsMaster>, DataError.Remote>> get() = _doctorList
+        MutableStateFlow<Result<List<DoctorMaster>, DataError.Remote>>(Result.Success(emptyList()))
+    val doctorList: StateFlow<Result<List<DoctorMaster>, DataError.Remote>> get() = _doctorList
 
     private val _hospitalList =
         MutableStateFlow<Result<List<HospitalMaster>, DataError.Remote>>(Result.Success(emptyList()))
@@ -74,7 +74,7 @@ class DoctorViewModal(
         }
     }
 
-    fun addDoctor(doctorsMaster: DoctorsMaster,file: File) {
+    fun addDoctor(doctorsMaster: DoctorMaster, file: File) {
         viewModelScope.launch {
             _doctorSubmissionState.value = DoctorSubmissionState.Loading // Show loading
             doctorRepository.addDoctorToDatabase(doctorsMaster,file)

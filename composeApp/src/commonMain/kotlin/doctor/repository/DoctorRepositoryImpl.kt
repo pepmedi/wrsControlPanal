@@ -4,7 +4,7 @@ import core.data.safeCall
 import core.domain.DataError
 import core.domain.Result
 import doctor.domain.DoctorRepository
-import doctor.domain.DoctorsMaster
+import doctor.domain.DoctorMaster
 import imageUpload.uploadImageToFirebaseStorage
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
@@ -21,6 +21,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import util.DatabaseCollection
+import util.DatabaseDocument
 import util.DatabaseDocumentsResponse
 import util.DatabaseRequest
 import util.DatabaseResponse
@@ -31,7 +32,7 @@ import java.io.File
 private const val BASE_URL = DatabaseUtil.DATABASE_URL
 
 class DoctorRepositoryImpl(private val httpClient: HttpClient) : DoctorRepository {
-    override suspend fun getAllDoctors(): Flow<Result<List<DoctorsMaster>, DataError.Remote>> =
+    override suspend fun getAllDoctors(): Flow<Result<List<DoctorMaster>, DataError.Remote>> =
         flow {
             val url = "$BASE_URL/${DatabaseCollection.DOCTORS}"
 
@@ -46,7 +47,7 @@ class DoctorRepositoryImpl(private val httpClient: HttpClient) : DoctorRepositor
                     val firestoreResponse = result.data
                     val doctors = firestoreResponse.documents.map { document ->
                         val fields = document.fields
-                        DoctorsMaster(
+                        DoctorMaster(
                             id = document.name.substringAfterLast("/"),
                             name = (fields["name"] as? DatabaseValue.StringValue)?.stringValue.orEmpty(),
                             age = (fields["age"] as? DatabaseValue.StringValue)?.stringValue.orEmpty(),
@@ -72,7 +73,7 @@ class DoctorRepositoryImpl(private val httpClient: HttpClient) : DoctorRepositor
         }.flowOn(Dispatchers.IO)
 
     override suspend fun addDoctorToDatabase(
-        doctor: DoctorsMaster,
+        doctor: DoctorMaster,
         imageFile: File
     ): Flow<Result<Unit, DataError.Remote>> =
         flow {
@@ -169,6 +170,52 @@ class DoctorRepositoryImpl(private val httpClient: HttpClient) : DoctorRepositor
                 e.printStackTrace()
                 println(e.localizedMessage)
                 emit(Result.Error(DataError.Remote.UNKNOWN))
+            }
+        }.flowOn(Dispatchers.IO)
+
+    override suspend fun getDoctor(doctorId: String): Flow<Result<DoctorMaster, DataError.Remote>> =
+        flow {
+            val url = "${DatabaseUtil.DATABASE_URL}/${DatabaseCollection.DOCTORS}/$doctorId"
+
+            try {
+                val result: Result<DatabaseDocument, DataError.Remote> = safeCall {
+                    httpClient.get(url) {
+                        contentType(ContentType.Application.Json)
+                    }
+                }
+
+                when (result) {
+                    is Result.Success -> {
+                        val document =
+                            result.data
+
+                        val fields = document.fields
+                        val doctor = DoctorMaster(
+                            id = document.name.substringAfterLast("/"),
+                            name = (fields["name"] as? DatabaseValue.StringValue)?.stringValue.orEmpty(),
+                            age = (fields["age"] as? DatabaseValue.StringValue)?.stringValue.orEmpty(),
+                            profilePic = (fields["profilePic"] as? DatabaseValue.StringValue)?.stringValue.orEmpty(),
+                            consltFee = (fields["consltFee"] as? DatabaseValue.StringValue)?.stringValue.orEmpty(),
+                            reviews = (fields["reviews"] as? DatabaseValue.StringValue)?.stringValue.orEmpty(),
+                            experience = (fields["experience"] as? DatabaseValue.StringValue)?.stringValue.orEmpty(),
+                            speciality = (fields["speciality"] as? DatabaseValue.StringValue)?.stringValue.orEmpty(),
+                            hospital = (fields["hospital"] as? DatabaseValue.ArrayValue)?.values?.mapNotNull { (it as? DatabaseValue.StringValue)?.stringValue }
+                                .orEmpty(),
+                            services = (fields["services"] as? DatabaseValue.ArrayValue)?.values?.mapNotNull { (it as? DatabaseValue.StringValue)?.stringValue }
+                                .orEmpty(),
+                            createdAt = (fields["createdAt"] as? DatabaseValue.StringValue)?.stringValue.orEmpty(),
+                            updatedAt = (fields["updatedAt"] as? DatabaseValue.StringValue)?.stringValue.orEmpty()
+                        )
+                        emit(Result.Success(doctor))
+                    }
+
+                    is Result.Error -> {
+                        emit(Result.Error(result.error))
+                    }
+                }
+
+            } catch (e: Exception) {
+                emit(Result.Error(DataError.Remote.SERVER))
             }
         }.flowOn(Dispatchers.IO)
 }

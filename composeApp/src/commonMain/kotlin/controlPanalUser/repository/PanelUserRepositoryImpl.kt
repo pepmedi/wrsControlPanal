@@ -4,8 +4,10 @@ import controlPanalUser.domain.UserMasterControlPanel
 import core.domain.DataError
 import core.domain.Result
 import controlPanalUser.domain.PanelUserRepository
+import core.data.safeCall
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
+import io.ktor.client.request.get
 import io.ktor.client.request.patch
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
@@ -18,6 +20,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import util.DatabaseCollection
+import util.DatabaseDocumentsResponse
 import util.DatabaseRequest
 import util.DatabaseResponse
 import util.DatabaseUtil
@@ -91,4 +94,42 @@ class PanelUserRepositoryImpl(private val httpClient: HttpClient) : PanelUserRep
     override suspend fun getPanelUser(userId: String): Result<UserMasterControlPanel, DataError.Remote> {
         TODO("Not yet implemented")
     }
+
+    override suspend fun getAllUser(): Flow<Result<List<UserMasterControlPanel>, DataError.Remote>> =
+        flow {
+            val result: Result<DatabaseDocumentsResponse, DataError.Remote> = safeCall {
+                httpClient.get(BASE_URL) {
+                    contentType(ContentType.Application.Json)
+                }
+            }
+
+            when (result) {
+                is Result.Success -> {
+                    val databaseResponse = result.data
+                    val users = databaseResponse.documents.map { user ->
+                        val field = user.fields
+                        UserMasterControlPanel(
+                            id = user.name.substringAfterLast("/"),
+                            userName = (field["userName"] as? DatabaseValue.StringValue)?.stringValue.orEmpty(),
+                            password = (field["password"] as? DatabaseValue.StringValue)?.stringValue.orEmpty(),
+                            empType = (field["empType"] as? DatabaseValue.StringValue)?.stringValue.orEmpty(),
+                            isActive = (field["isActive"] as? DatabaseValue.StringValue)?.stringValue.orEmpty(),
+                            doctorId = (field["doctorId"] as? DatabaseValue.StringValue)?.stringValue.orEmpty(),
+                            createdAt = (field["createdAt"] as? DatabaseValue.StringValue)?.stringValue.orEmpty(),
+                            updatedAt = (field["updatedAt"] as? DatabaseValue.StringValue)?.stringValue.orEmpty(),
+                            permissions = (field["permissions"] as? DatabaseValue.ArrayValue)
+                                ?.values
+                                ?.mapNotNull { (it as? DatabaseValue.StringValue)?.stringValue }
+                                ?.toSet()
+                                .orEmpty(),
+                        )
+                    }
+                    emit(Result.Success(users))
+                }
+
+                is Result.Error -> {
+                    emit(Result.Error(DataError.Remote.SERVER))
+                }
+            }
+        }
 }

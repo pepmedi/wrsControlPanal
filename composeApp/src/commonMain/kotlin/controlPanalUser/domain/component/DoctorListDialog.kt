@@ -28,14 +28,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.DialogWindow
 import androidx.compose.ui.window.rememberDialogState
-import doctor.domain.DoctorsMaster
+import doctor.domain.DoctorMaster
 import util.Util.toNameFormat
 
 @Composable
 fun DoctorListDialog(
-    doctorList: List<DoctorsMaster>,
+    doctorList: List<DoctorMaster>,
     onDismiss: () -> Unit,
-    onSubmit: (DoctorsMaster) -> Unit
+    onSubmit: (DoctorMaster) -> Unit
 ) {
     DialogWindow(
         onCloseRequest = onDismiss,
@@ -89,8 +89,8 @@ fun DoctorListDialog(
 
 @Composable
 fun DoctorNameItem(
-    doctor: DoctorsMaster,
-    onSelect: (DoctorsMaster) -> Unit
+    doctor: DoctorMaster,
+    onSelect: (DoctorMaster) -> Unit
 ) {
     Card(
         modifier = Modifier

@@ -8,4 +8,5 @@ interface PanelUserRepository {
     suspend fun createPanelUser(userMasterControlPanel: UserMasterControlPanel): Flow<Boolean>
     suspend fun updatePanelUser(userMasterControlPanel: UserMasterControlPanel): Flow<Boolean>
     suspend fun getPanelUser(userId: String): Result<UserMasterControlPanel, DataError.Remote>
+    suspend fun getAllUser(): Flow<Result<List<UserMasterControlPanel>, DataError.Remote>>
 }

@@ -32,49 +32,44 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import app.Route
+import appointment.presentation.AppointmentsScreenRoot
 import updateInfo.presentation.UpdateInfoScreen
 import controlPanalUser.domain.UserRole
-import controlPanalUser.presentation.PanelUserCreationScreenRoot
+import controlPanalUser.domain.UserSession
+import controlPanalUser.presentation.PanelUserScreenRoot
 
 @Composable
-fun DashboardApp(userRole: UserRole, onLogout: () -> Unit) {
+fun DashboardApp(userSession: UserSession, userRole: UserRole, onLogout: () -> Unit) {
     var selectedItem by remember { mutableStateOf(SidebarItem.DASHBOARD) }
     MaterialTheme {
         Row(modifier = Modifier.fillMaxSize()) {
             // Show "Dashboard" only if the user is ADMIN
-//            if (userRole == UserRole.ADMIN) {
-            // Add the "Dashboard" option only if user is ADMIN
-            Sidebar(
-                items = SidebarItem.entries,
-                onItemClick = { selectedItem = it },
-                selectedItem = selectedItem.title,
-            )
-//            } else {
+            if (userRole == UserRole.ADMIN) {
+                // Add the "Dashboard" option only if user is ADMIN
+                Sidebar(
+                    items = SidebarItem.entries,
+                    onItemClick = { selectedItem = it },
+                    selectedItem = selectedItem.title,
+                )
+            } else {
 //                // Define sidebar items based on the user's permissions
-//                val sidebarItems = buildList {
-//                    if (userMaster.permissions.contains("Access Dashboard")) add("Dashboard")
-//                    if (userMaster.permissions.contains("View Analytics")) add("Analytics")
-//                    if (userMaster.permissions.contains("Access Shops")) add("Shop")
-//                    if (userMaster.permissions.contains("Access Products")) add("Product")
-//                    if (userMaster.permissions.contains("Access Shop Videos")) add("Shop Video")
-//                    if (userMaster.permissions.contains("View Tickets")) add("Tickets")
-//                    if (userMaster.permissions.contains("Manage Banners")) add("Banner")
-//                    if (userMaster.permissions.contains("View Users")) add("C-Panel Users")
-//                    if (userMaster.permissions.contains("Shop Approval")) add("Shop Approval")
-//                    if (userMaster.permissions.contains("Product Approval")) add("Product Approval")
-//                    if (userMaster.permissions.contains("Shop Video Approval")) add("Shop Video Approval")
-//                    if (userMaster.permissions.contains("App Users")) add("Application Users")
-//                    add("Log out")
-//                }
+                val sidebarItems = buildList {
+                    userSession.permissions?.let {
+                        if (it.contains("Access Dashboard")) add(SidebarItem.DASHBOARD)
+                        if (it.contains("Update Info")) add(SidebarItem.UPDATE_INFO)
+                        if (it.contains("C-Panel Users")) add(SidebarItem.CPANEL_USERS)
+                    }
+                    add(SidebarItem.APPOINTMENTS)
+                    add(SidebarItem.LOGOUT)
+                }
 //
 //                // For Employee, skip Dashboard or customize Sidebar
-//                Sidebar(
-//                    items = sidebarItems,
-//                    onItemClick = { selectedItem = it },
-//                    selectedItem = selectedItem,
-//                )
-//            }
+                Sidebar(
+                    items = sidebarItems,
+                    onItemClick = { selectedItem = it },
+                    selectedItem = selectedItem.title,
+                )
+            }
 
             Column(
                 modifier = Modifier.fillMaxSize().background(Color(0xFFF5F5F5))
@@ -83,19 +78,19 @@ fun DashboardApp(userRole: UserRole, onLogout: () -> Unit) {
                 when (selectedItem) {
                     SidebarItem.DASHBOARD -> DashboardScreenUi()
                     SidebarItem.UPDATE_INFO -> UpdateInfoScreen()
-//                    SidebarItem.APP_USERS -> ShopScreen(userMaster, userRole)
+                    SidebarItem.APPOINTMENTS -> AppointmentsScreenRoot()
 //                    "Product" -> ProductScreen(userMaster, userRole)
 //                    "Shop Video" -> ShopVideosScreenUi(userRole)
 //                    "Banner" -> BannerScreen()
-                    SidebarItem.CPANEL_USERS -> PanelUserCreationScreenRoot()
+                    SidebarItem.CPANEL_USERS -> PanelUserScreenRoot()
 //                    "Shop Approval" -> ShopApprovalScreenUi()
 //                    "Product Approval" -> ProductApprovalScreenUi()
 //                    "Shop Video Approval" -> ShopVideoApprovalScreen()
 //                    "Tickets" -> TicketScreenUi()
 //                    "Application Users" -> AppUsersScreen(userMaster, userRole)
-//                    "Log out" -> {
-//                        onLogout()
-//                    }
+                    SidebarItem.LOGOUT -> {
+                        onLogout()
+                    }
 
                     else -> DashboardScreenUi()
                 }
@@ -118,11 +113,17 @@ fun Sidebar(items: List<SidebarItem>, selectedItem: String, onItemClick: (Sideba
     ) {
         Spacer(modifier = Modifier.height(8.dp))
         items.forEach { item ->
-            TextButton(onClick = { onItemClick(item) }, modifier = Modifier
-                .shadow(elevation = 2.dp, shape = RoundedCornerShape(3.dp), ambientColor = Color.Yellow)
-                .padding(5.dp)
-                .fillMaxWidth()
-                .background(if (item.title == selectedItem) Color.White else Color.Transparent)) {
+            TextButton(
+                onClick = { onItemClick(item) }, modifier = Modifier
+                    .shadow(
+                        elevation = 2.dp,
+                        shape = RoundedCornerShape(3.dp),
+                        ambientColor = Color.Yellow
+                    )
+                    .padding(5.dp)
+                    .fillMaxWidth()
+                    .background(if (item.title == selectedItem) Color.White else Color.Transparent)
+            ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
                         text = item.title,

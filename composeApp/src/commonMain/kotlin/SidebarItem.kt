@@ -1,7 +1,7 @@
 enum class SidebarItem(val title: String) {
     DASHBOARD("Dashboard"),
     UPDATE_INFO("Update Info"),
-    SHOP("Shop"),
+    APPOINTMENTS("Appointments"),
     PRODUCT("Product"),
     SHOP_VIDEO("Shop Video"),
     TICKETS("Tickets"),

@@ -3,7 +3,7 @@ package doctor.domain
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class DoctorsMaster(
+data class DoctorMaster(
     val id:String = "",
     val name:String= "",
     val experience:String= "",
