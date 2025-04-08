@@ -46,6 +46,7 @@ class AppointmentBookingRepositoryImpl(private val httpClient: HttpClient) :
                             description = (field["description"] as? DatabaseValue.StringValue)?.stringValue.orEmpty(),
                             createdAt = (field["createdAt"] as? DatabaseValue.StringValue)?.stringValue.orEmpty(),
                             mobileNo = (field["mobileNo"] as? DatabaseValue.StringValue)?.stringValue.orEmpty(),
+                            bookingFor = (field["bookingFor"] as? DatabaseValue.StringValue)?.stringValue.orEmpty(),
                             updatedAt = (field["updatedAt"] as? DatabaseValue.StringValue)?.stringValue.orEmpty(),
                             slotId = (field["slotId"] as? DatabaseValue.ArrayValue)?.values?.mapNotNull { (it as? DatabaseValue.StringValue)?.stringValue }
                                 .orEmpty(),

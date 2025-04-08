@@ -23,12 +23,15 @@ import util.FileUtil
 import java.io.File
 
 @Composable
-fun CancelButton(onBackClick: () -> Unit) {
+fun CancelButton(onBackClick: () -> Unit,modifier: Modifier = Modifier) {
     Button(
-        onClick = {onBackClick()},
+        onClick = { onBackClick() },
         shape = RoundedCornerShape(5.dp),
-        modifier = Modifier.fillMaxWidth(),
-        colors = ButtonDefaults.buttonColors(contentColor = Color.Black, containerColor = Color.Gray)
+        modifier = modifier.fillMaxWidth(),
+        colors = ButtonDefaults.buttonColors(
+            contentColor = Color.Black,
+            containerColor = Color.Gray
+        )
     ) {
         Text("Cancel")
     }
@@ -38,7 +41,7 @@ fun CancelButton(onBackClick: () -> Unit) {
 fun ImageSelector(
     imageBitmap: ImageBitmap?,
     onImageSelected: (File) -> Unit,
-    snackBarMessage: (String) -> Unit
+    snackBarMessage: (String) -> Unit,
 ) {
     Box(
         modifier = Modifier

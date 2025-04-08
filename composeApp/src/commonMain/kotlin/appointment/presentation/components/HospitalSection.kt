@@ -36,13 +36,13 @@ fun HospitalSection(
 
     Column(modifier = modifier.padding(16.dp)) {
         Text(
-            text = "Select Hospital",
+            text = "Selected Hospitals",
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Bold,
-            fontSize = 20.sp
+            fontSize = 15.sp
         )
 
-        Spacer(modifier = Modifier.height(12.dp))
+        Spacer(modifier = Modifier.height(8.dp))
 
         // Splitting the timeSlots list into rows
         val rows = hospitalList.chunked(columns)
@@ -80,7 +80,7 @@ fun HospitalSection(
                                     color =  Color.Black,
                                     fontWeight = FontWeight.SemiBold,
                                     textAlign = TextAlign.Center,
-                                    fontSize = 18.sp
+                                    fontSize = 16.sp
                                 )
                             }
                         }

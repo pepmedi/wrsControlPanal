@@ -142,8 +142,12 @@ fun AppointmentsScreen(
                         }
                     }
                 }
-                if(showDetails){
-                    AppointmentDetailsScreenRoot(appointmentDetails = currentAppointment, onBackClick = {})
+                if (showDetails) {
+                    AppointmentDetailsScreenRoot(
+                        appointmentDetails = currentAppointment,
+                        onBackClick = {
+                            showDetails = false
+                        })
                 }
             }
         }
