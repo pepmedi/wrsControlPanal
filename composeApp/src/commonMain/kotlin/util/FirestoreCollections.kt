@@ -9,3 +9,9 @@ object DatabaseCollection {
     const val FAVORITES = "favorites"
     const val PANEL_USER = "panelUser"
 }
+
+object StorageCollection {
+    const val DOCTOR_IMAGES = "doctorImages"
+    const val SERVICE_IMAGES = "serviceImages"
+    const val SERVICE_ICON = "serviceIcon"
+}

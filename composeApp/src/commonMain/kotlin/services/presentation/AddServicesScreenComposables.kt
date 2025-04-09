@@ -2,6 +2,7 @@ package services.presentation
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -26,15 +27,20 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import core.CancelButton
+import core.ImageSelector
 import doctor.presentation.components.TextInputField
 import kotlinx.coroutines.launch
 import org.koin.compose.viewmodel.koinViewModel
 import services.domain.ServiceStates
 import services.domain.ServicesMaster
+import util.FileCompressor
+import util.FileUtil.loadAndCompressImage
 import util.getCurrentTimeStamp
+import java.io.File
 
 @Composable
 fun AddServicesScreenUI(viewModal: ServicesViewModal = koinViewModel(), onBackClick: () -> Unit) {
@@ -42,6 +48,13 @@ fun AddServicesScreenUI(viewModal: ServicesViewModal = koinViewModel(), onBackCl
 
     var serviceName by remember { mutableStateOf("") }
 
+    var imageBitmap by remember { mutableStateOf<ImageBitmap?>(null) }
+    var imageFile by remember { mutableStateOf<File?>(null) }
+
+    var iconBitMap by remember { mutableStateOf<ImageBitmap?>(null) }
+    var iconFile by remember { mutableStateOf<File?>(null) }
+
+    var snackBarMessage by remember { mutableStateOf("") }
     // Snackbar
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
@@ -57,6 +70,8 @@ fun AddServicesScreenUI(viewModal: ServicesViewModal = koinViewModel(), onBackCl
         val errors = mutableListOf<String>()
 
         if (serviceName.isBlank()) errors.add("Service Name is required")
+        if(imageBitmap == null) errors.add("Service Image is required")
+        if(iconBitMap == null) errors.add("Service Icon is required")
 
         if (errors.isNotEmpty()) {
             scope.launch {
@@ -88,6 +103,40 @@ fun AddServicesScreenUI(viewModal: ServicesViewModal = koinViewModel(), onBackCl
                     }
 
                     item {
+                        Row {
+                            //first image
+                            ImageSelector(
+                                imageBitmap = imageBitmap,
+                                onImageSelected = { file ->
+                                    scope.launch {
+                                        imageFile = FileCompressor.loadAndCompressImage(file)
+                                        imageBitmap = loadAndCompressImage(file)
+                                    }
+                                },
+                                snackBarMessage = { message ->
+                                    snackBarMessage = message
+                                },
+                                text = "Select Service Image"
+                            )
+
+                            //first image
+                            ImageSelector(
+                                imageBitmap = iconBitMap,
+                                onImageSelected = { file ->
+                                    scope.launch {
+                                        iconFile = FileCompressor.loadAndCompressImage(file)
+                                        iconBitMap = loadAndCompressImage(file)
+                                    }
+                                },
+                                snackBarMessage = { message ->
+                                    snackBarMessage = message
+                                },
+                                text = "Select Service icon"
+                            )
+                        }
+                    }
+
+                    item {
                         if (servicesState == ServiceStates.Loading) {
                             CircularProgressIndicator()
                         } else {
@@ -95,17 +144,23 @@ fun AddServicesScreenUI(viewModal: ServicesViewModal = koinViewModel(), onBackCl
                                 shape = RoundedCornerShape(5.dp), onClick = {
                                     if (validateForm()) {
                                         scope.launch {
-                                            viewModal.addService(
-                                                service = ServicesMaster(
-                                                    id = "",
-                                                    name = serviceName,
-                                                    createdAt = getCurrentTimeStamp(),
-                                                    updatedAt = getCurrentTimeStamp()
-                                                )
-                                            )
+                                            imageFile?.let {
+                                                iconFile?.let { it1 ->
+                                                    viewModal.addService(
+                                                        service = ServicesMaster(
+                                                            id = "",
+                                                            name = serviceName,
+                                                            createdAt = getCurrentTimeStamp(),
+                                                            updatedAt = getCurrentTimeStamp()
+                                                        ),
+                                                        imageFile = it,
+                                                        iconFile = it1
+                                                    )
+                                                }
+                                            }
                                         }
                                     }
-                                }){
+                                }) {
                                 Text("Submit")
                             }
                         }

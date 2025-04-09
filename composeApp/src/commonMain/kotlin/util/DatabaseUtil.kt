@@ -122,6 +122,10 @@ object DatabaseValueSerializer : KSerializer<DatabaseValue> {
 
 }
 
+fun buildUpdateMask(vararg fields: String): String {
+    return fields.joinToString("&") { "updateMask.fieldPaths=$it" }
+}
+
 fun buildCustomDatabaseQuery(
     collection: String,
     conditions: Map<String, String>,

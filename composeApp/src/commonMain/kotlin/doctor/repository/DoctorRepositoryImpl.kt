@@ -27,6 +27,7 @@ import util.DatabaseRequest
 import util.DatabaseResponse
 import util.DatabaseUtil
 import util.DatabaseValue
+import util.StorageCollection
 import java.io.File
 
 private const val BASE_URL = DatabaseUtil.DATABASE_URL
@@ -140,8 +141,8 @@ class DoctorRepositoryImpl(private val httpClient: HttpClient) : DoctorRepositor
                     val downloadUrl = uploadImageToFirebaseStorage(
                         httpClient = httpClient,
                         file = imageFile,
-                        folderName = "rajeev",
-                        fileName = "myName"
+                        folderName = StorageCollection.DOCTOR_IMAGES,
+                        fileName = generatedId
                     )
 
                     val patchImageResponse =

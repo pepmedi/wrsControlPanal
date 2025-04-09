@@ -42,6 +42,7 @@ fun ImageSelector(
     imageBitmap: ImageBitmap?,
     onImageSelected: (File) -> Unit,
     snackBarMessage: (String) -> Unit,
+    text:String = "Click to Select"
 ) {
     Box(
         modifier = Modifier
@@ -62,7 +63,7 @@ fun ImageSelector(
         if (imageBitmap != null) {
             Image(bitmap = imageBitmap, contentDescription = "Selected Image")
         } else {
-            Text(text = "Click to Select")
+            Text(text = text)
         }
     }
 }
