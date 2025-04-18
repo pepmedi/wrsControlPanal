@@ -51,14 +51,19 @@ fun LoginScreen(
     var isPasswordVisible by remember { mutableStateOf(false) }
     var snackBarMessage by remember { mutableStateOf("") }
 
-    LaunchedEffect(uiState.loginSuccess) {
-        if (uiState.loginSuccess) {
+    LaunchedEffect(uiState.user?.id) {
+        if (uiState.loginSuccess && uiState.user != null) {
+            loginViewModel.resetLoginUiState()
             onLogin(true)
         }
     }
 
-    LaunchedEffect(uiState.errorMessage){
-        uiState.errorMessage?.let{
+    LaunchedEffect(Unit) {
+        loginViewModel.resetLoginUiState()
+    }
+
+    LaunchedEffect(uiState.errorMessage) {
+        uiState.errorMessage?.let {
             snackBarMessage = it
         }
     }

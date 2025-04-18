@@ -7,6 +7,9 @@ import appointment.domain.AppointmentBookingRepository
 import appointment.presentation.AppointmentDetailsViewModal
 import appointment.repository.AppointmentBookingRepositoryImpl
 import appointment.presentation.AppointmentsViewModal
+import blog.domain.BlogRepository
+import blog.repository.BlogRepositoryImpl
+import blog.viewModel.AddBlogViewModel
 import controlPanalUser.domain.PanelUserRepository
 import controlPanalUser.presentation.PanelUserCreationViewModal
 import controlPanalUser.presentation.PanelUserScreenViewModal
@@ -29,6 +32,9 @@ import org.koin.dsl.module
 import services.domain.ServicesRepository
 import services.presentation.ServicesViewModal
 import services.repository.ServicesRepositoryImpl
+import slots.domain.SlotsRepository
+import slots.repository.SlotsRepositoryImpl
+import slots.viewModel.AddSlotsViewModel
 
 expect val platformModule: Module
 
@@ -42,8 +48,10 @@ val sharedModule = module {
     singleOf(::AppointmentBookingRepositoryImpl).bind<AppointmentBookingRepository>()
     singleOf(::AppointmentBookingRepositoryImpl).bind<AppointmentBookingRepository>()
     singleOf(::UserRepositoryImpl).bind<UserRepository>()
+    singleOf(::SlotsRepositoryImpl).bind<SlotsRepository>()
+    singleOf(::BlogRepositoryImpl).bind<BlogRepository>()
 
-    viewModel { DoctorViewModal(get(), get(), get()) }
+    viewModel { DoctorViewModal(get(), get(), get(), get()) }
     viewModel { HospitalViewModal(get()) }
     viewModel { ServicesViewModal(get()) }
     viewModel { PanelUserCreationViewModal(get(), get()) }
@@ -51,4 +59,6 @@ val sharedModule = module {
     viewModel { AppointmentsViewModal(get(), get(), get()) }
     viewModel { PanelUserScreenViewModal(get()) }
     viewModel { AppointmentDetailsViewModal(get()) }
+    viewModel { AddSlotsViewModel(get()) }
+    viewModel { AddBlogViewModel(get(),get()) }
 }

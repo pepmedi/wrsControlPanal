@@ -29,19 +29,21 @@ fun main() {
 //            App(
 //                prefs = prefs
 //            )
-            var isLoggedIn by remember { mutableStateOf(false) } // Track login state
-            var userMaster by remember { mutableStateOf(UserMasterControlPanel()) }
+            var isLoggedIn by remember { mutableStateOf(SessionManager.currentUser != null) }
 //
-            if (isLoggedIn) {
+            if (isLoggedIn && SessionManager.currentUser != null) {
                 // Show the Dashboard after successful login
                 SessionManager.currentUser?.let {
-                    DashboardApp(it,SessionManager.currentUser?.role ?: UserRole.EMPLOYEE) {
-                        isLoggedIn = false
-                        userMaster = UserMasterControlPanel()
-                    }
+                    DashboardApp(
+                        userSession = it,
+                        SessionManager.currentUser?.role ?: UserRole.EMPLOYEE,
+                        onLogout = {
+                            SessionManager.currentUser = null
+                            isLoggedIn = false
+                        }
+                    )
                 }
             } else {
-
                 LoginScreen { status ->
                     // Perform login validation here if needed
                     isLoggedIn = status

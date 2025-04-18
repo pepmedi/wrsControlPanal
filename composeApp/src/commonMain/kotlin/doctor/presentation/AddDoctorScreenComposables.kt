@@ -12,6 +12,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -34,6 +35,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import component.GradientButton
 import core.CancelButton
 import core.ImageSelector
 import core.domain.DataError
@@ -44,9 +46,11 @@ import doctor.presentation.components.TextInputField
 import hospital.domain.HospitalMaster
 import hospital.presentation.components.HospitalListDialog
 import hospital.presentation.components.ServicesListDialog
+import hospital.presentation.components.SlotsListDialog
 import kotlinx.coroutines.launch
 import org.koin.compose.viewmodel.koinViewModel
 import services.domain.ServicesMaster
+import slots.domain.SlotsMaster
 import util.FileCompressor
 import util.FileUtil.loadAndCompressImage
 import util.getCurrentTimeStamp
@@ -58,6 +62,7 @@ fun AddDoctorScreen(viewModal: DoctorViewModal = koinViewModel(), onBackClick: (
     val doctorSubmissionState by viewModal.doctorSubmissionState.collectAsStateWithLifecycle()
     val hospitalListState = viewModal.hospitalList.collectAsStateWithLifecycle()
     val servicesListState = viewModal.servicesList.collectAsStateWithLifecycle()
+    val slotsMaster = viewModal.slotsList.collectAsStateWithLifecycle()
 
     var doctorName by remember { mutableStateOf("") }
     var doctorExperience by remember { mutableStateOf("") }
@@ -76,6 +81,9 @@ fun AddDoctorScreen(viewModal: DoctorViewModal = koinViewModel(), onBackClick: (
 
     var showServiceList by remember { mutableStateOf(false) }
     var selectedServices by remember { mutableStateOf(emptyList<ServicesMaster>()) }
+
+    var showSlotsList by remember { mutableStateOf(false) }
+    val selectedSlots by remember { mutableStateOf(emptyList<SlotsMaster>()) }
 
     // Snackbar
     val snackbarHostState = remember { SnackbarHostState() }
@@ -128,6 +136,24 @@ fun AddDoctorScreen(viewModal: DoctorViewModal = koinViewModel(), onBackClick: (
                             icon = Icons.Default.Person,
                         )
                     }
+
+                    item {
+                        TextInputField(
+                            value = age,
+                            onValueChange = { age = it },
+                            label = "Age",
+                            icon = Icons.Default.Person,
+                        )
+                    }
+
+                    item {
+                        TextInputField(
+                            value = consultantFee,
+                            onValueChange = { consultantFee = it },
+                            label = "Consultation Fee",
+                            icon = Icons.Default.Person,
+                        )
+                    }
                     item {
                         TextInputField(
                             value = doctorExperience,
@@ -137,11 +163,20 @@ fun AddDoctorScreen(viewModal: DoctorViewModal = koinViewModel(), onBackClick: (
                         )
                     }
 
+//                    item {
+//                        TextInputField(
+//                            value = review,
+//                            onValueChange = { review = it },
+//                            label = "Doctor Experience",
+//                            icon = Icons.Default.Person,
+//                        )
+//                    }
+
                     item {
                         TextInputField(
-                            value = age,
-                            onValueChange = { age = it },
-                            label = "Age",
+                            value = speciality,
+                            onValueChange = { speciality = it },
+                            label = "Doctor Speciality",
                             icon = Icons.Default.Person,
                         )
                     }
@@ -170,28 +205,12 @@ fun AddDoctorScreen(viewModal: DoctorViewModal = koinViewModel(), onBackClick: (
 
                     item {
                         TextInputField(
-                            value = consultantFee,
-                            onValueChange = { consultantFee = it },
-                            label = "Consultation Fee",
-                            icon = Icons.Default.Person,
-                        )
-                    }
-
-                    item {
-                        TextInputField(
-                            value = review,
-                            onValueChange = { review = it },
-                            label = "Doctor Experience",
-                            icon = Icons.Default.Person,
-                        )
-                    }
-
-                    item {
-                        TextInputField(
-                            value = speciality,
-                            onValueChange = { speciality = it },
-                            label = "Doctor Experience",
-                            icon = Icons.Default.Person,
+                            value = selectedSlots.joinToString(", ") { it.name },
+                            onValueChange = { },
+                            label = "Slots",
+                            icon = Icons.Outlined.CheckCircle,
+                            enabled = false,
+                            onClick = { showSlotsList = true }
                         )
                     }
 
@@ -214,13 +233,13 @@ fun AddDoctorScreen(viewModal: DoctorViewModal = koinViewModel(), onBackClick: (
                         if (doctorSubmissionState == DoctorSubmissionState.Loading) {
                             CircularProgressIndicator()
                         } else {
-                            Button(
+                            GradientButton(
                                 modifier = Modifier.fillMaxWidth(),
-                                shape = RoundedCornerShape(5.dp),
+                                text = "Submit",
                                 onClick = {
                                     if (validateForm()) {
                                         scope.launch {
-                                            imageFile1?.let {
+                                            imageFile1?.let { doctorImage ->
                                                 viewModal.addDoctor(
                                                     doctorsMaster = DoctorMaster(
                                                         id = "",
@@ -232,17 +251,16 @@ fun AddDoctorScreen(viewModal: DoctorViewModal = koinViewModel(), onBackClick: (
                                                         hospital = selectedHospitals.map { it.id },
                                                         consltFee = consultantFee,
                                                         reviews = review,
+                                                        slots = selectedSlots.map { it.id },
                                                         updatedAt = getCurrentTimeStamp(),
                                                         createdAt = getCurrentTimeStamp()
                                                     ),
-                                                    file = it
+                                                    file = doctorImage
                                                 )
                                             }
                                         }
                                     }
-                                }) {
-                                Text("Submit")
-                            }
+                                })
                         }
                     }
 
@@ -264,6 +282,15 @@ fun AddDoctorScreen(viewModal: DoctorViewModal = koinViewModel(), onBackClick: (
                         onDismiss = { showServiceList = false },
                         onSubmit = {
                             selectedServices = it
+                        }
+                    )
+                }
+                if (showSlotsList) {
+                    SlotsListDialog(
+                        slotsList = slotsMaster.value,
+                        onDismiss = { showSlotsList = false },
+                        onSubmit = {
+
                         }
                     )
                 }

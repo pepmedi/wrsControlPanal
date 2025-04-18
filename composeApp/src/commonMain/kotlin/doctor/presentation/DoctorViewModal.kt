@@ -4,9 +4,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import core.domain.DataError
 import core.domain.Result
+import doctor.domain.DoctorMaster
 import doctor.domain.DoctorRepository
 import doctor.domain.DoctorSubmissionState
-import doctor.domain.DoctorMaster
 import hospital.domain.HospitalMaster
 import hospital.domain.HospitalRepository
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -14,12 +14,15 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import services.domain.ServicesMaster
 import services.domain.ServicesRepository
+import slots.domain.SlotsMaster
+import slots.domain.SlotsRepository
 import java.io.File
 
 class DoctorViewModal(
     private val doctorRepository: DoctorRepository,
     private val hospitalRepository: HospitalRepository,
-    private val servicesRepository: ServicesRepository
+    private val servicesRepository: ServicesRepository,
+    private val slotsRepository: SlotsRepository
 ) : ViewModel() {
 
     private val _doctorList =
@@ -36,9 +39,38 @@ class DoctorViewModal(
 
     val servicesList: StateFlow<Result<List<ServicesMaster>, DataError.Remote>> get() = _servicesList
 
+    private val _slotsList =
+        MutableStateFlow<Result<List<SlotsMaster>, DataError>>(Result.Success(emptyList()))
+
+    val slotsList: StateFlow<Result<List<SlotsMaster>, DataError>> get() = _slotsList
+
     private val _doctorSubmissionState =
         MutableStateFlow<DoctorSubmissionState>(DoctorSubmissionState.Idle)
     val doctorSubmissionState: StateFlow<DoctorSubmissionState> get() = _doctorSubmissionState
+
+    init {
+        getDoctorList()
+        getAllHospital()
+        getAllServices()
+        getAllSlots()
+    }
+
+    private fun getAllSlots() {
+        viewModelScope.launch {
+            slotsRepository.getAllSlots()
+                .collect { result ->
+                    when (result) {
+                        is Result.Success -> {
+                            _slotsList.value = result
+                        }
+
+                        is Result.Error -> {
+
+                        }
+                    }
+                }
+        }
+    }
 
     private fun getDoctorList() {
         println("fetched:-")
@@ -50,12 +82,6 @@ class DoctorViewModal(
         }
     }
 
-    init {
-        getDoctorList()
-        getAllHospital()
-        getAllServices()
-    }
-
     private fun getAllHospital() {
         viewModelScope.launch {
             hospitalRepository.getAllHospital()
@@ -65,10 +91,10 @@ class DoctorViewModal(
         }
     }
 
-    private fun getAllServices(){
+    private fun getAllServices() {
         viewModelScope.launch {
             servicesRepository.getAllServices()
-                .collect{
+                .collect {
                     _servicesList.value = it
                 }
         }
@@ -77,12 +103,11 @@ class DoctorViewModal(
     fun addDoctor(doctorsMaster: DoctorMaster, file: File) {
         viewModelScope.launch {
             _doctorSubmissionState.value = DoctorSubmissionState.Loading // Show loading
-            doctorRepository.addDoctorToDatabase(doctorsMaster,file)
+            doctorRepository.addDoctorToDatabase(doctorsMaster, file)
                 .collect { result ->
                     _doctorSubmissionState.value = when (result) {
                         is Result.Success -> DoctorSubmissionState.Success
                         is Result.Error -> DoctorSubmissionState.Error(result.error)
-                        else -> DoctorSubmissionState.Idle
                     }
                 }
         }

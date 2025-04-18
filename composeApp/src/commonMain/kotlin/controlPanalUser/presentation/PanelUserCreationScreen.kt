@@ -49,7 +49,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import controlPanalUser.domain.PanelUserCreationAction
 import controlPanalUser.domain.PanelUserCreationUiState
 import controlPanalUser.domain.UserRole
-import controlPanalUser.domain.component.DoctorListDialog
+import controlPanalUser.presentation.component.DoctorListDialog
 import core.ErrorSnackBar
 import doctor.presentation.components.TextInputField
 import org.koin.compose.viewmodel.koinViewModel

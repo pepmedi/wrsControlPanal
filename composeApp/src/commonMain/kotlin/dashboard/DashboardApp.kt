@@ -79,15 +79,7 @@ fun DashboardApp(userSession: UserSession, userRole: UserRole, onLogout: () -> U
                     SidebarItem.DASHBOARD -> DashboardScreenUi()
                     SidebarItem.UPDATE_INFO -> UpdateInfoScreen()
                     SidebarItem.APPOINTMENTS -> AppointmentsScreenRoot()
-//                    "Product" -> ProductScreen(userMaster, userRole)
-//                    "Shop Video" -> ShopVideosScreenUi(userRole)
-//                    "Banner" -> BannerScreen()
                     SidebarItem.CPANEL_USERS -> PanelUserScreenRoot()
-//                    "Shop Approval" -> ShopApprovalScreenUi()
-//                    "Product Approval" -> ProductApprovalScreenUi()
-//                    "Shop Video Approval" -> ShopVideoApprovalScreen()
-//                    "Tickets" -> TicketScreenUi()
-//                    "Application Users" -> AppUsersScreen(userMaster, userRole)
                     SidebarItem.LOGOUT -> {
                         onLogout()
                     }

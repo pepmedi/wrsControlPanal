@@ -31,6 +31,9 @@ class LoginViewModel(
         _uiState.update { it.copy(errorMessage = "") }
     }
 
+    fun resetLoginUiState(): LoginUiState {
+        return LoginUiState()
+    }
     fun login() {
         viewModelScope.launch {
             _uiState.update {

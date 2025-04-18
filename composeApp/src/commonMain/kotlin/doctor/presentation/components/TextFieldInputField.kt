@@ -1,10 +1,8 @@
 package doctor.presentation.components
 
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.onClick
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
@@ -18,23 +16,22 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
-import jdk.jfr.Enabled
 
 @Composable
 fun TextInputField(
     value: String,
     onValueChange: (String) -> Unit,
     label: String,
-    icon: ImageVector,
+    icon: ImageVector? = null,
     isPassword: Boolean = false,
     enabled: Boolean = true,
-    onClick:()->Unit = {}
+    maxLines: Int = Int.MAX_VALUE,
+    onClick: () -> Unit = {}
 ) {
     var isFocused by remember { mutableStateOf(false) }
 
@@ -43,6 +40,7 @@ fun TextInputField(
         onValueChange = onValueChange,
         label = { Text(label) },
         enabled = enabled,
+        maxLines = maxLines,
         colors = TextFieldDefaults.colors(
             unfocusedContainerColor = Color.White,
 
@@ -54,7 +52,11 @@ fun TextInputField(
             disabledLeadingIconColor = Color.Gray, // Keep icon gray
             disabledPlaceholderColor = Color.Gray // Keep placeholder gray
         ),
-        leadingIcon = { Icon(icon, contentDescription = label) },
+        prefix = {
+            if (icon != null) {
+                Icon(icon, contentDescription = label)
+            }
+        },
         visualTransformation = if (isPassword) PasswordVisualTransformation() else VisualTransformation.None,
         keyboardOptions = KeyboardOptions.Default.copy(keyboardType = if (isPassword) KeyboardType.Password else KeyboardType.Text),
         modifier = Modifier
