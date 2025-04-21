@@ -27,6 +27,8 @@ import util.DatabaseRequest
 import util.DatabaseResponse
 import util.DatabaseUtil
 import util.DatabaseValue
+import util.StorageCollection
+import util.buildUpdateMask
 import java.io.File
 
 private const val BASE_URL = DatabaseUtil.DATABASE_URL
@@ -60,7 +62,11 @@ class DoctorRepositoryImpl(private val httpClient: HttpClient) : DoctorRepositor
                             services = (fields["services"] as? DatabaseValue.ArrayValue)?.values?.mapNotNull { (it as? DatabaseValue.StringValue)?.stringValue }
                                 .orEmpty(),
                             createdAt = (fields["createdAt"] as? DatabaseValue.StringValue)?.stringValue.orEmpty(),
-                            updatedAt = (fields["updatedAt"] as? DatabaseValue.StringValue)?.stringValue.orEmpty()
+                            updatedAt = (fields["updatedAt"] as? DatabaseValue.StringValue)?.stringValue.orEmpty(),
+                            speciality = (fields["speciality"] as? DatabaseValue.StringValue)?.stringValue.orEmpty(),
+                            focus = (fields["focus"] as? DatabaseValue.StringValue)?.stringValue.orEmpty(),
+                            careerPath = (fields["careerPath"] as? DatabaseValue.StringValue)?.stringValue.orEmpty(),
+                            profile = (fields["profile"] as? DatabaseValue.StringValue)?.stringValue.orEmpty()
                         )
                     }
                     emit(Result.Success(doctors))
@@ -106,7 +112,11 @@ class DoctorRepositoryImpl(private val httpClient: HttpClient) : DoctorRepositor
                                 "consltFee" to DatabaseValue.StringValue(doctor.consltFee),
                                 "reviews" to DatabaseValue.StringValue(doctor.reviews),
                                 "createdAt" to DatabaseValue.StringValue(doctor.createdAt),
-                                "updatedAt" to DatabaseValue.StringValue(doctor.updatedAt)
+                                "updatedAt" to DatabaseValue.StringValue(doctor.updatedAt),
+                                "speciality" to DatabaseValue.StringValue(doctor.speciality),
+                                "focus" to DatabaseValue.StringValue(doctor.focus),
+                                "careerPath" to DatabaseValue.StringValue(doctor.careerPath),
+                                "profile" to DatabaseValue.StringValue(doctor.profile)
                             )
                         )
                     )
@@ -140,8 +150,8 @@ class DoctorRepositoryImpl(private val httpClient: HttpClient) : DoctorRepositor
                     val downloadUrl = uploadImageToFirebaseStorage(
                         httpClient = httpClient,
                         file = imageFile,
-                        folderName = "rajeev",
-                        fileName = "myName"
+                        folderName = StorageCollection.DOCTOR_IMAGES,
+                        fileName = generatedId
                     )
 
                     val patchImageResponse =
@@ -203,8 +213,13 @@ class DoctorRepositoryImpl(private val httpClient: HttpClient) : DoctorRepositor
                                 .orEmpty(),
                             services = (fields["services"] as? DatabaseValue.ArrayValue)?.values?.mapNotNull { (it as? DatabaseValue.StringValue)?.stringValue }
                                 .orEmpty(),
+                            slots = (fields["slots"] as? DatabaseValue.ArrayValue)?.values?.mapNotNull { (it as? DatabaseValue.StringValue)?.stringValue }
+                                .orEmpty(),
                             createdAt = (fields["createdAt"] as? DatabaseValue.StringValue)?.stringValue.orEmpty(),
-                            updatedAt = (fields["updatedAt"] as? DatabaseValue.StringValue)?.stringValue.orEmpty()
+                            updatedAt = (fields["updatedAt"] as? DatabaseValue.StringValue)?.stringValue.orEmpty(),
+                            focus = (fields["focus"] as? DatabaseValue.StringValue)?.stringValue.orEmpty(),
+                            careerPath = (fields["careerPath"] as? DatabaseValue.StringValue)?.stringValue.orEmpty(),
+                            profile = (fields["profile"] as? DatabaseValue.StringValue)?.stringValue.orEmpty(),
                         )
                         emit(Result.Success(doctor))
                     }
@@ -218,4 +233,84 @@ class DoctorRepositoryImpl(private val httpClient: HttpClient) : DoctorRepositor
                 emit(Result.Error(DataError.Remote.SERVER))
             }
         }.flowOn(Dispatchers.IO)
+
+    override suspend fun updateDoctor(
+        doctor: DoctorMaster,
+        imageFile: File?
+    ): Flow<Result<String?, DataError.Remote>> = flow {
+        try {
+            // Step 1: Update doctor details first
+            val patchResponse = httpClient.patch(
+                "$BASE_URL/${DatabaseCollection.DOCTORS}/${doctor.id}?${
+                    buildUpdateMask(
+                        "name", "experience", "age", "hospital", "services", "slots",
+                        "consltFee", "updatedAt", "focus", "careerPath", "profile"
+                    )
+                }"
+            ) {
+                contentType(ContentType.Application.Json)
+                setBody(
+                    DatabaseRequest(
+                        fields = mapOf(
+                            "name" to DatabaseValue.StringValue(doctor.name),
+                            "age" to DatabaseValue.StringValue(doctor.age),
+                            "experience" to DatabaseValue.StringValue(doctor.experience),
+                            "hospital" to DatabaseValue.ArrayValue(doctor.hospital.map {
+                                DatabaseValue.StringValue(it)
+                            }),
+                            "services" to DatabaseValue.ArrayValue(doctor.services.map {
+                                DatabaseValue.StringValue(it)
+                            }),
+                            "slots" to DatabaseValue.ArrayValue(doctor.slots.map {
+                                DatabaseValue.StringValue(it)
+                            }),
+                            "consltFee" to DatabaseValue.StringValue(doctor.consltFee),
+                            "updatedAt" to DatabaseValue.StringValue(doctor.updatedAt),
+                            "focus" to DatabaseValue.StringValue(doctor.focus),
+                            "careerPath" to DatabaseValue.StringValue(doctor.careerPath),
+                            "profile" to DatabaseValue.StringValue(doctor.profile)
+                        )
+                    )
+                )
+            }
+
+            if (patchResponse.status == HttpStatusCode.OK) {
+                // Step 2: Upload image if available
+                if (imageFile != null) {
+                    val downloadUrl = uploadImageToFirebaseStorage(
+                        httpClient = httpClient,
+                        file = imageFile,
+                        folderName = StorageCollection.DOCTOR_IMAGES,
+                        fileName = doctor.id
+                    )
+
+                    val patchImageResponse = httpClient.patch(
+                        "$BASE_URL/${DatabaseCollection.DOCTORS}/${doctor.id}?updateMask.fieldPaths=profilePic"
+                    ) {
+                        contentType(ContentType.Application.Json)
+                        setBody(
+                            DatabaseRequest(
+                                fields = mapOf(
+                                    "profilePic" to DatabaseValue.StringValue(downloadUrl)
+                                )
+                            )
+                        )
+                    }
+
+                    if (patchImageResponse.status == HttpStatusCode.OK) {
+                        emit(Result.Success(downloadUrl)) // ✅ emit URL if uploaded
+                    } else {
+                        emit(Result.Error(DataError.Remote.SERVER))
+                    }
+                } else {
+                    emit(Result.Success(null)) // ✅ emit success but no image uploaded
+                }
+            } else {
+                emit(Result.Error(DataError.Remote.SERVER))
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            emit(Result.Error(DataError.Remote.SERVER))
+        }
+    }.flowOn(Dispatchers.IO)
 }

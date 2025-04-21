@@ -3,27 +3,20 @@ package services.repository
 import core.data.safeCall
 import core.domain.DataError
 import core.domain.Result
+import imageUpload.uploadImageToFirebaseStorage
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
-import io.ktor.client.request.forms.formData
-import io.ktor.client.request.forms.submitFormWithBinaryData
 import io.ktor.client.request.get
 import io.ktor.client.request.patch
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
-import io.ktor.client.statement.HttpResponse
-import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType
-import io.ktor.http.Headers
-import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
-import io.ktor.http.headers
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
-import org.bouncycastle.tls.ConnectionEnd.client
 import services.domain.ServicesMaster
 import services.domain.ServicesRepository
 import util.DatabaseCollection
@@ -32,8 +25,9 @@ import util.DatabaseRequest
 import util.DatabaseResponse
 import util.DatabaseUtil
 import util.DatabaseValue
+import util.StorageCollection
+import util.buildUpdateMask
 import java.io.File
-import java.util.UUID
 
 private const val BASE_URL = "${DatabaseUtil.DATABASE_URL}/${DatabaseCollection.SERVICES}"
 
@@ -70,7 +64,11 @@ class ServicesRepositoryImpl(private val httpClient: HttpClient) : ServicesRepos
             }
         }.flowOn(Dispatchers.IO)
 
-    override suspend fun addServiceToDatabase(service: ServicesMaster): Flow<Result<Unit, DataError.Remote>> =
+    override suspend fun addServiceToDatabase(
+        service: ServicesMaster,
+        imageFile: File,
+        iconFile: File
+    ): Flow<Result<Unit, DataError.Remote>> =
         flow {
 
             try {
@@ -111,7 +109,45 @@ class ServicesRepositoryImpl(private val httpClient: HttpClient) : ServicesRepos
                     }
 
                 if (patchResponse.status == HttpStatusCode.OK) {
-                    emit(Result.Success(Unit))
+                    val servicesImageUrl = uploadImageToFirebaseStorage(
+                        httpClient = httpClient,
+                        file = imageFile,
+                        folderName = StorageCollection.SERVICE_IMAGES,
+                        fileName = generatedId
+                    )
+
+                    val servicesIconUrl = uploadImageToFirebaseStorage(
+                        httpClient = httpClient,
+                        file = imageFile,
+                        folderName = StorageCollection.SERVICE_ICON,
+                        fileName = generatedId
+                    )
+
+                    val patchImagesUrlResponse =
+                        httpClient.patch(
+                            "$BASE_URL/$generatedId?${
+                                buildUpdateMask(
+                                    "imageUrl",
+                                    "iconUrl"
+                                )
+                            }"
+                        ) {
+                            contentType(ContentType.Application.Json)
+                            setBody(
+                                DatabaseRequest(
+                                    fields = mapOf(
+                                        "imageUrl" to DatabaseValue.StringValue(servicesImageUrl),
+                                        "iconUrl" to DatabaseValue.StringValue(servicesIconUrl)
+                                    )
+                                )
+                            )
+                        }
+
+                    if (patchImagesUrlResponse.status == HttpStatusCode.OK) {
+                        emit(Result.Success(Unit))
+                    } else {
+                        emit(Result.Error(DataError.Remote.SERVER))
+                    }
                 } else {
                     emit(Result.Error(DataError.Remote.SERVER))
                 }

@@ -58,7 +58,7 @@ import org.koin.compose.viewmodel.koinViewModel
 import util.Util.toNameFormat
 
 @Composable
-fun AppointmentsScreenRoot(viewModal: AppointmentsViewModal = koinViewModel()) {
+fun AppointmentsScreenRoot(viewModal: AppointmentsViewModel = koinViewModel()) {
 
     val uiState by viewModal.uiState.collectAsStateWithLifecycle(initialValue = AppointmentsUiState())
     AppointmentsScreen(

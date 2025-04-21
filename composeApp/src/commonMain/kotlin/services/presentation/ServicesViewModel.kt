@@ -9,18 +9,24 @@ import kotlinx.coroutines.launch
 import services.domain.ServiceStates
 import services.domain.ServicesMaster
 import services.domain.ServicesRepository
+import java.io.File
 
-class ServicesViewModal(private val servicesRepository: ServicesRepository):ViewModel() {
+class ServicesViewModel(private val servicesRepository: ServicesRepository) : ViewModel() {
     private val _serviceStates = MutableStateFlow<ServiceStates>(
-        ServiceStates.Idle)
+        ServiceStates.Idle
+    )
     val serviceStates: StateFlow<ServiceStates> get() = _serviceStates
 
-    fun addService(service:ServicesMaster){
+    fun addService(service: ServicesMaster, imageFile: File, iconFile: File) {
         viewModelScope.launch {
             _serviceStates.value = ServiceStates.Loading
-            servicesRepository.addServiceToDatabase(service)
-                .collect{ result->
-                    _serviceStates.value = when(result){
+            servicesRepository.addServiceToDatabase(
+                service = service,
+                imageFile = imageFile,
+                iconFile = iconFile
+            )
+                .collect { result ->
+                    _serviceStates.value = when (result) {
                         is Result.Success -> ServiceStates.Success
                         is Result.Error -> ServiceStates.Error(result.error)
                         else -> ServiceStates.Idle
@@ -29,7 +35,7 @@ class ServicesViewModal(private val servicesRepository: ServicesRepository):View
         }
     }
 
-    fun resetState(){
+    fun resetState() {
         _serviceStates.value = ServiceStates.Idle
     }
 }

@@ -1,4 +1,4 @@
-package controlPanalUser.domain.component
+package controlPanalUser.presentation.component
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
@@ -40,7 +40,7 @@ fun DoctorListDialog(
     DialogWindow(
         onCloseRequest = onDismiss,
         title = "Select Doctor",
-        state = rememberDialogState(size = DpSize(500.dp, 500.dp)), // Window size
+        state = rememberDialogState(size = DpSize(500.dp, 500.dp)),
         resizable = true
     ) {
         Surface(
@@ -56,7 +56,7 @@ fun DoctorListDialog(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    text = "Services",
+                    text = "Doctors",
                     fontSize = 24.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color.Black,
@@ -70,14 +70,14 @@ fun DoctorListDialog(
                 LazyColumn(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .weight(1f) // Allow list to take up space
+                        .weight(1f)
                         .padding(8.dp)
                 ) {
-                    items(doctorList) { doctor -> // ✅ Corrected `value` usage
+                    items(doctorList) { doctor ->
                         DoctorNameItem(
                             doctor = doctor,
                             onSelect = { selectedDoctor ->
-                               onSubmit(selectedDoctor)
+                                onSubmit(selectedDoctor)
                                 onDismiss()
                             })
                     }
@@ -96,7 +96,7 @@ fun DoctorNameItem(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 12.dp, vertical = 3.dp)
-            .clickable{ onSelect(doctor)},
+            .clickable { onSelect(doctor) },
         colors = CardDefaults.cardColors(containerColor = Color.White),
         border = BorderStroke(1.dp, Color.Black),
         elevation = CardDefaults.cardElevation(4.dp),

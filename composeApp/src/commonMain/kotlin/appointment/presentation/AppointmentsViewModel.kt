@@ -19,7 +19,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-class AppointmentsViewModal(
+class AppointmentsViewModel(
     private val repository: AppointmentBookingRepository,
     private val doctorRepository: DoctorRepository,
     private val userRepository: UserRepository

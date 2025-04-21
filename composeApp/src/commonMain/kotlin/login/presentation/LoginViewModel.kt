@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import login.domain.LoginRepository
+import util.ToastEvent
 
 class LoginViewModel(
     private val loginRepository: LoginRepository
@@ -28,14 +29,17 @@ class LoginViewModel(
         _uiState.update { it.copy(password = value) }
     }
     fun onErrorMessageChange(){
-        _uiState.update { it.copy(errorMessage = "") }
+        _uiState.update { it.copy(errorMessage = ToastEvent()) }
     }
 
+    fun resetLoginUiState() {
+        _uiState.value = LoginUiState()
+    }
     fun login() {
         viewModelScope.launch {
             _uiState.update {
                 it.copy(
-                    isLoading = true, errorMessage = null
+                    isLoading = true, errorMessage = ToastEvent()
                 )
             }
             val result =
@@ -72,7 +76,7 @@ class LoginViewModel(
                         _uiState.update {
                             it.copy(
                                 isLoading = false,
-                                errorMessage = "User ID is not Active"
+                                errorMessage = ToastEvent("User ID is not Active")
                             )
                         }
                     }
@@ -82,7 +86,7 @@ class LoginViewModel(
                     _uiState.update {
                         it.copy(
                             isLoading = false,
-                            errorMessage = "User not found"
+                            errorMessage = ToastEvent("User not found")
                         )
                     }
                 }
@@ -96,7 +100,7 @@ data class LoginUiState(
     val username: String = "rajeev",
     val password: String = "pass",
     val isLoading: Boolean = false,
-    val errorMessage: String? = null,
+    val errorMessage: ToastEvent = ToastEvent(),
     val loginSuccess: Boolean = false,
     val user: UserMasterControlPanel? = null,
     val role: UserRole? = null

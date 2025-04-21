@@ -12,7 +12,7 @@ import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 
-class PanelUserScreenViewModal(private val panelUserRepository: PanelUserRepository) : ViewModel() {
+class PanelUserScreenViewModel(private val panelUserRepository: PanelUserRepository) : ViewModel() {
     private val _state = MutableStateFlow(PanelUserUiState())
     val state = _state.asStateFlow()
         .onStart {

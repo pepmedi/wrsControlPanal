@@ -2,7 +2,6 @@ package hospital.presentation.components
 
 import SecondaryAppColor
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -12,7 +11,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -39,7 +37,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogWindow
 import androidx.compose.ui.window.rememberDialogState
 import core.CancelButton
@@ -49,12 +46,27 @@ import hospital.domain.HospitalMaster
 
 @Composable
 fun HospitalListDialog(
-    hospitalList: Result<List<HospitalMaster>, DataError.Remote>,
+    hospitalResult: Result<List<HospitalMaster>, DataError.Remote>? = null,
+    hospitalList: List<HospitalMaster>? = null,
+    selectedHospitalList: List<HospitalMaster> = emptyList(),
     onDismiss: () -> Unit,
     onSubmit: (List<HospitalMaster>) -> Unit
 ) {
 
-    val selectedHospitals = remember { mutableStateListOf<HospitalMaster>() }
+    val resolvedResult = remember(hospitalResult, hospitalList) {
+        when {
+            hospitalResult != null -> hospitalResult
+            hospitalList != null -> Result.Success(hospitalList)
+            else -> Result.Error(DataError.Remote.UNKNOWN)
+        }
+    }
+
+    val selectedHospitals = remember {
+        mutableStateListOf<HospitalMaster>().apply {
+            addAll(selectedHospitalList)
+        }
+    }
+
     DialogWindow(
         onCloseRequest = onDismiss,
         title = "Select Hospital",
@@ -70,7 +82,8 @@ fun HospitalListDialog(
             color = Color.White
         ) {
             Column(
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier.fillMaxSize()
+                    .padding(bottom = 10.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
@@ -83,15 +96,16 @@ fun HospitalListDialog(
 
                 Spacer(modifier = Modifier.height(5.dp))
 
-                when (hospitalList) {
+                when (resolvedResult) {
                     is Result.Success -> {
+                        val list = resolvedResult.data
                         LazyColumn(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .weight(1f) // Allow list to take up space
+                                .weight(1f)
                                 .padding(8.dp)
                         ) {
-                            items(hospitalList.data) { hospital -> // ✅ Corrected `value` usage
+                            items(list) { hospital ->
                                 HospitalItem(
                                     hospital = hospital,
                                     isSelected = hospital in selectedHospitals,
@@ -106,13 +120,13 @@ fun HospitalListDialog(
                         }
                     }
 
-                    is Result.Error -> { // ✅ Proper error handling
+                    is Result.Error -> {
                         Box(
                             modifier = Modifier.fillMaxSize(),
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
-                                text = "Failed to load hospitals: ${hospitalList.error}",
+                                text = "Failed to load hospitals: ${resolvedResult.error}",
                                 color = Color.Red,
                                 fontSize = 16.sp,
                                 textAlign = TextAlign.Center

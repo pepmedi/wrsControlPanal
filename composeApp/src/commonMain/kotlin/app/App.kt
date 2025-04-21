@@ -10,10 +10,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
-import dashboard.DashboardApp
-import doctor.presentation.DoctorListScreenRoot
 import org.jetbrains.compose.ui.tooling.preview.Preview
-import controlPanalUser.domain.UserRole
 
 @Composable
 @Preview
@@ -35,12 +32,12 @@ fun App(prefs:DataStore<Preferences>) {
 //                    DashboardApp(UserRole.ADMIN, onLogout = {})
                 }
 
-                composable<Route.DoctorListScreenRoot>(
-                    exitTransition = { slideOutHorizontally() },
-                    popEnterTransition = { slideInHorizontally() }
-                ) {
-                    DoctorListScreenRoot(onDoctorClick = {})
-                }
+//                composable<Route.DoctorListScreenRoot>(
+//                    exitTransition = { slideOutHorizontally() },
+//                    popEnterTransition = { slideInHorizontally() }
+//                ) {
+//                    DoctorListScreenRoot(onDoctorClick = {})
+//                }
 
 //                composable<Route.AddDoctorScreenRoute>(
 //                    exitTransition = { slideOutHorizontally() },

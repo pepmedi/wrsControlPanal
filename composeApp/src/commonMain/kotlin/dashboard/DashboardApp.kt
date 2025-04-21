@@ -32,11 +32,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import app.Route
 import appointment.presentation.AppointmentsScreenRoot
 import updateInfo.presentation.UpdateInfoScreen
 import controlPanalUser.domain.UserRole
 import controlPanalUser.domain.UserSession
 import controlPanalUser.presentation.PanelUserScreenRoot
+import doctor.screen.DoctorListScreenRoot
 
 @Composable
 fun DashboardApp(userSession: UserSession, userRole: UserRole, onLogout: () -> Unit) {
@@ -79,15 +81,11 @@ fun DashboardApp(userSession: UserSession, userRole: UserRole, onLogout: () -> U
                     SidebarItem.DASHBOARD -> DashboardScreenUi()
                     SidebarItem.UPDATE_INFO -> UpdateInfoScreen()
                     SidebarItem.APPOINTMENTS -> AppointmentsScreenRoot()
-//                    "Product" -> ProductScreen(userMaster, userRole)
-//                    "Shop Video" -> ShopVideosScreenUi(userRole)
-//                    "Banner" -> BannerScreen()
                     SidebarItem.CPANEL_USERS -> PanelUserScreenRoot()
-//                    "Shop Approval" -> ShopApprovalScreenUi()
-//                    "Product Approval" -> ProductApprovalScreenUi()
-//                    "Shop Video Approval" -> ShopVideoApprovalScreen()
-//                    "Tickets" -> TicketScreenUi()
-//                    "Application Users" -> AppUsersScreen(userMaster, userRole)
+                    SidebarItem.DOCTORS -> DoctorListScreenRoot(onDoctorClick = {
+
+                    })
+
                     SidebarItem.LOGOUT -> {
                         onLogout()
                     }

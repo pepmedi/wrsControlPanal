@@ -15,10 +15,9 @@ import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import util.Util
 import util.getCurrentTimeStamp
 
-class PanelUserCreationViewModal(
+class PanelUserCreationViewModel(
     private val panelUserRepository: PanelUserRepository,
     private val doctorRepository: DoctorRepository
 ) : ViewModel() {
@@ -112,7 +111,8 @@ class PanelUserCreationViewModal(
                     isActive = if (_state.value.isActive) "0" else "1",
                     empType = _state.value.empType,
                     doctorId = _state.value.selectedDoctor.id,
-                    permissions = _state.value.permissions.filter { it.value }.keys.toSet(),
+                    permissions = _state.value.permissions.filter { it.value }.keys.toSet()
+                        .ifEmpty { setOf("none") },
                     createdAt = getCurrentTimeStamp(),
                     updatedAt = getCurrentTimeStamp()
                 )

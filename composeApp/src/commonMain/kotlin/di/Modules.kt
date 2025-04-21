@@ -4,19 +4,24 @@ package di
 import appUsers.UserRepository
 import appUsers.UserRepositoryImpl
 import appointment.domain.AppointmentBookingRepository
-import appointment.presentation.AppointmentDetailsViewModal
+import appointment.presentation.AppointmentDetailsViewModel
 import appointment.repository.AppointmentBookingRepositoryImpl
-import appointment.presentation.AppointmentsViewModal
+import appointment.presentation.AppointmentsViewModel
+import blog.domain.BlogRepository
+import blog.repository.BlogRepositoryImpl
+import blog.viewModel.AddBlogViewModel
 import controlPanalUser.domain.PanelUserRepository
-import controlPanalUser.presentation.PanelUserCreationViewModal
-import controlPanalUser.presentation.PanelUserScreenViewModal
+import controlPanalUser.presentation.PanelUserCreationViewModel
+import controlPanalUser.presentation.PanelUserScreenViewModel
 import controlPanalUser.repository.PanelUserRepositoryImpl
 import core.data.HttpClientFactory
 import doctor.domain.DoctorRepository
-import doctor.presentation.DoctorViewModal
+import doctor.viewModal.AddDoctorViewModel
 import doctor.repository.DoctorRepositoryImpl
+import doctor.viewModal.DoctorListViewModel
+import doctor.viewModal.UpdateDoctorViewModel
 import hospital.domain.HospitalRepository
-import hospital.presentation.HospitalViewModal
+import hospital.presentation.HospitalViewModel
 import hospital.repository.DefaultHospitalRepository
 import login.domain.LoginRepository
 import login.domain.LoginRepositoryImpl
@@ -27,8 +32,11 @@ import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.bind
 import org.koin.dsl.module
 import services.domain.ServicesRepository
-import services.presentation.ServicesViewModal
+import services.presentation.ServicesViewModel
 import services.repository.ServicesRepositoryImpl
+import slots.domain.SlotsRepository
+import slots.repository.SlotsRepositoryImpl
+import slots.viewModel.AddSlotsViewModel
 
 expect val platformModule: Module
 
@@ -42,13 +50,19 @@ val sharedModule = module {
     singleOf(::AppointmentBookingRepositoryImpl).bind<AppointmentBookingRepository>()
     singleOf(::AppointmentBookingRepositoryImpl).bind<AppointmentBookingRepository>()
     singleOf(::UserRepositoryImpl).bind<UserRepository>()
+    singleOf(::SlotsRepositoryImpl).bind<SlotsRepository>()
+    singleOf(::BlogRepositoryImpl).bind<BlogRepository>()
 
-    viewModel { DoctorViewModal(get(), get(), get()) }
-    viewModel { HospitalViewModal(get()) }
-    viewModel { ServicesViewModal(get()) }
-    viewModel { PanelUserCreationViewModal(get(), get()) }
+    viewModel { AddDoctorViewModel(get(), get(), get(), get()) }
+    viewModel { HospitalViewModel(get()) }
+    viewModel { ServicesViewModel(get()) }
+    viewModel { PanelUserCreationViewModel(get(), get()) }
     viewModel { LoginViewModel(get()) }
-    viewModel { AppointmentsViewModal(get(), get(), get()) }
-    viewModel { PanelUserScreenViewModal(get()) }
-    viewModel { AppointmentDetailsViewModal(get()) }
+    viewModel { AppointmentsViewModel(get(), get(), get()) }
+    viewModel { PanelUserScreenViewModel(get()) }
+    viewModel { AppointmentDetailsViewModel(get()) }
+    viewModel { AddSlotsViewModel(get()) }
+    viewModel { AddBlogViewModel(get(), get()) }
+    viewModel { DoctorListViewModel(get()) }
+    viewModel { UpdateDoctorViewModel(get(), get(), get(), get()) }
 }

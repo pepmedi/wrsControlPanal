@@ -23,7 +23,6 @@ import androidx.compose.material.Card
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.ripple
-import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -34,23 +33,19 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.toUpperCase
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import controlPanalUser.domain.PanelUserRepository
 import controlPanalUser.domain.UserMasterControlPanel
 import controlPanalUser.domain.UserRole
-import kotlinx.coroutines.launch
 import org.koin.compose.viewmodel.koinViewModel
 import util.Util.toNameFormat
 
 @Composable
-fun PanelUserScreenRoot(viewModal: PanelUserScreenViewModal = koinViewModel()) {
+fun PanelUserScreenRoot(viewModal: PanelUserScreenViewModel = koinViewModel()) {
 
     val uiState by viewModal.state.collectAsStateWithLifecycle()
 
