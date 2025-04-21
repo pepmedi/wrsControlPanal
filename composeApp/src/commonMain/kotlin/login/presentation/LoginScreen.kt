@@ -15,8 +15,7 @@ import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Card
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Face
-import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -37,8 +36,15 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import core.ErrorSnackBar
+import com.dokar.sonner.TextToastAction
+import com.dokar.sonner.ToastType
+import com.dokar.sonner.Toaster
+import com.dokar.sonner.rememberToasterState
+import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.viewmodel.koinViewModel
+import wrscontrolpanel.composeapp.generated.resources.Res
+import wrscontrolpanel.composeapp.generated.resources.visibility
+import wrscontrolpanel.composeapp.generated.resources.visibilityoff
 
 
 @Composable
@@ -49,11 +55,22 @@ fun LoginScreen(
 
     val uiState by loginViewModel.uiState.collectAsStateWithLifecycle()
     var isPasswordVisible by remember { mutableStateOf(false) }
-    var snackBarMessage by remember { mutableStateOf("") }
+
+    val toaster = rememberToasterState()
 
     LaunchedEffect(uiState.user?.id) {
         if (uiState.loginSuccess && uiState.user != null) {
             loginViewModel.resetLoginUiState()
+            toaster.show(
+                message = "Login Successfully",
+                type = ToastType.Success,
+                action = TextToastAction(
+                    text = "Done",
+                    onClick = {
+                        toaster.dismissAll()
+                    }
+                )
+            )
             onLogin(true)
         }
     }
@@ -62,9 +79,16 @@ fun LoginScreen(
         loginViewModel.resetLoginUiState()
     }
 
-    LaunchedEffect(uiState.errorMessage) {
-        uiState.errorMessage?.let {
-            snackBarMessage = it
+    LaunchedEffect(uiState.errorMessage.id) {
+        if (uiState.errorMessage.message.isNotEmpty()) {
+            toaster.show(
+                message = uiState.errorMessage.message,
+                type = ToastType.Error,
+                action = TextToastAction(
+                    text = "Done",
+                    onClick = { toaster.dismissAll() }
+                )
+            )
         }
     }
 
@@ -104,7 +128,7 @@ fun LoginScreen(
                     trailingIcon = {
                         IconButton(onClick = {}) {
                             Icon(
-                                imageVector = Icons.Filled.Face,
+                                imageVector = Icons.Outlined.Person,
                                 contentDescription = "Username"
                             )
                         }
@@ -124,7 +148,7 @@ fun LoginScreen(
                     trailingIcon = {
                         IconButton(onClick = { isPasswordVisible = !isPasswordVisible }) {
                             Icon(
-                                imageVector = Icons.Filled.Lock,
+                                painter = painterResource(if (isPasswordVisible) Res.drawable.visibility else Res.drawable.visibilityoff),
                                 contentDescription = if (isPasswordVisible) "Hide password" else "Show password"
                             )
                         }
@@ -150,14 +174,10 @@ fun LoginScreen(
             }
         }
 
-        if (snackBarMessage.isNotEmpty()) {
-            ErrorSnackBar(
-                snackBarMessage,
-                modifier = Modifier.align(Alignment.BottomCenter)
-                    .padding(start = 20.dp, end = 20.dp, bottom = 20.dp),
-                onDismiss = {
-                    loginViewModel.onErrorMessageChange()
-                })
-        }
+        Toaster(
+            state = toaster,
+            richColors = true,
+            alignment = Alignment.TopEnd
+        )
     }
 }

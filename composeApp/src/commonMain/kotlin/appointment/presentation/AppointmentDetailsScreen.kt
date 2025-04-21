@@ -23,7 +23,7 @@ import util.Util.toNameFormat
 
 @Composable
 fun AppointmentDetailsScreenRoot(
-    viewModal: AppointmentDetailsViewModal = koinViewModel(),
+    viewModal: AppointmentDetailsViewModel = koinViewModel(),
     appointmentDetails: AppointmentDetails,
     onBackClick: () -> Unit
 ) {

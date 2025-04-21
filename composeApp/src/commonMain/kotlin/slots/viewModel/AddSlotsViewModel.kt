@@ -7,7 +7,6 @@ import core.domain.onSuccess
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
-import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.launch
 import slots.domain.SlotsMaster
 import slots.domain.SlotsRepository

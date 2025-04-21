@@ -20,7 +20,7 @@ import androidx.compose.ui.unit.sp
 
 @Composable
 fun GradientButton(
-    text: String,
+    text: String = "Submit",
     modifier: Modifier = Modifier,
     textColor: Color = Color.White,
     onClick: () -> Unit,
@@ -34,6 +34,7 @@ fun GradientButton(
     )
     Box(
         modifier = modifier
+            .padding(top = 16.dp)
             .clip(RoundedCornerShape(10.dp))
             .background(gradient)
             .border(

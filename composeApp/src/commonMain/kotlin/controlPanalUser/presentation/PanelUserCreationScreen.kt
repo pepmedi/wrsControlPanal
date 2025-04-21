@@ -45,19 +45,18 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import controlPanalUser.domain.PanelUserCreationAction
 import controlPanalUser.domain.PanelUserCreationUiState
 import controlPanalUser.domain.UserRole
 import controlPanalUser.presentation.component.DoctorListDialog
 import core.ErrorSnackBar
-import doctor.presentation.components.TextInputField
+import doctor.screen.components.TextInputField
 import org.koin.compose.viewmodel.koinViewModel
 import util.Util.toNameFormat
 
 @Composable
 fun PanelUserCreationScreenRoot(
-    viewModal: PanelUserCreationViewModal = koinViewModel(),
+    viewModal: PanelUserCreationViewModel = koinViewModel(),
     onBack: () -> Unit
 ) {
 

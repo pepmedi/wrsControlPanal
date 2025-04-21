@@ -40,7 +40,7 @@ fun DoctorListDialog(
     DialogWindow(
         onCloseRequest = onDismiss,
         title = "Select Doctor",
-        state = rememberDialogState(size = DpSize(500.dp, 500.dp)), // Window size
+        state = rememberDialogState(size = DpSize(500.dp, 500.dp)),
         resizable = true
     ) {
         Surface(
@@ -70,10 +70,10 @@ fun DoctorListDialog(
                 LazyColumn(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .weight(1f) // Allow list to take up space
+                        .weight(1f)
                         .padding(8.dp)
                 ) {
-                    items(doctorList) { doctor -> // ✅ Corrected `value` usage
+                    items(doctorList) { doctor ->
                         DoctorNameItem(
                             doctor = doctor,
                             onSelect = { selectedDoctor ->

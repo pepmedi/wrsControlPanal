@@ -47,15 +47,30 @@ import util.Util.toNameFormat
 
 @Composable
 fun SlotsListDialog(
-    slotsList: Result<List<SlotsMaster>, DataError>,
+    slotsResult: Result<List<SlotsMaster>, DataError>? = null,
+    selectedSlotsList: List<SlotsMaster> = emptyList(),
+    slotsList: List<SlotsMaster>? = null,
     onDismiss: () -> Unit,
     onSubmit: (List<SlotsMaster>) -> Unit
 ) {
-    val selectedSlotsList = remember { mutableStateListOf<SlotsMaster>() }
+    // Decide which list to use
+    val resolvedResult = remember(slotsResult, slotsList) {
+        when {
+            slotsResult != null -> slotsResult
+            slotsList != null -> Result.Success(slotsList)
+            else -> Result.Error(DataError.Remote.SERVER)
+        }
+    }
+
+    val selectedSlots = remember {
+        mutableStateListOf<SlotsMaster>().apply {
+            addAll(selectedSlotsList)
+        }
+    }
 
     DialogWindow(
         onCloseRequest = onDismiss,
-        title = "Select Services",
+        title = "Select Slots",
         state = rememberDialogState(size = DpSize(500.dp, 500.dp)), // Window size
         resizable = true
     ) {
@@ -68,7 +83,8 @@ fun SlotsListDialog(
             color = Color.White
         ) {
             Column(
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier.fillMaxSize()
+                    .padding(bottom = 10.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
@@ -81,23 +97,24 @@ fun SlotsListDialog(
 
                 Spacer(modifier = Modifier.height(5.dp))
 
-                when (slotsList) {
+                when (resolvedResult) {
                     is Result.Success -> {
+                        val list = resolvedResult.data
                         LazyColumn(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .weight(1f) // Allow list to take up space
+                                .weight(1f)
                                 .padding(8.dp)
                         ) {
-                            items(slotsList.data) { slot ->
+                            items(list) { slot ->
                                 SlotsItem(
                                     slot = slot,
-                                    isSelected = slot in selectedSlotsList,
-                                    onSelect = { selectedSlots ->
-                                        if (selectedSlots in selectedSlotsList) {
-                                            selectedSlotsList.remove(selectedSlots)
+                                    isSelected = slot in selectedSlots,
+                                    onSelect = { currentSlot ->
+                                        if (currentSlot in selectedSlots) {
+                                            selectedSlots.remove(currentSlot)
                                         } else {
-                                            selectedSlotsList.add(selectedSlots)
+                                            selectedSlots.add(currentSlot)
                                         }
                                     })
                             }
@@ -110,20 +127,11 @@ fun SlotsListDialog(
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
-                                text = "Failed to load slots: ${slotsList.error}",
+                                text = "Failed to load slots: ${resolvedResult.error}",
                                 color = Color.Red,
                                 fontSize = 16.sp,
                                 textAlign = TextAlign.Center
                             )
-                        }
-                    }
-
-                    else -> {
-                        Box(
-                            modifier = Modifier.fillMaxSize(),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            CircularProgressIndicator()
                         }
                     }
                 }
@@ -134,7 +142,7 @@ fun SlotsListDialog(
                         contentColor = Color.White,
                         containerColor = SecondaryAppColor
                     ), onClick = {
-                        onSubmit(selectedSlotsList)
+                        onSubmit(selectedSlots)
                         onDismiss()
                     }) {
                     Text("Submit")

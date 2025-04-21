@@ -1,4 +1,4 @@
-package doctor.presentation.components
+package doctor.screen.components
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -31,6 +31,7 @@ fun TextInputField(
     isPassword: Boolean = false,
     enabled: Boolean = true,
     maxLines: Int = Int.MAX_VALUE,
+    minLines: Int = 1,
     onClick: () -> Unit = {}
 ) {
     var isFocused by remember { mutableStateOf(false) }
@@ -45,18 +46,19 @@ fun TextInputField(
             unfocusedContainerColor = Color.White,
 
             focusedContainerColor = Color.White,
-            disabledTextColor = Color.Black, // Keep text black when disabled
-            disabledContainerColor = Color.Transparent, // No background change
-            disabledLabelColor = Color.Gray, // Keep label gray
-            disabledIndicatorColor = Color.Gray, // Keep border gray
-            disabledLeadingIconColor = Color.Gray, // Keep icon gray
-            disabledPlaceholderColor = Color.Gray // Keep placeholder gray
+            disabledTextColor = Color.Black,
+            disabledContainerColor = Color.Transparent,
+            disabledLabelColor = Color.Gray,
+            disabledIndicatorColor = Color.Gray,
+            disabledLeadingIconColor = Color.Gray,
+            disabledPlaceholderColor = Color.Gray
         ),
         prefix = {
             if (icon != null) {
                 Icon(icon, contentDescription = label)
             }
         },
+        minLines = minLines,
         visualTransformation = if (isPassword) PasswordVisualTransformation() else VisualTransformation.None,
         keyboardOptions = KeyboardOptions.Default.copy(keyboardType = if (isPassword) KeyboardType.Password else KeyboardType.Text),
         modifier = Modifier

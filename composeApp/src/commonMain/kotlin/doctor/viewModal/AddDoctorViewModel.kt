@@ -1,4 +1,4 @@
-package doctor.presentation
+package doctor.viewModal
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -18,7 +18,7 @@ import slots.domain.SlotsMaster
 import slots.domain.SlotsRepository
 import java.io.File
 
-class DoctorViewModal(
+class AddDoctorViewModel(
     private val doctorRepository: DoctorRepository,
     private val hospitalRepository: HospitalRepository,
     private val servicesRepository: ServicesRepository,

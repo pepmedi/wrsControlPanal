@@ -2,21 +2,17 @@ package hospital.presentation
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.LocationOn
-import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -29,30 +25,60 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.dokar.sonner.TextToastAction
+import com.dokar.sonner.ToastType
+import com.dokar.sonner.Toaster
+import com.dokar.sonner.rememberToasterState
+import component.GradientButton
 import core.CancelButton
-import doctor.presentation.components.TextInputField
+import doctor.screen.components.TextInputField
 import hospital.domain.HospitalMaster
 import hospital.domain.HospitalStates
 import kotlinx.coroutines.launch
 import org.koin.compose.viewmodel.koinViewModel
+import util.ToastEvent
 import util.getCurrentTimeStamp
 
 @Composable
-fun AddHospitalScreen(viewModal: HospitalViewModal = koinViewModel(), onBackClick: () -> Unit) {
+fun AddHospitalScreen(viewModal: HospitalViewModel = koinViewModel(), onBackClick: () -> Unit) {
 
     val hospitalStates by viewModal.hospitalStates.collectAsStateWithLifecycle()
 
     var hospitalName by remember { mutableStateOf("") }
     var address by remember { mutableStateOf("") }
 
-    // Snackbar
-    val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
+
+    val toaster = rememberToasterState()
+    var toasterEvent by remember { mutableStateOf<ToastEvent?>(null) }
 
     LaunchedEffect(hospitalStates) {
         if (hospitalStates is HospitalStates.Success) {
-            viewModal.resetSubmissionState() // Reset state
-            onBackClick() // Navigate back
+            viewModal.resetSubmissionState()
+            toaster.show(
+                message = "Hospital Added Successfully",
+                type = ToastType.Success,
+                action = TextToastAction(
+                    text = "Done",
+                    onClick = {
+                        toaster.dismissAll()
+                    }
+                )
+            )
+            onBackClick()
+        }
+    }
+
+    LaunchedEffect(toasterEvent?.id) {
+        toasterEvent?.let {
+            toaster.show(
+                message = it.message,
+                type = ToastType.Error,
+                action = TextToastAction(
+                    text = "Done",
+                    onClick = { toaster.dismissAll() }
+                )
+            )
         }
     }
 
@@ -64,7 +90,7 @@ fun AddHospitalScreen(viewModal: HospitalViewModal = koinViewModel(), onBackClic
 
         if (errors.isNotEmpty()) {
             scope.launch {
-                snackbarHostState.showSnackbar(errors.joinToString("\n"))
+                toasterEvent = ToastEvent(errors.first())
             }
             return false
         }
@@ -72,67 +98,60 @@ fun AddHospitalScreen(viewModal: HospitalViewModal = koinViewModel(), onBackClic
     }
 
     MaterialTheme {
-        Scaffold(
-            snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
-        ) { paddingValues ->
-            Box(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
-                LazyColumn(
-                    modifier = Modifier.fillMaxWidth()
-                        .background(Color.White)
-                        .padding(10.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    item {
-                        TextInputField(
-                            value = hospitalName,
-                            onValueChange = { hospitalName = it },
-                            label = "Hospital Name",
-                            icon = Icons.Outlined.Home
-                        )
-                    }
+        Box(modifier = Modifier.fillMaxSize().background(Color.White)) {
+            Column(
+                modifier = Modifier.fillMaxWidth()
+                    .background(Color.White)
+                    .padding(10.dp)
+                    .verticalScroll(rememberScrollState()),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                TextInputField(
+                    value = hospitalName,
+                    onValueChange = { hospitalName = it },
+                    label = "Hospital Name",
+                    icon = Icons.Outlined.Home
+                )
 
-                    item {
-                        TextInputField(
-                            value = address,
-                            onValueChange = { address = it },
-                            label = "Hospital Address",
-                            icon = Icons.Outlined.LocationOn
-                        )
-                    }
 
-                    item {
-                        if (hospitalStates == HospitalStates.Loading) {
-                            CircularProgressIndicator()
-                        } else {
-                            Button(
-                                modifier = Modifier.fillMaxWidth(),
-                                shape = RoundedCornerShape(5.dp),
-                                onClick = {
-                                    if (validateForm()) {
-                                        scope.launch {
-                                            viewModal.addHospital(
-                                                hospitalMaster = HospitalMaster(
-                                                    id = "",
-                                                    name = hospitalName,
-                                                    address = address,
-                                                    createdAt = getCurrentTimeStamp(),
-                                                    updatedAt = getCurrentTimeStamp()
-                                                )
-                                            )
-                                        }
-                                    }
-                                }) {
-                                Text("Submit")
+                TextInputField(
+                    value = address,
+                    onValueChange = { address = it },
+                    label = "Hospital Address",
+                    icon = Icons.Outlined.LocationOn
+                )
+
+                if (hospitalStates == HospitalStates.Loading) {
+                    CircularProgressIndicator()
+                } else {
+                    GradientButton(
+                        modifier = Modifier.fillMaxWidth(),
+                        onClick = {
+                            if (validateForm()) {
+                                scope.launch {
+                                    viewModal.addHospital(
+                                        hospitalMaster = HospitalMaster(
+                                            id = "",
+                                            name = hospitalName,
+                                            address = address,
+                                            createdAt = getCurrentTimeStamp(),
+                                            updatedAt = getCurrentTimeStamp()
+                                        )
+                                    )
+                                }
                             }
-                        }
-                    }
-
-                    item {
-                        CancelButton(onBackClick)
-                    }
+                        })
                 }
+
+
+                CancelButton(onBackClick)
             }
 
+            Toaster(
+                state = toaster,
+                richColors = true,
+                alignment = Alignment.TopEnd
+            )
         }
     }
 }

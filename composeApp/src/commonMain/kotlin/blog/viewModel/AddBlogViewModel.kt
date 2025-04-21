@@ -48,7 +48,9 @@ class AddBlogViewModel(
             }
 
             is AddBlogAction.OnSubmit -> {
-                addBlogToDatabase()
+                if(_state.value.isFormValid){
+                    addBlogToDatabase()
+                }
             }
 
             is AddBlogAction.OnShowDoctorListClicked -> {
@@ -114,6 +116,16 @@ data class AddBlogState(
 ) {
     val isFormValid: Boolean
         get() = title.isNotBlank() && blogDescription.isNotBlank() && imageFile != null && doctor.id.isNotBlank()
+
+    fun getError(): String {
+        return when {
+            title.isBlank() -> "Title is required"
+            blogDescription.isBlank() -> "Description is required"
+            imageFile == null -> "Image is required"
+            doctor.id.isBlank() -> "Doctor is required"
+            else -> ""
+        }
+    }
 }
 
 sealed interface AddBlogAction {

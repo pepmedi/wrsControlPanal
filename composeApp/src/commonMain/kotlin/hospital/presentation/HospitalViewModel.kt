@@ -10,7 +10,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
-class HospitalViewModal(private val hospitalRepository: HospitalRepository):ViewModel() {
+class HospitalViewModel(private val hospitalRepository: HospitalRepository):ViewModel() {
     private val _hospitalStates = MutableStateFlow<HospitalStates>(
         HospitalStates.Idle)
     val hospitalStates: StateFlow<HospitalStates> get() = _hospitalStates

@@ -11,7 +11,7 @@ import services.domain.ServicesMaster
 import services.domain.ServicesRepository
 import java.io.File
 
-class ServicesViewModal(private val servicesRepository: ServicesRepository) : ViewModel() {
+class ServicesViewModel(private val servicesRepository: ServicesRepository) : ViewModel() {
     private val _serviceStates = MutableStateFlow<ServiceStates>(
         ServiceStates.Idle
     )

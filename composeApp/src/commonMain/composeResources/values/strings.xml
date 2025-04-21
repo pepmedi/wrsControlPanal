@@ -2,4 +2,9 @@
 <resources>
     <string name="search_hint">Search...</string>
     <string name="hi_welcome">Hi, Welcome</string>
+
+
+    <string name="close_hint">Clear search</string>
+
+    <string name="search_results">Search Results</string>
 </resources>

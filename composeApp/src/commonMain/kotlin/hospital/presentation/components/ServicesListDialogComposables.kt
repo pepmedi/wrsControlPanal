@@ -28,7 +28,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.traceEventEnd
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -48,12 +47,27 @@ import services.domain.ServicesMaster
 
 @Composable
 fun ServicesListDialog(
-    serviceList: Result<List<ServicesMaster>, DataError.Remote>,
+    serviceResult: Result<List<ServicesMaster>, DataError.Remote>? = null,
+    selectedServicesList: List<ServicesMaster> = emptyList(),
+    servicesList: List<ServicesMaster>? = null,
     onDismiss: () -> Unit,
     onSubmit: (List<ServicesMaster>) -> Unit
 ) {
 
-    val selectedServices = remember { mutableStateListOf<ServicesMaster>() }
+    val resolvedResult = remember(serviceResult, servicesList) {
+        when {
+            serviceResult != null -> serviceResult
+            servicesList != null -> Result.Success(servicesList)
+            else -> Result.Error(DataError.Remote.UNKNOWN) // or a default empty/failure state
+        }
+    }
+
+    val selectedServices = remember {
+        mutableStateListOf<ServicesMaster>().apply {
+            addAll(selectedServicesList)
+        }
+    }
+
     DialogWindow(
         onCloseRequest = onDismiss,
         title = "Select Services",
@@ -69,7 +83,8 @@ fun ServicesListDialog(
             color = Color.White
         ) {
             Column(
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier.fillMaxSize()
+                    .padding(bottom = 10.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
@@ -82,15 +97,16 @@ fun ServicesListDialog(
 
                 Spacer(modifier = Modifier.height(5.dp))
 
-                when (serviceList) {
+                when (resolvedResult) {
                     is Result.Success -> {
+                        val list = resolvedResult.data
                         LazyColumn(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .weight(1f) // Allow list to take up space
                                 .padding(8.dp)
                         ) {
-                            items(serviceList.data) { services -> // ✅ Corrected `value` usage
+                            items(list) { services -> // ✅ Corrected `value` usage
                                 ServiceItem(
                                     service = services,
                                     isSelected = services in selectedServices,
@@ -111,7 +127,7 @@ fun ServicesListDialog(
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
-                                text = "Failed to load Services: ${serviceList.error}",
+                                text = "Failed to load Services: ${resolvedResult.error}",
                                 color = Color.Red,
                                 fontSize = 16.sp,
                                 textAlign = TextAlign.Center

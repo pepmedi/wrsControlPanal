@@ -13,7 +13,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-class AppointmentDetailsViewModal(private val hospitalRepository: HospitalRepository) :
+class AppointmentDetailsViewModel(private val hospitalRepository: HospitalRepository) :
     ViewModel() {
 
     private val _state = MutableStateFlow(AppointmentDetailsUiState())

@@ -15,10 +15,9 @@ import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import util.Util
 import util.getCurrentTimeStamp
 
-class PanelUserCreationViewModal(
+class PanelUserCreationViewModel(
     private val panelUserRepository: PanelUserRepository,
     private val doctorRepository: DoctorRepository
 ) : ViewModel() {

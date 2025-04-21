@@ -4,7 +4,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -34,8 +33,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import blog.screen.AddBlogScreenRoot
 import component.SlideInScreen
-import controlPanalUser.presentation.PanelUserCreationScreenRoot
-import doctor.presentation.AddDoctorScreen
+import doctor.screen.AddDoctorScreen
 import hospital.presentation.AddHospitalScreen
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
@@ -114,36 +112,37 @@ fun UpdateInfoScreen() {
                     }
                 }
             }
-            if (addDoctorUiScreen) {
+
+            SlideInScreen(addDoctorUiScreen) {
                 AddDoctorScreen(onBackClick = {
                     addDoctorUiScreen = false
                 })
             }
 
-            if (addHospitalUiScreen) {
+            SlideInScreen(addHospitalUiScreen) {
                 AddHospitalScreen(onBackClick = {
                     addHospitalUiScreen = false
                 })
             }
-            if (addServicesUiScreen) {
+
+            SlideInScreen(addServicesUiScreen) {
                 AddServicesScreenUI(onBackClick = {
                     addServicesUiScreen = false
                 })
             }
-            if (addSlotsUiScreen) {
+
+            SlideInScreen(visible = addSlotsUiScreen) {
                 AddSlotsUiScreen(onBackClick = {
                     addSlotsUiScreen = false
                 })
             }
 
-            if (addBlogUiScreen) {
-                SlideInScreen(visible = addBlogUiScreen) {
-                    AddBlogScreenRoot(
-                        onBackClick = {
-                            addBlogUiScreen = false
-                        }
-                    )
-                }
+            SlideInScreen(visible = addBlogUiScreen) {
+                AddBlogScreenRoot(
+                    onBackClick = {
+                        addBlogUiScreen = false
+                    }
+                )
             }
         }
     }

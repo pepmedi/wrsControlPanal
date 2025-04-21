@@ -7,9 +7,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
-import app.App
 import com.plcoding.bookpedia.di.initKoin
-import controlPanalUser.domain.UserMasterControlPanel
 import controlPanalUser.domain.UserRole
 import controlPanalUser.repository.SessionManager
 import createDataStore
