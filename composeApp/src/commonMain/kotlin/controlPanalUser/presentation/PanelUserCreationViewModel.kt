@@ -77,7 +77,6 @@ class PanelUserCreationViewModel(
                 } else {
                     _state.update {
                         it.copy(
-                            isError = _state.value.getErrorMessage(),
                             isLoading = false
                         )
                     }
@@ -100,6 +99,10 @@ class PanelUserCreationViewModel(
 
             else -> Unit
         }
+    }
+
+    fun resetData() {
+        _state.value = PanelUserCreationUiState()
     }
 
     private fun registerUser() {

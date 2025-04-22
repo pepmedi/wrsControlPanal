@@ -45,6 +45,8 @@ kotlin {
 
             implementation("org.bouncycastle:bctls-jdk15on:1.70")
             implementation("org.conscrypt:conscrypt-openjdk-uber:2.5.2")
+
+            implementation("org.apache.pdfbox:pdfbox:2.0.30")
         }
     }
 }

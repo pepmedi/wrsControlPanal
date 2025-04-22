@@ -21,7 +21,7 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.FloatingActionButton
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material.Icon
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -68,7 +68,6 @@ fun DoctorListScreenRoot(
 
     DoctorListScreen(uiState, onDoctorClick = {
         onDoctorClick(it)
-
     },
         onAction = { action ->
             viewModal.onAction(action)
@@ -152,7 +151,8 @@ fun DoctorListScreen(
             modifier = Modifier
                 .align(Alignment.BottomEnd)
                 .padding(16.dp),
-            shape = RoundedCornerShape(corner = CornerSize(8.dp))
+            shape = RoundedCornerShape(corner = CornerSize(8.dp)),
+            containerColor = PrimaryAppColor
         ) {
             Icon(imageVector = Icons.Default.Add, contentDescription = "Add Shop")
         }
@@ -168,7 +168,6 @@ fun DoctorListScreen(
                 showUpdateDoctorScreen = false
             },
                 onSuccessful = {
-
                     toasterEvent(ToastEvent("Doctor Updated Successfully"))
                 })
         }

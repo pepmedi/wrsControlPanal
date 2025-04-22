@@ -1,5 +1,6 @@
 package controlPanalUser.presentation
 
+import PrimaryAppColor
 import SecondaryAppColor
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.clickable
@@ -39,6 +40,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import component.SlideInScreen
 import controlPanalUser.domain.UserMasterControlPanel
 import controlPanalUser.domain.UserRole
 import org.koin.compose.viewmodel.koinViewModel
@@ -102,14 +104,17 @@ fun PanelUserScreen(
                     modifier = Modifier
                         .align(Alignment.BottomEnd)
                         .padding(16.dp),
-                    shape = RoundedCornerShape(corner = CornerSize(8.dp))
+                    shape = RoundedCornerShape(corner = CornerSize(8.dp)),
+                    containerColor = PrimaryAppColor
                 ) {
                     Icon(imageVector = Icons.Filled.Add, contentDescription = "Add Product")
                 }
 
-                if (showCreateUserUI) {
-                    PanelUserCreationScreenRoot(onBack = {
+                SlideInScreen(showCreateUserUI) {
+                    PanelUserCreationScreenRoot(onBackClick = {
                         showCreateUserUI = false
+                    }, onSuccessful = {
+
                     })
                 }
             }

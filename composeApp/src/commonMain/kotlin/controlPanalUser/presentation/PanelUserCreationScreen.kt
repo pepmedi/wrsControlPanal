@@ -45,51 +45,90 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.dokar.sonner.TextToastAction
+import com.dokar.sonner.ToastType
+import com.dokar.sonner.Toaster
+import com.dokar.sonner.rememberToasterState
+import component.GradientButton
 import controlPanalUser.domain.PanelUserCreationAction
 import controlPanalUser.domain.PanelUserCreationUiState
+import controlPanalUser.domain.RoleCode
 import controlPanalUser.domain.UserRole
 import controlPanalUser.presentation.component.DoctorListDialog
-import core.ErrorSnackBar
+import core.CancelButton
 import doctor.screen.components.TextInputField
 import org.koin.compose.viewmodel.koinViewModel
+import util.ToastEvent
 import util.Util.toNameFormat
 
 @Composable
 fun PanelUserCreationScreenRoot(
     viewModal: PanelUserCreationViewModel = koinViewModel(),
-    onBack: () -> Unit
+    onSuccessful: () -> Unit,
+    onBackClick: () -> Unit
 ) {
 
-    val state by viewModal.state.collectAsStateWithLifecycle()
+    val uiState by viewModal.state.collectAsStateWithLifecycle()
 
+    val toaster = rememberToasterState { }
+    var toasterEvent by remember { mutableStateOf<ToastEvent?>(null) }
 
-    LaunchedEffect(state.isSuccess) {
-        if (state.isSuccess) {
-            onBack()
+    LaunchedEffect(toasterEvent?.id) {
+        toasterEvent?.let {
+            toaster.show(
+                message = it.message,
+                type = ToastType.Error,
+                action = TextToastAction(
+                    text = "Done",
+                    onClick = { toaster.dismissAll() }
+                )
+            )
         }
     }
 
-    PanelUserCreationScreen(state = state,
+    LaunchedEffect(uiState.isSuccess, uiState.isError) {
+        if (uiState.isSuccess) {
+            toaster.show(
+                message = "Doctor Data updated successfully",
+                type = ToastType.Success
+            )
+            onSuccessful()
+            viewModal.resetData()
+            onBackClick()
+        } else if (uiState.isError.isNotEmpty()) {
+            toasterEvent = ToastEvent(message = "SomeThing went wrong.\n please try again ")
+        }
+    }
+
+    PanelUserCreationScreen(
+        uiState = uiState,
         onAction = { action ->
             when (action) {
-                is PanelUserCreationAction.OnBackButtonClicked -> onBack()
+                is PanelUserCreationAction.OnBackButtonClicked -> onBackClick()
+                is PanelUserCreationAction.OnCreateUserButtonClicked -> {
+                    if (!uiState.isFormValid) {
+                        toasterEvent = ToastEvent(uiState.getErrorMessage())
+                    }
+                }
+
                 else -> Unit
             }
             viewModal.onAction(action)
         })
 
+    Toaster(
+        state = toaster,
+        richColors = true,
+        alignment = Alignment.TopEnd
+    )
+
 }
 
 @Composable
 fun PanelUserCreationScreen(
-    state: PanelUserCreationUiState,
-    onAction: (PanelUserCreationAction) -> Unit
+    uiState: PanelUserCreationUiState,
+    onAction: (PanelUserCreationAction) -> Unit,
 ) {
-    var snackBarMessage by remember { mutableStateOf("") }
-
-    LaunchedEffect(state.isError) {
-        snackBarMessage = state.isError
-    }
 
     MaterialTheme {
         Scaffold(containerColor = Color.White) { paddingValue ->
@@ -114,7 +153,7 @@ fun PanelUserCreationScreen(
                         }
                         item {
                             TextInputField(
-                                value = state.userName,
+                                value = uiState.userName,
                                 onValueChange = {
                                     onAction(
                                         PanelUserCreationAction.OnUserNameChanged(
@@ -129,7 +168,7 @@ fun PanelUserCreationScreen(
 
                         item {
                             TextInputField(
-                                value = state.userPass,
+                                value = uiState.userPass,
                                 onValueChange = {
                                     onAction(
                                         PanelUserCreationAction.OnUserPassChanged(
@@ -146,7 +185,7 @@ fun PanelUserCreationScreen(
                         item {
 
                             // Employee Switch Section
-                            CreateActiveSwitch(state.isActive) {
+                            CreateActiveSwitch(uiState.isActive) {
                                 onAction(
                                     PanelUserCreationAction.OnIsActiveChanged(
                                         it
@@ -157,7 +196,7 @@ fun PanelUserCreationScreen(
                         }
 
                         item {
-                            UserRoleSelector(state.empType,
+                            UserRoleSelector(uiState.empType,
                                 onRoleSelected = {
                                     val empType = when (it) {
                                         UserRole.ADMIN -> "0"
@@ -168,12 +207,12 @@ fun PanelUserCreationScreen(
                                 })
                         }
 
-                        if (state.empType == "1" || state.empType == "2") {
+                        if (uiState.empType == "1" || uiState.empType == "2") {
                             item {
                                 Text(text = "Add Doctor")
 
                                 TextInputField(
-                                    value = state.selectedDoctor.name.toNameFormat(),
+                                    value = uiState.selectedDoctor.name.toNameFormat(),
                                     onValueChange = {
                                         onAction(
                                             PanelUserCreationAction.OnUserPassChanged(
@@ -195,13 +234,13 @@ fun PanelUserCreationScreen(
                             }
                         }
 
-                        if (state.empType == "2") {
+                        if (uiState.empType == "2") {
                             item {
                                 Text(text = "Permissions")
                             }
 
                             items(
-                                state.permissions.toList(),
+                                uiState.permissions.toList(),
                                 key = { it.first }) { (permission, isChecked) ->
 
                                 CreatePermissionRow(
@@ -218,51 +257,29 @@ fun PanelUserCreationScreen(
                         }
 
                         item {
-                            if (state.isLoading) {
+                            if (uiState.isLoading) {
                                 CircularProgressIndicator()
                             } else {
-                                Button(modifier = Modifier.fillMaxWidth(),
-                                    shape = RoundedCornerShape(5.dp),
+
+                                GradientButton(
+                                    text = "Submit",
+                                    modifier = Modifier.fillMaxWidth(),
                                     onClick = {
                                         onAction(PanelUserCreationAction.OnCreateUserButtonClicked)
-                                    }) {
-                                    Text("Submit")
-                                }
+                                    })
                             }
                         }
 
                         item {
-                            Button(
-                                onClick = { onAction(PanelUserCreationAction.OnBackButtonClicked) },
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(vertical = 8.dp),
-                                shape = RoundedCornerShape(5.dp),
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = Color.Gray,
-                                    contentColor = Color.Black
-                                )
-                            ) {
-                                Text(text = "Cancel", fontSize = 20.sp)
-                            }
+                            CancelButton(onBackClick = { onAction(PanelUserCreationAction.OnBackButtonClicked) })
                         }
                     }
                 }
 
-                if (state.showDoctorList) {
-                    DoctorListDialog(doctorList = state.doctorList,
+                if (uiState.showDoctorList) {
+                    DoctorListDialog(doctorList = uiState.doctorList,
                         onDismiss = { onAction(PanelUserCreationAction.OnShowDoctorListClicked(false)) },
                         onSubmit = { onAction(PanelUserCreationAction.OnSelectedDoctorChanged(it)) })
-                }
-
-                if (snackBarMessage.isNotEmpty()) {
-                    ErrorSnackBar(
-                        snackBarMessage,
-                        modifier = Modifier.align(Alignment.BottomCenter)
-                            .padding(start = 20.dp, end = 20.dp, bottom = 20.dp),
-                        onDismiss = {
-                            onAction(PanelUserCreationAction.OnErrorMessageChange)
-                        })
                 }
             }
         }
@@ -318,8 +335,9 @@ fun UserRoleSelector(
         "0" -> UserRole.ADMIN
         "1" -> UserRole.DOCTOR
         "2" -> UserRole.EMPLOYEE
-        else -> UserRole.ADMIN
+        else -> null
     }
+
     Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
         Text(
             text = "Select Role",
