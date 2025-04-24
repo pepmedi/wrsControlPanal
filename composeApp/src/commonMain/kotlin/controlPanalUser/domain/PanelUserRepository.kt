@@ -1,12 +1,12 @@
 package controlPanalUser.domain
 
 import core.domain.DataError
-import core.domain.Result
+import core.domain.AppResult
 import kotlinx.coroutines.flow.Flow
 
 interface PanelUserRepository {
     suspend fun createPanelUser(userMasterControlPanel: UserMasterControlPanel): Flow<Boolean>
     suspend fun updatePanelUser(userMasterControlPanel: UserMasterControlPanel): Flow<Boolean>
-    suspend fun getPanelUser(userId: String): Result<UserMasterControlPanel, DataError.Remote>
-    suspend fun getAllUser(): Flow<Result<List<UserMasterControlPanel>, DataError.Remote>>
+    suspend fun getPanelUser(userId: String): AppResult<UserMasterControlPanel, DataError.Remote>
+    suspend fun getAllUser(): Flow<AppResult<List<UserMasterControlPanel>, DataError.Remote>>
 }

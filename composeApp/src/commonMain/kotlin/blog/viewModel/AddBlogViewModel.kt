@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import blog.domain.BlogMaster
 import blog.domain.BlogRepository
-import core.domain.Result
+import core.domain.AppResult
 import core.domain.onError
 import core.domain.onSuccess
 import doctor.domain.DoctorMaster
@@ -66,11 +66,11 @@ class AddBlogViewModel(
             doctorRepository.getAllDoctors()
                 .collect { result ->
                     when (result) {
-                        is Result.Success -> {
+                        is AppResult.Success -> {
                             _state.update { it.copy(doctorList = result.data) }
                         }
 
-                        is Result.Error -> {
+                        is AppResult.Error -> {
                             // Handle error
                         }
                     }

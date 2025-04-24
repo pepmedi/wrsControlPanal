@@ -20,6 +20,10 @@ import doctor.viewModal.AddDoctorViewModel
 import doctor.repository.DoctorRepositoryImpl
 import doctor.viewModal.DoctorListViewModel
 import doctor.viewModal.UpdateDoctorViewModel
+import documents.PatientDocumentRepositoryImpl
+import documents.modal.PatientDocumentRepository
+import documents.viewModal.AllRecordsViewModal
+import documents.viewModal.UploadAppointmentRecordsViewModal
 import hospital.domain.HospitalRepository
 import hospital.presentation.HospitalViewModel
 import hospital.repository.DefaultHospitalRepository
@@ -52,6 +56,7 @@ val sharedModule = module {
     singleOf(::UserRepositoryImpl).bind<UserRepository>()
     singleOf(::SlotsRepositoryImpl).bind<SlotsRepository>()
     singleOf(::BlogRepositoryImpl).bind<BlogRepository>()
+    singleOf(::PatientDocumentRepositoryImpl).bind<PatientDocumentRepository>()
 
     viewModel { AddDoctorViewModel(get(), get(), get(), get()) }
     viewModel { HospitalViewModel(get()) }
@@ -65,4 +70,6 @@ val sharedModule = module {
     viewModel { AddBlogViewModel(get(), get()) }
     viewModel { DoctorListViewModel(get()) }
     viewModel { UpdateDoctorViewModel(get(), get(), get(), get()) }
+    viewModel { UploadAppointmentRecordsViewModal(get()) }
+    viewModel { AllRecordsViewModal(get()) }
 }

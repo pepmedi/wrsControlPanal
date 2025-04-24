@@ -50,9 +50,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import appointment.domain.AppointmentBookingMaster
+import component.SlideInBottomSheet
+import component.SlideInScreen
 import controlPanalUser.domain.UserRole
 import controlPanalUser.repository.SessionManager
 import doctor.domain.DoctorMaster
+import documents.screen.AllAppointmentRecordsRoot
+import documents.screen.UploadAppointmentRecords
 import hexToComposeColor
 import org.koin.compose.viewmodel.koinViewModel
 import util.Util.toNameFormat
@@ -72,12 +76,14 @@ fun AppointmentsScreen(
 ) {
     val tabs = listOf("All", "Waiting", "Completed", "Upcoming", "Cancelled")
     var selectedTab by remember { mutableStateOf(0) }
+    var expandedCardId by remember { mutableStateOf<String?>(null) }
 
     val currentUser = SessionManager.currentUser
     val isAdmin = currentUser?.role == UserRole.ADMIN
     val linkedDoctorId = currentUser?.linkedDoctorId
 
     var showDetails by mutableStateOf(false)
+    var showAddRecords by mutableStateOf(false)
     var currentAppointment by mutableStateOf(AppointmentDetails())
 
     fun filterAppointments(appointment: List<AppointmentDetails>): List<AppointmentDetails> {
@@ -133,21 +139,47 @@ fun AppointmentsScreen(
                                     appointment = appointment.appointment,
                                     onCancel = {},
                                     onReschedule = {},
-                                    onCardClick = {
+                                    onDetailsClick = {
                                         currentAppointment = appointment
                                         showDetails = true
+                                    },
+                                    isExpanded = expandedCardId == appointment.appointment.id,
+                                    onExpand = { expandedCardId = appointment.appointment.id },
+                                    onCollapse = { expandedCardId = null },
+                                    onUploadRecords = {
+                                        showAddRecords = true
                                     }
                                 )
                             }
                         }
                     }
                 }
-                if (showDetails) {
+
+                SlideInScreen(showDetails) {
                     AppointmentDetailsScreenRoot(
                         appointmentDetails = currentAppointment,
                         onBackClick = {
                             showDetails = false
-                        })
+                        }
+                    )
+                }
+
+                SlideInScreen(showAddRecords) {
+                    expandedCardId?.let { it1 ->
+//                        UploadAppointmentRecords(
+//                            appointmentId = it1,
+//                            onBackClick = {
+//                                showAddRecords = false
+//                            },
+//                            onSuccessfulUpload = {
+//                                showAddRecords = false
+//                            }
+//                        )
+                        AllAppointmentRecordsRoot(appointmentId = it1,
+                            onBackClick = {
+                                showAddRecords = false
+                            })
+                    }
                 }
             }
         }
@@ -160,13 +192,20 @@ fun BookingCard(
     appointment: AppointmentBookingMaster,
     onCancel: () -> Unit,
     onReschedule: () -> Unit,
-    onCardClick: () -> Unit
+    onDetailsClick: () -> Unit,
+    isExpanded: Boolean,
+    onExpand: () -> Unit,
+    onCollapse: () -> Unit,
+    onUploadRecords: () -> Unit
 ) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 15.dp, vertical = 5.dp)
-            .clickable { onCardClick() },
+            .then(
+                if (isExpanded) Modifier.clickable(onClick = { onCollapse() }) else Modifier.clickable(
+                    onClick = { onExpand() })
+            ),
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
         elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
@@ -182,27 +221,22 @@ fun BookingCard(
                         .background(backgroundColor),
                     contentAlignment = Alignment.Center
                 ) {
-//                    AsyncImage(
-//                        model = doctor.profilePic,
-//                        contentDescription = "Doctor Image",
-//                        modifier = Modifier
-//                            .size(80.dp),
-////                            .clip(CircleShape),
-//                        contentScale = ContentScale.Crop
-//                    )
-
                     Icon(imageVector = Icons.Sharp.Person, contentDescription = "user Image")
                 }
 
                 Spacer(modifier = Modifier.width(12.dp))
+
                 Column {
+
                     Text(
                         text = appointment.patientName.toNameFormat(),
                         color = SecondaryAppColor,
                         fontSize = 20.sp,
                         style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold)
                     )
+
                     Spacer(modifier = Modifier.height(12.dp))
+
                     Text(
                         text = appointment.mobileNo,
                         color = Color.Black,
@@ -210,94 +244,121 @@ fun BookingCard(
                         style = MaterialTheme.typography.bodySmall.copy(color = Color.Gray)
                     )
 
-                    Spacer(modifier = Modifier.height(12.dp))
+                    Spacer(modifier = Modifier.height(6.dp))
+
+                    Text(
+                        text = doctor.name.toNameFormat(),
+                        color = Color.Black,
+                        fontSize = 14.sp,
+                        style = MaterialTheme.typography.bodySmall.copy(color = Color.Black)
+                    )
+
                     Text(
                         text = appointment.description,
                         color = Color.Black,
                         fontSize = 14.sp,
                         style = MaterialTheme.typography.bodySmall.copy(color = Color.Black)
                     )
+
                     Row(verticalAlignment = Alignment.CenterVertically) {
-//                        Icon(
-//                            imageVector = Icons.Default.LocationOn,
-//                            contentDescription = "Location Icon",
-//                            tint = Color.Gray,
-//                            modifier = Modifier.size(14.dp)
-//                        )
-//                        Text(
-//                            text = doctor.consltFee,
-//                            style = MaterialTheme.typography.bodySmall.copy(color = Color.Gray)
-//                        )
-                    }
-                }
-            }
-            Spacer(modifier = Modifier.height(8.dp))
-            // Conditionally show buttons based on status
-            when (appointment.status) {
-                "0" -> { // Completed
 
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(
-                            12.dp,
-                            Alignment.CenterHorizontally
-                        )
-                    ) {
-                        OutlinedButton(
-                            onClick = {},
-                            colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Blue),
-                            border = BorderStroke(1.dp, SecondaryAppColor),
-                            modifier = Modifier.weight(1f)
-                        ) {
-                            Text(text = "Reschedule", color = Color.Black, fontSize = 15.sp)
-                        }
-
-                        OutlinedButton(
-                            onClick = {},
-                            colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Blue),
-                            border = BorderStroke(1.dp, SecondaryAppColor),
-                            modifier = Modifier.weight(1f)
-                        ) {
-                            Text(text = "Add Review", color = Color.Black, fontSize = 15.sp)
-                        }
-                    }
-                }
-
-                "1" -> { /* Canceled - No Buttons */
-                }
-
-                "2", "3" -> { // Hold or Upcoming → Show Re-Book
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(
-                            12.dp,
-                            Alignment.CenterHorizontally
-                        )
-                    ) {
-                        OutlinedButton(
-                            onClick = {},
-                            colors = ButtonDefaults.outlinedButtonColors(
-                                contentColor = Color.Black,
-                                containerColor = hexToComposeColor("#E5E7EB")
-                            ),
-                            border = BorderStroke(1.dp, SecondaryAppColor),
-                            modifier = Modifier.weight(1f)
-                        ) {
-                            Text(text = "Canceled", color = Color.Black, fontSize = 15.sp)
-                        }
-
-                        OutlinedButton(
-                            onClick = {},
-                            colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Blue),
-                            border = BorderStroke(1.dp, SecondaryAppColor),
-                            modifier = Modifier.weight(1f)
-                        ) {
-                            Text(text = "Reschedule", color = Color.Black, fontSize = 15.sp)
-                        }
                     }
                 }
             }
 
+            if (isExpanded) {
+                Spacer(modifier = Modifier.height(8.dp))
+                // Conditionally show buttons based on status
+                when (appointment.status) {
+                    "0" -> { // Completed
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(
+                                12.dp,
+                                Alignment.CenterHorizontally
+                            )
+                        ) {
+                            OutlinedButton(
+                                onClick = {},
+                                colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Blue),
+                                border = BorderStroke(1.dp, SecondaryAppColor),
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                Text(text = "Reschedule", color = Color.Black, fontSize = 15.sp)
+                            }
+
+                            OutlinedButton(
+                                onClick = {},
+                                colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Blue),
+                                border = BorderStroke(1.dp, SecondaryAppColor),
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                Text(text = "Add Review", color = Color.Black, fontSize = 15.sp)
+                            }
+                        }
+                    }
+
+                    "1" -> { /* Canceled - No Buttons */
+                    }
+
+                    "2", "3" -> { // Hold or Upcoming → Show Re-Book
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(
+                                12.dp,
+                                Alignment.CenterHorizontally
+                            )
+                        ) {
+                            OutlinedButton(
+                                onClick = {},
+                                colors = ButtonDefaults.outlinedButtonColors(
+                                    contentColor = Color.Black,
+                                    containerColor = hexToComposeColor("#E5E7EB")
+                                ),
+                                border = BorderStroke(1.dp, SecondaryAppColor),
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                Text(text = "Canceled", color = Color.Black, fontSize = 15.sp)
+                            }
+
+                            OutlinedButton(
+                                onClick = {},
+                                colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Blue),
+                                border = BorderStroke(1.dp, SecondaryAppColor),
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                Text(text = "Reschedule", color = Color.Black, fontSize = 15.sp)
+                            }
+                        }
+                    }
+                }
+                // Common "Details" button for all statuses
+                Spacer(modifier = Modifier.height(8.dp))
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    OutlinedButton(
+                        onClick = { onDetailsClick() },
+                        colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Black),
+                        border = BorderStroke(1.dp, SecondaryAppColor),
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Text(text = "Details", fontSize = 15.sp)
+                    }
+
+                    OutlinedButton(
+                        onClick = { onUploadRecords() },
+                        colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Black),
+                        border = BorderStroke(1.dp, SecondaryAppColor),
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Text(text = "Upload Records", fontSize = 15.sp)
+                    }
+                }
+            }
         }
     }
 }
@@ -308,8 +369,8 @@ fun CustomTabRow(tabs: List<String>, selectedTab: Int, onTabSelected: (Int) -> U
     Row(
         modifier = Modifier
             .horizontalScroll(rememberScrollState())
-            .padding(8.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
+            .padding(5.dp),
+        horizontalArrangement = Arrangement.spacedBy(5.dp)
     ) {
         tabs.forEachIndexed { index, title ->
             Button(

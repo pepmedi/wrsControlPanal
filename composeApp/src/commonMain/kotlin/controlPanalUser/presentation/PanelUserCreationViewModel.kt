@@ -6,7 +6,7 @@ import controlPanalUser.domain.PanelUserCreationAction
 import controlPanalUser.domain.PanelUserRepository
 import controlPanalUser.domain.PanelUserCreationUiState
 import controlPanalUser.domain.UserMasterControlPanel
-import core.domain.Result
+import core.domain.AppResult
 import doctor.domain.DoctorRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -77,7 +77,6 @@ class PanelUserCreationViewModel(
                 } else {
                     _state.update {
                         it.copy(
-                            isError = _state.value.getErrorMessage(),
                             isLoading = false
                         )
                     }
@@ -100,6 +99,10 @@ class PanelUserCreationViewModel(
 
             else -> Unit
         }
+    }
+
+    fun resetData() {
+        _state.value = PanelUserCreationUiState()
     }
 
     private fun registerUser() {
@@ -130,12 +133,12 @@ class PanelUserCreationViewModel(
             .getAllDoctors()
             .collect { result ->
                 when (result) {
-                    is Result.Success -> {
+                    is AppResult.Success -> {
                         val doctorList = result.data
                         _state.update { it.copy(doctorList = doctorList) }
                     }
 
-                    is Result.Error -> {
+                    is AppResult.Error -> {
                         _state.update { it.copy(isError = result.error.name) }
                     }
                 }

@@ -61,10 +61,14 @@ object FileUtil {
         }
     }
 
-    suspend fun loadAndCompressImage(file: File, compressionThreshold: Long = 60 * 1024): ImageBitmap? {
+    suspend fun loadAndCompressImage(
+        file: File,
+        compressionThreshold: Long = 60 * 1024
+    ): ImageBitmap? {
         return withContext(Dispatchers.IO) {
             try {
-                val originalImage: BufferedImage = ImageIO.read(file)?.toRGB() ?: return@withContext null
+                val originalImage: BufferedImage =
+                    ImageIO.read(file)?.toRGB() ?: return@withContext null
                 val compressedBytes = compressImage(originalImage, compressionThreshold)
 
                 // Convert compressed byte array back to BufferedImage
@@ -123,5 +127,32 @@ object FileUtil {
         g.dispose()
 
         return rgbImage
+    }
+
+    fun selectFile(): File? {
+        val fileDialog = FileDialog(Frame(), "Select an Image or PDF (*.jpg, *.png, *.pdf)", FileDialog.LOAD).apply {
+            directory = System.getProperty("user.home") + File.separator + "Desktop"
+            filenameFilter = FilenameFilter { _, name ->
+                name.endsWith(".jpeg", ignoreCase = true) ||
+                        name.endsWith(".jpg", ignoreCase = true) ||
+                        name.endsWith(".png", ignoreCase = true) ||
+                        name.endsWith(".webp", ignoreCase = true) ||
+                        name.endsWith(".pdf", ignoreCase = true)
+            }
+            isVisible = true
+        }
+
+        val selectedFileName = fileDialog.file ?: return null // Handle cancel case
+        val selectedDirectory = fileDialog.directory ?: return null
+        val selectedFile = File(fileDialog.directory, selectedFileName)
+
+        // ✅ Ensure the file is a proper hierarchical URI
+        return if (selectedFile.exists() && selectedFile.isFile) {
+            println("Selected file: ${selectedFile.absolutePath}")
+            selectedFile
+        } else {
+            println("Invalid file selected!")
+            null
+        }
     }
 }

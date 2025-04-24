@@ -54,7 +54,11 @@ fun AppointmentDetailsScreen(
                     )
                     HospitalSection(state.hospitalList)
                     PatientDetailsForm(state.appointmentDetails)
-                    CancelButton(onBackClick = onBackClick, modifier = Modifier.padding(16.dp))
+                    CancelButton(
+                        onBackClick = onBackClick,
+                        modifier = Modifier.padding(16.dp),
+                        text = "Back"
+                    )
                 }
             }
         }

@@ -21,7 +21,6 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -41,13 +40,13 @@ import androidx.compose.ui.window.DialogWindow
 import androidx.compose.ui.window.rememberDialogState
 import core.CancelButton
 import core.domain.DataError
-import core.domain.Result
+import core.domain.AppResult
 import slots.domain.SlotsMaster
 import util.Util.toNameFormat
 
 @Composable
 fun SlotsListDialog(
-    slotsResult: Result<List<SlotsMaster>, DataError>? = null,
+    slotsResult: AppResult<List<SlotsMaster>, DataError>? = null,
     selectedSlotsList: List<SlotsMaster> = emptyList(),
     slotsList: List<SlotsMaster>? = null,
     onDismiss: () -> Unit,
@@ -57,8 +56,8 @@ fun SlotsListDialog(
     val resolvedResult = remember(slotsResult, slotsList) {
         when {
             slotsResult != null -> slotsResult
-            slotsList != null -> Result.Success(slotsList)
-            else -> Result.Error(DataError.Remote.SERVER)
+            slotsList != null -> AppResult.Success(slotsList)
+            else -> AppResult.Error(DataError.Remote.SERVER)
         }
     }
 
@@ -98,7 +97,7 @@ fun SlotsListDialog(
                 Spacer(modifier = Modifier.height(5.dp))
 
                 when (resolvedResult) {
-                    is Result.Success -> {
+                    is AppResult.Success -> {
                         val list = resolvedResult.data
                         LazyColumn(
                             modifier = Modifier
@@ -121,7 +120,7 @@ fun SlotsListDialog(
                         }
                     }
 
-                    is Result.Error -> {
+                    is AppResult.Error -> {
                         Box(
                             modifier = Modifier.fillMaxSize(),
                             contentAlignment = Alignment.Center

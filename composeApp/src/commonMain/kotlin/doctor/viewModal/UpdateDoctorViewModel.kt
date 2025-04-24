@@ -2,7 +2,7 @@ package doctor.viewModal
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import core.domain.Result
+import core.domain.AppResult
 import doctor.domain.DoctorMaster
 import doctor.domain.DoctorRepository
 import hospital.domain.HospitalMaster
@@ -118,7 +118,7 @@ class UpdateDoctorViewModel(
                 )
                 .collect { result ->
                     when (result) {
-                        is Result.Success -> {
+                        is AppResult.Success -> {
                             if(result.data == null){
                                 _state.update { it.copy(isUpdating = false, isSuccessful = true) }
                             }else {
@@ -126,7 +126,7 @@ class UpdateDoctorViewModel(
                             }
                         }
 
-                        is Result.Error -> {
+                        is AppResult.Error -> {
                             _state.update { it.copy(error = result.error.toString()) }
                         }
                     }
@@ -144,7 +144,7 @@ class UpdateDoctorViewModel(
             doctorRepository.getDoctor(doctorId = doctorId)
                 .collect { result ->
                     when (result) {
-                        is Result.Success -> {
+                        is AppResult.Success -> {
                             getAllHospital()
                             getAllServices()
                             getAllSlots()
@@ -170,7 +170,7 @@ class UpdateDoctorViewModel(
                             }
                         }
 
-                        is Result.Error -> {
+                        is AppResult.Error -> {
                             _state.update { it.copy(error = result.error.toString()) }
                         }
                     }
@@ -182,11 +182,11 @@ class UpdateDoctorViewModel(
         hospitalRepository.getAllHospital()
             .collect { result ->
                 when (result) {
-                    is Result.Success -> {
+                    is AppResult.Success -> {
                         _state.update { it.copy(hospitalList = result.data) }
                     }
 
-                    is Result.Error -> {
+                    is AppResult.Error -> {
                         _state.update { it.copy(error = result.error.toString()) }
                     }
                 }
@@ -198,11 +198,11 @@ class UpdateDoctorViewModel(
         servicesRepository.getAllServices()
             .collect { result ->
                 when (result) {
-                    is Result.Success -> {
+                    is AppResult.Success -> {
                         _state.update { it.copy(servicesList = result.data) }
                     }
 
-                    is Result.Error -> {
+                    is AppResult.Error -> {
                         _state.update { it.copy(error = result.error.toString()) }
                     }
                 }
@@ -215,11 +215,11 @@ class UpdateDoctorViewModel(
             .getAllSlots()
             .collect { result ->
                 when (result) {
-                    is Result.Success -> {
+                    is AppResult.Success -> {
                         _state.update { it.copy(slotsList = result.data) }
                     }
 
-                    is Result.Error -> {
+                    is AppResult.Error -> {
                         _state.update { it.copy(error = result.error.toString()) }
                     }
                 }

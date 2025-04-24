@@ -4,7 +4,7 @@ import appointment.domain.AppointmentBookingMaster
 import appointment.domain.AppointmentBookingRepository
 import core.data.safeCall
 import core.domain.DataError
-import core.domain.Result
+import core.domain.AppResult
 import io.ktor.client.HttpClient
 import io.ktor.client.request.get
 import io.ktor.http.ContentType
@@ -22,16 +22,16 @@ private const val BASE_URL = "${DatabaseUtil.DATABASE_URL}/${DatabaseCollection.
 
 class AppointmentBookingRepositoryImpl(private val httpClient: HttpClient) :
     AppointmentBookingRepository {
-    override suspend fun getAllAppointments(): Flow<Result<List<AppointmentBookingMaster>, DataError.Remote>> =
+    override suspend fun getAllAppointments(): Flow<AppResult<List<AppointmentBookingMaster>, DataError.Remote>> =
         flow {
-            val result: Result<DatabaseDocumentsResponse, DataError.Remote> = safeCall {
+            val result: AppResult<DatabaseDocumentsResponse, DataError.Remote> = safeCall {
                 httpClient.get(BASE_URL) {
                     contentType(ContentType.Application.Json)
                 }
             }
 
             when (result) {
-                is Result.Success -> {
+                is AppResult.Success -> {
                     val databaseResponse = result.data
                     val appointments = databaseResponse.documents.map { appointments ->
                         val field = appointments.fields
@@ -56,11 +56,11 @@ class AppointmentBookingRepositoryImpl(private val httpClient: HttpClient) :
                                 .orEmpty(),
                         )
                     }
-                    emit(Result.Success(appointments))
+                    emit(AppResult.Success(appointments))
                 }
 
-                is Result.Error -> {
-                    emit(Result.Error(DataError.Remote.SERVER))
+                is AppResult.Error -> {
+                    emit(AppResult.Error(DataError.Remote.SERVER))
                 }
             }
         }.flowOn(Dispatchers.IO)

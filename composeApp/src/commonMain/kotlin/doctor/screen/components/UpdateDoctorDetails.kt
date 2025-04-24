@@ -41,7 +41,6 @@ import doctor.viewModal.UpdateDoctorViewModel
 import hospital.presentation.components.HospitalListDialog
 import hospital.presentation.components.ServicesListDialog
 import hospital.presentation.components.SlotsListDialog
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.koin.compose.viewmodel.koinViewModel
 import util.FileCompressor
@@ -141,7 +140,7 @@ fun UpdateDoctorDetailsScreen(
                 .background(Color.White)
         ) {
             if (uiState.isLoading) {
-                AppCircularProgressIndicator()
+                AppCircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
 
             } else if (uiState.error != null) {
                 Box(modifier = Modifier.fillMaxSize()) {
