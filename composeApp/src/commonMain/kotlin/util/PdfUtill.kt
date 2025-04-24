@@ -1,18 +1,39 @@
 package util
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asComposeImageBitmap
 import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.unit.dp
+import coil3.compose.SubcomposeAsyncImage
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -20,15 +41,11 @@ import kotlinx.coroutines.withContext
 import org.apache.pdfbox.pdmodel.PDDocument
 import org.apache.pdfbox.rendering.PDFRenderer
 import org.jetbrains.skiko.toBitmap
-import java.awt.image.BufferedImage
-import java.io.ByteArrayOutputStream
 import java.io.InputStream
 import java.net.URI
-import java.net.URL
 import java.nio.file.Files
 import java.nio.file.Paths
 import java.nio.file.StandardCopyOption
-import javax.imageio.ImageIO
 
 // Function to fetch PDF from URL
 suspend fun fetchPdfFromUrl(url: String): PDDocument = withContext(Dispatchers.IO) {
@@ -47,7 +64,7 @@ suspend fun downloadPdf(url: String, destinationPath: String) {
 }
 
 // Function to convert PDF page to image (no need to be @Composable)
-fun convertPdfPageToImage(renderer: PDFRenderer, pageIndex: Int): Painter? {
+fun convertPdfPageToImage(renderer: PDFRenderer, pageIndex: Int = 0): Painter? {
     return try {
         val image = renderer.renderImage(pageIndex, 2f)
         val bitmap = image.toBitmap()
@@ -59,7 +76,10 @@ fun convertPdfPageToImage(renderer: PDFRenderer, pageIndex: Int): Painter? {
 }
 
 @Composable
-fun PdfViewerWithLoading(url: String) {
+fun PdfViewerWithLoading(
+    url: String,
+    onCancelClick: () -> Unit
+) {
     var pdfPainters by remember { mutableStateOf<List<Painter>>(emptyList()) }
     var isLoading by remember { mutableStateOf(true) }
     var loadError by remember { mutableStateOf<String?>(null) }
@@ -87,7 +107,7 @@ fun PdfViewerWithLoading(url: String) {
             }
 
             document.close()
-            delay(300) // Optional UI smoothness
+            delay(300)
             pdfPainters = painters
 
         } catch (e: Exception) {
@@ -98,13 +118,21 @@ fun PdfViewerWithLoading(url: String) {
         }
     }
 
-    Box(modifier = Modifier.fillMaxSize()) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.Black)
+    ) {
         when {
-            isLoading -> CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+            isLoading -> CircularProgressIndicator(
+                modifier = Modifier.align(Alignment.Center),
+                color = Color.White
+            )
+
             loadError != null -> Text(
                 text = "Failed to load PDF:\n$loadError",
                 modifier = Modifier.align(Alignment.Center),
-                color = androidx.compose.ui.graphics.Color.Red
+                color = Color.Red
             )
 
             else -> LazyColumn(
@@ -123,9 +151,27 @@ fun PdfViewerWithLoading(url: String) {
             }
         }
 
-        // Button for downloading the PDF
-        DownloadButton(
-            url = url, modifier = Modifier
+        // Transparent top bar with cancel icon
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .align(Alignment.TopStart)
+                .background(Color.LightGray.copy(alpha = 0.5f)),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            IconButton(onClick = onCancelClick) {
+                Icon(
+                    imageVector = Icons.Default.Close,
+                    contentDescription = "Cancel",
+                    tint = Color.White
+                )
+            }
+        }
+
+        // Bottom-right download button
+        PdfDownloadButton(
+            url = url,
+            modifier = Modifier
                 .align(Alignment.BottomEnd)
                 .padding(16.dp)
         )
@@ -133,7 +179,66 @@ fun PdfViewerWithLoading(url: String) {
 }
 
 @Composable
-fun DownloadButton(url: String, modifier: Modifier = Modifier) {
+fun AsyncImageViewer(
+    url: String,
+    onCancelClick: () -> Unit
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.Black)
+    ) {
+        SubcomposeAsyncImage(
+            model = url,
+            contentDescription = "Medical Image",
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(12.dp),
+            loading = {
+                CircularProgressIndicator(
+                    modifier = Modifier.align(Alignment.Center),
+                    color = Color.White
+                )
+            },
+            error = {
+                Text(
+                    text = "Failed to load image.",
+                    color = Color.Red,
+                    modifier = Modifier.align(Alignment.Center)
+                )
+            }
+        )
+
+        // Transparent top bar with Cancel icon
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 16.dp, start = 8.dp)
+                .align(Alignment.TopStart),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            IconButton(onClick = onCancelClick) {
+                Icon(
+                    imageVector = Icons.Default.Close,
+                    contentDescription = "Cancel",
+                    tint = Color.White
+                )
+            }
+        }
+
+        // Bottom download button
+        PdfDownloadButton(
+            url = url,
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(16.dp)
+        )
+    }
+}
+
+
+@Composable
+fun PdfDownloadButton(url: String, modifier: Modifier = Modifier) {
     var isDownloading by remember { mutableStateOf(false) }
     var downloadMessage by remember { mutableStateOf("") }
 

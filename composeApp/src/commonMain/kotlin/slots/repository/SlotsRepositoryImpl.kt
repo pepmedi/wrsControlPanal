@@ -2,7 +2,7 @@ package slots.repository
 
 import core.data.safeCall
 import core.domain.DataError
-import core.domain.Result
+import core.domain.AppResult
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get
@@ -28,7 +28,7 @@ import util.DatabaseValue
 private const val BASE_URL = "${DatabaseUtil.DATABASE_URL}/${DatabaseCollection.SLOTS}"
 
 class SlotsRepositoryImpl(private val httpClient: HttpClient) : SlotsRepository {
-    override suspend fun addSlotsToDatabase(slotsMaster: SlotsMaster): Result<Boolean, DataError> {
+    override suspend fun addSlotsToDatabase(slotsMaster: SlotsMaster): AppResult<Boolean, DataError> {
         return try {
             val response = httpClient.post(BASE_URL) {
                 contentType(ContentType.Application.Json)
@@ -45,7 +45,7 @@ class SlotsRepositoryImpl(private val httpClient: HttpClient) : SlotsRepository 
 
             if (response.status != HttpStatusCode.OK) {
                 println("Error: ${response.status}")
-                Result.Error(DataError.Remote.SERVER)
+                AppResult.Error(DataError.Remote.SERVER)
             }
             val dataBaseResponse: DatabaseResponse = response.body()
             val generatedId = dataBaseResponse.name.substringAfterLast("/")
@@ -62,21 +62,21 @@ class SlotsRepositoryImpl(private val httpClient: HttpClient) : SlotsRepository 
                     )
                 }
             if (patchResponse.status == HttpStatusCode.OK) {
-                Result.Success(true)
+                AppResult.Success(true)
             } else {
-                Result.Error(DataError.Remote.SERVER)
+                AppResult.Error(DataError.Remote.SERVER)
             }
 
         } catch (e: Exception) {
             e.printStackTrace()
             println(e.localizedMessage)
-            Result.Error(DataError.Remote.SERVER)
+            AppResult.Error(DataError.Remote.SERVER)
         }
     }
 
-    override suspend fun getAllSlots(): Flow<Result<List<SlotsMaster>, DataError>> =
+    override suspend fun getAllSlots(): Flow<AppResult<List<SlotsMaster>, DataError>> =
         flow {
-            val result: Result<DatabaseDocumentsResponse, DataError.Remote> = safeCall {
+            val result: AppResult<DatabaseDocumentsResponse, DataError.Remote> = safeCall {
                 httpClient.get(BASE_URL) {
                     contentType(ContentType.Application.Json)
                 }
@@ -84,7 +84,7 @@ class SlotsRepositoryImpl(private val httpClient: HttpClient) : SlotsRepository 
 
             when (result) {
 
-                is Result.Success -> {
+                is AppResult.Success -> {
                     val databaseResponse = result.data
                     val services = databaseResponse.documents.map { databaseDocument ->
                         val fields = databaseDocument.fields
@@ -95,11 +95,11 @@ class SlotsRepositoryImpl(private val httpClient: HttpClient) : SlotsRepository 
                             updatedAt = (fields["updatedAt"] as? DatabaseValue.StringValue)?.stringValue.orEmpty()
                         )
                     }
-                    emit(Result.Success(services))
+                    emit(AppResult.Success(services))
                 }
 
-                is Result.Error -> {
-                    emit(Result.Error(DataError.Remote.SERVER))
+                is AppResult.Error -> {
+                    emit(AppResult.Error(DataError.Remote.SERVER))
                 }
             }
         }.flowOn(Dispatchers.IO)

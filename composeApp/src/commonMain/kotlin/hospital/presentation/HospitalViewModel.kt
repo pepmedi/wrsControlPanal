@@ -2,7 +2,7 @@ package hospital.presentation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import core.domain.Result
+import core.domain.AppResult
 import hospital.domain.HospitalMaster
 import hospital.domain.HospitalRepository
 import hospital.domain.HospitalStates
@@ -21,8 +21,8 @@ class HospitalViewModel(private val hospitalRepository: HospitalRepository):View
             hospitalRepository.addHospitalToDatabase(hospitalMaster)
                 .collect{ result->
                     _hospitalStates.value = when (result){
-                        is Result.Success -> HospitalStates.Success
-                        is Result.Error -> HospitalStates.Error(result.error)
+                        is AppResult.Success -> HospitalStates.Success
+                        is AppResult.Error -> HospitalStates.Error(result.error)
                         else -> HospitalStates.Idle
                     }
                 }

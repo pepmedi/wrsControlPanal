@@ -3,7 +3,7 @@ package doctor.viewModal
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import core.domain.DataError
-import core.domain.Result
+import core.domain.AppResult
 import doctor.domain.DoctorMaster
 import doctor.domain.DoctorRepository
 import doctor.domain.DoctorSubmissionState
@@ -26,23 +26,23 @@ class AddDoctorViewModel(
 ) : ViewModel() {
 
     private val _doctorList =
-        MutableStateFlow<Result<List<DoctorMaster>, DataError.Remote>>(Result.Success(emptyList()))
-    val doctorList: StateFlow<Result<List<DoctorMaster>, DataError.Remote>> get() = _doctorList
+        MutableStateFlow<AppResult<List<DoctorMaster>, DataError.Remote>>(AppResult.Success(emptyList()))
+    val doctorList: StateFlow<AppResult<List<DoctorMaster>, DataError.Remote>> get() = _doctorList
 
     private val _hospitalList =
-        MutableStateFlow<Result<List<HospitalMaster>, DataError.Remote>>(Result.Success(emptyList()))
+        MutableStateFlow<AppResult<List<HospitalMaster>, DataError.Remote>>(AppResult.Success(emptyList()))
 
-    val hospitalList: StateFlow<Result<List<HospitalMaster>, DataError.Remote>> get() = _hospitalList
+    val hospitalList: StateFlow<AppResult<List<HospitalMaster>, DataError.Remote>> get() = _hospitalList
 
     private val _servicesList =
-        MutableStateFlow<Result<List<ServicesMaster>, DataError.Remote>>(Result.Success(emptyList()))
+        MutableStateFlow<AppResult<List<ServicesMaster>, DataError.Remote>>(AppResult.Success(emptyList()))
 
-    val servicesList: StateFlow<Result<List<ServicesMaster>, DataError.Remote>> get() = _servicesList
+    val servicesList: StateFlow<AppResult<List<ServicesMaster>, DataError.Remote>> get() = _servicesList
 
     private val _slotsList =
-        MutableStateFlow<Result<List<SlotsMaster>, DataError>>(Result.Success(emptyList()))
+        MutableStateFlow<AppResult<List<SlotsMaster>, DataError>>(AppResult.Success(emptyList()))
 
-    val slotsList: StateFlow<Result<List<SlotsMaster>, DataError>> get() = _slotsList
+    val slotsList: StateFlow<AppResult<List<SlotsMaster>, DataError>> get() = _slotsList
 
     private val _doctorSubmissionState =
         MutableStateFlow<DoctorSubmissionState>(DoctorSubmissionState.Idle)
@@ -60,11 +60,11 @@ class AddDoctorViewModel(
             slotsRepository.getAllSlots()
                 .collect { result ->
                     when (result) {
-                        is Result.Success -> {
+                        is AppResult.Success -> {
                             _slotsList.value = result
                         }
 
-                        is Result.Error -> {
+                        is AppResult.Error -> {
 
                         }
                     }
@@ -106,8 +106,8 @@ class AddDoctorViewModel(
             doctorRepository.addDoctorToDatabase(doctorsMaster, file)
                 .collect { result ->
                     _doctorSubmissionState.value = when (result) {
-                        is Result.Success -> DoctorSubmissionState.Success
-                        is Result.Error -> DoctorSubmissionState.Error(result.error)
+                        is AppResult.Success -> DoctorSubmissionState.Success
+                        is AppResult.Error -> DoctorSubmissionState.Error(result.error)
                     }
                 }
         }

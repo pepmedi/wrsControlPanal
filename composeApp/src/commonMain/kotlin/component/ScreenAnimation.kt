@@ -34,9 +34,9 @@ fun SlideInScreen(
         )
     ) {
         Surface(
-            modifier = Modifier.fillMaxSize(), // You can customize width/height here
+            modifier = Modifier.fillMaxSize(),
             tonalElevation = 4.dp,
-            shape = RoundedCornerShape(12.dp) // Optional styling
+            shape = RoundedCornerShape(12.dp)
         ) {
             content()
         }

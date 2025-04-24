@@ -2,7 +2,7 @@ package services.repository
 
 import core.data.safeCall
 import core.domain.DataError
-import core.domain.Result
+import core.domain.AppResult
 import imageUpload.uploadImageToFirebaseStorage
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
@@ -32,16 +32,16 @@ import java.io.File
 private const val BASE_URL = "${DatabaseUtil.DATABASE_URL}/${DatabaseCollection.SERVICES}"
 
 class ServicesRepositoryImpl(private val httpClient: HttpClient) : ServicesRepository {
-    override suspend fun getAllServices(): Flow<Result<List<ServicesMaster>, DataError.Remote>> =
+    override suspend fun getAllServices(): Flow<AppResult<List<ServicesMaster>, DataError.Remote>> =
         flow {
-            val result: Result<DatabaseDocumentsResponse, DataError.Remote> = safeCall {
+            val result: AppResult<DatabaseDocumentsResponse, DataError.Remote> = safeCall {
                 httpClient.get(BASE_URL) {
                     contentType(ContentType.Application.Json)
                 }
             }
 
             when (result) {
-                is Result.Success -> {
+                is AppResult.Success -> {
                     val databaseResponse = result.data
                     val services = databaseResponse.documents.map { databaseDocument ->
                         val fields = databaseDocument.fields
@@ -55,11 +55,11 @@ class ServicesRepositoryImpl(private val httpClient: HttpClient) : ServicesRepos
                             updatedAt = (fields["updatedAt"] as? DatabaseValue.StringValue)?.stringValue.orEmpty()
                         )
                     }
-                    emit(Result.Success(services))
+                    emit(AppResult.Success(services))
                 }
 
-                is Result.Error -> {
-                    emit(Result.Error(DataError.Remote.SERVER))
+                is AppResult.Error -> {
+                    emit(AppResult.Error(DataError.Remote.SERVER))
                 }
             }
         }.flowOn(Dispatchers.IO)
@@ -68,7 +68,7 @@ class ServicesRepositoryImpl(private val httpClient: HttpClient) : ServicesRepos
         service: ServicesMaster,
         imageFile: File,
         iconFile: File
-    ): Flow<Result<Unit, DataError.Remote>> =
+    ): Flow<AppResult<Unit, DataError.Remote>> =
         flow {
 
             try {
@@ -90,7 +90,7 @@ class ServicesRepositoryImpl(private val httpClient: HttpClient) : ServicesRepos
 
                 if (response.status != HttpStatusCode.OK) {
                     println("Error: ${response.status}")
-                    emit(Result.Error(DataError.Remote.SERVER))
+                    emit(AppResult.Error(DataError.Remote.SERVER))
                 }
 
                 val dataBaseResponse: DatabaseResponse = response.body()
@@ -144,17 +144,17 @@ class ServicesRepositoryImpl(private val httpClient: HttpClient) : ServicesRepos
                         }
 
                     if (patchImagesUrlResponse.status == HttpStatusCode.OK) {
-                        emit(Result.Success(Unit))
+                        emit(AppResult.Success(Unit))
                     } else {
-                        emit(Result.Error(DataError.Remote.SERVER))
+                        emit(AppResult.Error(DataError.Remote.SERVER))
                     }
                 } else {
-                    emit(Result.Error(DataError.Remote.SERVER))
+                    emit(AppResult.Error(DataError.Remote.SERVER))
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
                 println(e.localizedMessage)
-                emit(Result.Error(DataError.Remote.SERVER))
+                emit(AppResult.Error(DataError.Remote.SERVER))
             }
 
         }.flowOn(Dispatchers.IO)

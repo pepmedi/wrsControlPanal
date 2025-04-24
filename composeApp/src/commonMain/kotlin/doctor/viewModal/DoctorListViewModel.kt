@@ -2,7 +2,7 @@ package doctor.viewModal
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import core.domain.Result
+import core.domain.AppResult
 import doctor.domain.DoctorMaster
 import doctor.domain.DoctorRepository
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -47,7 +47,7 @@ class DoctorListViewModel(private val doctorRepository: DoctorRepository) : View
             .getAllDoctors()
             .collect { result ->
                 when (result) {
-                    is Result.Success -> {
+                    is AppResult.Success -> {
                         _state.update {
                             it.copy(
                                 doctorList = result.data,
@@ -57,7 +57,7 @@ class DoctorListViewModel(private val doctorRepository: DoctorRepository) : View
                         }
                     }
 
-                    is Result.Error -> {
+                    is AppResult.Error -> {
                         _state.update {
                             it.copy(error = result.error.name, isLoading = false)
                         }

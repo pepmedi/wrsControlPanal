@@ -4,7 +4,7 @@ import controlPanalUser.domain.UserMasterControlPanel
 import core.data.HttpClientFactory.json
 import core.data.safeCall
 import core.domain.DataError
-import core.domain.Result
+import core.domain.AppResult
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get
@@ -14,8 +14,6 @@ import io.ktor.client.statement.HttpResponse
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
 import io.ktor.http.isSuccess
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.builtins.ListSerializer
 import util.DatabaseCollection
@@ -32,7 +30,7 @@ class LoginRepositoryImpl(private val httpClient: HttpClient) : LoginRepository 
     override suspend fun isValidUser(
         username: String,
         password: String
-    ): Result<UserMasterControlPanel, DataError.Remote> {
+    ): AppResult<UserMasterControlPanel, DataError.Remote> {
         try {
             val requestBody = buildCustomDatabaseQuery(
                 collection = DatabaseCollection.PANEL_USER,
@@ -56,20 +54,20 @@ class LoginRepositoryImpl(private val httpClient: HttpClient) : LoginRepository 
                 val documents = databaseResponses.mapNotNull { it.document }
 
                 if (documents.isEmpty()) {
-                   return Result.Error(DataError.Remote.SERVER)
+                   return AppResult.Error(DataError.Remote.SERVER)
                 }
 
                 val id = documents.first().name.substringAfterLast("/")
                 if (isValidUser) {
                     val url = "${BASE_URL}/$id"
-                    val result: Result<DatabaseDocument, DataError.Remote> = safeCall {
+                    val result: AppResult<DatabaseDocument, DataError.Remote> = safeCall {
                         httpClient.get(url) {
                             contentType(ContentType.Application.Json)
                         }
                     }
 
                     when (result) {
-                        is Result.Success -> {
+                        is AppResult.Success -> {
                             val document = result.data
 
                             val fields = document.fields
@@ -88,23 +86,23 @@ class LoginRepositoryImpl(private val httpClient: HttpClient) : LoginRepository 
                                     ?.toSet()
                                     .orEmpty(),
                             )
-                            return Result.Success(user)
+                            return AppResult.Success(user)
                         }
 
-                        is Result.Error -> {
-                           return Result.Error(result.error)
+                        is AppResult.Error -> {
+                           return AppResult.Error(result.error)
                         }
                     }
                 }
             } else {
-               return Result.Error(DataError.Remote.SERVER)
+               return AppResult.Error(DataError.Remote.SERVER)
             }
         } catch (e: Exception) {
             e.printStackTrace()
             println(e.localizedMessage)
-           return Result.Error(DataError.Remote.SERVER)
+           return AppResult.Error(DataError.Remote.SERVER)
         }
-        return Result.Error(DataError.Remote.SERVER)
+        return AppResult.Error(DataError.Remote.SERVER)
     }
 }
 

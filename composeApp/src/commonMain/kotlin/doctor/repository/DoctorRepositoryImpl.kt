@@ -2,7 +2,7 @@ package doctor.repository
 
 import core.data.safeCall
 import core.domain.DataError
-import core.domain.Result
+import core.domain.AppResult
 import doctor.domain.DoctorRepository
 import doctor.domain.DoctorMaster
 import imageUpload.uploadImageToFirebaseStorage
@@ -34,18 +34,18 @@ import java.io.File
 private const val BASE_URL = DatabaseUtil.DATABASE_URL
 
 class DoctorRepositoryImpl(private val httpClient: HttpClient) : DoctorRepository {
-    override suspend fun getAllDoctors(): Flow<Result<List<DoctorMaster>, DataError.Remote>> =
+    override suspend fun getAllDoctors(): Flow<AppResult<List<DoctorMaster>, DataError.Remote>> =
         flow {
             val url = "$BASE_URL/${DatabaseCollection.DOCTORS}"
 
-            val result: Result<DatabaseDocumentsResponse, DataError.Remote> = safeCall {
+            val result: AppResult<DatabaseDocumentsResponse, DataError.Remote> = safeCall {
                 httpClient.get(url) {
                     contentType(ContentType.Application.Json)
                 }
             }
 
             when (result) {
-                is Result.Success -> {
+                is AppResult.Success -> {
                     val firestoreResponse = result.data
                     val doctors = firestoreResponse.documents.map { document ->
                         val fields = document.fields
@@ -69,11 +69,11 @@ class DoctorRepositoryImpl(private val httpClient: HttpClient) : DoctorRepositor
                             profile = (fields["profile"] as? DatabaseValue.StringValue)?.stringValue.orEmpty()
                         )
                     }
-                    emit(Result.Success(doctors))
+                    emit(AppResult.Success(doctors))
                 }
 
-                is Result.Error -> {
-                    emit(Result.Error(result.error))
+                is AppResult.Error -> {
+                    emit(AppResult.Error(result.error))
                 }
             }
         }.flowOn(Dispatchers.IO)
@@ -81,7 +81,7 @@ class DoctorRepositoryImpl(private val httpClient: HttpClient) : DoctorRepositor
     override suspend fun addDoctorToDatabase(
         doctor: DoctorMaster,
         imageFile: File
-    ): Flow<Result<Unit, DataError.Remote>> =
+    ): Flow<AppResult<Unit, DataError.Remote>> =
         flow {
             val url = "$BASE_URL/${DatabaseCollection.DOCTORS}"
             try {
@@ -124,7 +124,7 @@ class DoctorRepositoryImpl(private val httpClient: HttpClient) : DoctorRepositor
 
                 if (response.status != HttpStatusCode.OK) {
                     println("Error: ${response.status}")
-                    emit(Result.Error(DataError.Remote.SERVER))
+                    emit(AppResult.Error(DataError.Remote.SERVER))
                     return@flow
                 }
 
@@ -169,33 +169,33 @@ class DoctorRepositoryImpl(private val httpClient: HttpClient) : DoctorRepositor
                         }
 
                     if (patchImageResponse.status == HttpStatusCode.OK) {
-                        emit(Result.Success(Unit))
+                        emit(AppResult.Success(Unit))
                     } else {
-                        emit(Result.Error(DataError.Remote.SERVER))
+                        emit(AppResult.Error(DataError.Remote.SERVER))
                     }
                 } else {
-                    emit(Result.Error(DataError.Remote.SERVER))
+                    emit(AppResult.Error(DataError.Remote.SERVER))
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
                 println(e.localizedMessage)
-                emit(Result.Error(DataError.Remote.UNKNOWN))
+                emit(AppResult.Error(DataError.Remote.UNKNOWN))
             }
         }.flowOn(Dispatchers.IO)
 
-    override suspend fun getDoctor(doctorId: String): Flow<Result<DoctorMaster, DataError.Remote>> =
+    override suspend fun getDoctor(doctorId: String): Flow<AppResult<DoctorMaster, DataError.Remote>> =
         flow {
             val url = "${DatabaseUtil.DATABASE_URL}/${DatabaseCollection.DOCTORS}/$doctorId"
 
             try {
-                val result: Result<DatabaseDocument, DataError.Remote> = safeCall {
+                val result: AppResult<DatabaseDocument, DataError.Remote> = safeCall {
                     httpClient.get(url) {
                         contentType(ContentType.Application.Json)
                     }
                 }
 
                 when (result) {
-                    is Result.Success -> {
+                    is AppResult.Success -> {
                         val document =
                             result.data
 
@@ -221,23 +221,23 @@ class DoctorRepositoryImpl(private val httpClient: HttpClient) : DoctorRepositor
                             careerPath = (fields["careerPath"] as? DatabaseValue.StringValue)?.stringValue.orEmpty(),
                             profile = (fields["profile"] as? DatabaseValue.StringValue)?.stringValue.orEmpty(),
                         )
-                        emit(Result.Success(doctor))
+                        emit(AppResult.Success(doctor))
                     }
 
-                    is Result.Error -> {
-                        emit(Result.Error(result.error))
+                    is AppResult.Error -> {
+                        emit(AppResult.Error(result.error))
                     }
                 }
 
             } catch (e: Exception) {
-                emit(Result.Error(DataError.Remote.SERVER))
+                emit(AppResult.Error(DataError.Remote.SERVER))
             }
         }.flowOn(Dispatchers.IO)
 
     override suspend fun updateDoctor(
         doctor: DoctorMaster,
         imageFile: File?
-    ): Flow<Result<String?, DataError.Remote>> = flow {
+    ): Flow<AppResult<String?, DataError.Remote>> = flow {
         try {
             // Step 1: Update doctor details first
             val patchResponse = httpClient.patch(
@@ -298,19 +298,19 @@ class DoctorRepositoryImpl(private val httpClient: HttpClient) : DoctorRepositor
                     }
 
                     if (patchImageResponse.status == HttpStatusCode.OK) {
-                        emit(Result.Success(downloadUrl)) // ✅ emit URL if uploaded
+                        emit(AppResult.Success(downloadUrl)) // ✅ emit URL if uploaded
                     } else {
-                        emit(Result.Error(DataError.Remote.SERVER))
+                        emit(AppResult.Error(DataError.Remote.SERVER))
                     }
                 } else {
-                    emit(Result.Success(null)) // ✅ emit success but no image uploaded
+                    emit(AppResult.Success(null)) // ✅ emit success but no image uploaded
                 }
             } else {
-                emit(Result.Error(DataError.Remote.SERVER))
+                emit(AppResult.Error(DataError.Remote.SERVER))
             }
         } catch (e: Exception) {
             e.printStackTrace()
-            emit(Result.Error(DataError.Remote.SERVER))
+            emit(AppResult.Error(DataError.Remote.SERVER))
         }
     }.flowOn(Dispatchers.IO)
 }

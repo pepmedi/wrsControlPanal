@@ -2,7 +2,7 @@ package hospital.repository
 
 import core.data.safeCall
 import core.domain.DataError
-import core.domain.Result
+import core.domain.AppResult
 import hospital.domain.HospitalMaster
 import hospital.domain.HospitalRepository
 import io.ktor.client.HttpClient
@@ -28,18 +28,18 @@ import util.DatabaseValue
 private const val BASE_URL = DatabaseUtil.DATABASE_URL
 
 class DefaultHospitalRepository(private val httpClient: HttpClient) : HospitalRepository {
-    override suspend fun getAllHospital(): Flow<Result<List<HospitalMaster>, DataError.Remote>> =
+    override suspend fun getAllHospital(): Flow<AppResult<List<HospitalMaster>, DataError.Remote>> =
         flow {
             val url = "$BASE_URL/hospitals"
 
-            val result: Result<DatabaseDocumentsResponse, DataError.Remote> = safeCall {
+            val result: AppResult<DatabaseDocumentsResponse, DataError.Remote> = safeCall {
                 httpClient.get(url) {
                     contentType(ContentType.Application.Json)
                 }
             }
 
             when (result) {
-                is Result.Success -> {
+                is AppResult.Success -> {
                     val databaseResponse = result.data
                     val hospitals = databaseResponse.documents.map { databaseDocument ->
                         val fields = databaseDocument.fields
@@ -51,16 +51,16 @@ class DefaultHospitalRepository(private val httpClient: HttpClient) : HospitalRe
                             updatedAt = (fields["updatedAt"] as? DatabaseValue.StringValue)?.stringValue.orEmpty()
                         )
                     }
-                    emit(Result.Success(hospitals))
+                    emit(AppResult.Success(hospitals))
                 }
 
-                is Result.Error -> {
-                    emit(Result.Error(result.error))
+                is AppResult.Error -> {
+                    emit(AppResult.Error(result.error))
                 }
             }
         }.flowOn(Dispatchers.IO)
 
-    override suspend fun addHospitalToDatabase(hospital: HospitalMaster): Flow<Result<Unit, DataError.Remote>> =
+    override suspend fun addHospitalToDatabase(hospital: HospitalMaster): Flow<AppResult<Unit, DataError.Remote>> =
         flow {
             val url = "${BASE_URL}/hospitals"
 
@@ -81,7 +81,7 @@ class DefaultHospitalRepository(private val httpClient: HttpClient) : HospitalRe
 
                 if (response.status != HttpStatusCode.OK) {
                     println("Error: ${response.status}")
-                    emit(Result.Error(DataError.Remote.SERVER))
+                    emit(AppResult.Error(DataError.Remote.SERVER))
                 }
 
                 val dataBaseResponse: DatabaseResponse = response.body()
@@ -101,14 +101,14 @@ class DefaultHospitalRepository(private val httpClient: HttpClient) : HospitalRe
                 }
 
                 if (patchResponse.status == HttpStatusCode.OK) {
-                    emit(Result.Success(Unit))
+                    emit(AppResult.Success(Unit))
                 } else {
-                    emit(Result.Error(DataError.Remote.SERVER))
+                    emit(AppResult.Error(DataError.Remote.SERVER))
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
                 println(e.localizedMessage)
-                emit(Result.Error(DataError.Remote.SERVER))
+                emit(AppResult.Error(DataError.Remote.SERVER))
             }
         }.flowOn(Dispatchers.IO)
 }

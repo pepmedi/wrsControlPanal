@@ -6,7 +6,7 @@ import controlPanalUser.domain.UserMasterControlPanel
 import controlPanalUser.domain.UserRole
 import controlPanalUser.domain.UserSession
 import controlPanalUser.repository.SessionManager
-import core.domain.Result
+import core.domain.AppResult
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
@@ -46,7 +46,7 @@ class LoginViewModel(
                 loginRepository.isValidUser(_uiState.value.username, _uiState.value.password)
 
             when (result) {
-                is Result.Success -> {
+                is AppResult.Success -> {
                     val user = result.data
                     if (user.isActive == "0") {
                         val role = when (user.empType) {
@@ -82,7 +82,7 @@ class LoginViewModel(
                     }
                 }
 
-                is Result.Error -> {
+                is AppResult.Error -> {
                     _uiState.update {
                         it.copy(
                             isLoading = false,

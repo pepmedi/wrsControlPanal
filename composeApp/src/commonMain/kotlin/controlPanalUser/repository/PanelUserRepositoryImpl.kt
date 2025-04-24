@@ -2,7 +2,7 @@ package controlPanalUser.repository
 
 import controlPanalUser.domain.UserMasterControlPanel
 import core.domain.DataError
-import core.domain.Result
+import core.domain.AppResult
 import controlPanalUser.domain.PanelUserRepository
 import core.data.safeCall
 import io.ktor.client.HttpClient
@@ -91,20 +91,20 @@ class PanelUserRepositoryImpl(private val httpClient: HttpClient) : PanelUserRep
         TODO("Not yet implemented")
     }
 
-    override suspend fun getPanelUser(userId: String): Result<UserMasterControlPanel, DataError.Remote> {
+    override suspend fun getPanelUser(userId: String): AppResult<UserMasterControlPanel, DataError.Remote> {
         TODO("Not yet implemented")
     }
 
-    override suspend fun getAllUser(): Flow<Result<List<UserMasterControlPanel>, DataError.Remote>> =
+    override suspend fun getAllUser(): Flow<AppResult<List<UserMasterControlPanel>, DataError.Remote>> =
         flow {
-            val result: Result<DatabaseDocumentsResponse, DataError.Remote> = safeCall {
+            val result: AppResult<DatabaseDocumentsResponse, DataError.Remote> = safeCall {
                 httpClient.get(BASE_URL) {
                     contentType(ContentType.Application.Json)
                 }
             }
 
             when (result) {
-                is Result.Success -> {
+                is AppResult.Success -> {
                     val databaseResponse = result.data
                     val users = databaseResponse.documents.map { user ->
                         val field = user.fields
@@ -124,11 +124,11 @@ class PanelUserRepositoryImpl(private val httpClient: HttpClient) : PanelUserRep
                                 .orEmpty(),
                         )
                     }
-                    emit(Result.Success(users))
+                    emit(AppResult.Success(users))
                 }
 
-                is Result.Error -> {
-                    emit(Result.Error(DataError.Remote.SERVER))
+                is AppResult.Error -> {
+                    emit(AppResult.Error(DataError.Remote.SERVER))
                 }
             }
         }

@@ -10,6 +10,7 @@ object DatabaseCollection {
     const val PANEL_USER = "panelUser"
     const val SLOTS = "slots"
     const val BLOGS = "blogs"
+    const val PATIENTs_MEDICAL_RECORDS = "patientMedicalRecords"
 }
 
 object StorageCollection {
@@ -17,4 +18,5 @@ object StorageCollection {
     const val SERVICE_IMAGES = "serviceImages"
     const val SERVICE_ICON = "serviceIcon"
     const val BLOG_IMAGES = "blogImages"
+    const val PATIENT_MEDICAL_RECORD = "patientMedicalRecord"
 }

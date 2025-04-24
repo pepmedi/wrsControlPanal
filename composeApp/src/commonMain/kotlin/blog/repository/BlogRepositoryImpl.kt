@@ -3,7 +3,7 @@ package blog.repository
 import blog.domain.BlogMaster
 import blog.domain.BlogRepository
 import core.domain.DataError
-import core.domain.Result
+import core.domain.AppResult
 import imageUpload.uploadImageToFirebaseStorage
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
@@ -28,7 +28,7 @@ class BlogRepositoryImpl(private val httpClient: HttpClient) : BlogRepository {
     override suspend fun addBlogToDatabase(
         blog: BlogMaster,
         imageFile: File
-    ): Result<Unit, DataError.Remote> {
+    ): AppResult<Unit, DataError.Remote> {
 
         return try {
             val response: HttpResponse = httpClient.post(BASE_URL) {
@@ -47,7 +47,7 @@ class BlogRepositoryImpl(private val httpClient: HttpClient) : BlogRepository {
             }
             if (response.status != HttpStatusCode.OK) {
                 println("Error: ${response.status}")
-                Result.Error(DataError.Remote.SERVER)
+                AppResult.Error(DataError.Remote.SERVER)
             }
 
             val firestoreResponse: DatabaseResponse = response.body()
@@ -91,17 +91,17 @@ class BlogRepositoryImpl(private val httpClient: HttpClient) : BlogRepository {
                     }
 
                 if (patchImageResponse.status == HttpStatusCode.OK) {
-                    Result.Success(Unit)
+                    AppResult.Success(Unit)
                 } else {
-                    Result.Error(DataError.Remote.SERVER)
+                    AppResult.Error(DataError.Remote.SERVER)
                 }
             } else {
-                Result.Error(DataError.Remote.SERVER)
+                AppResult.Error(DataError.Remote.SERVER)
             }
         } catch (e: Exception) {
             e.printStackTrace()
             println(e.message)
-            Result.Error(DataError.Remote.SERVER)
+            AppResult.Error(DataError.Remote.SERVER)
         }
     }
 }

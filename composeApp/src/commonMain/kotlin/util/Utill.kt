@@ -20,4 +20,22 @@ object Util {
     fun String.toOtpMobileFormat(): String {
         return "91$this"
     }
+
+    fun generateUUID(): String {
+        return listOf(
+            (1..8),
+            (1..4),
+            (1..4),
+            (1..4),
+            (1..12)
+        ).joinToString("-") { section ->
+            section.map {
+                "0123456789abcdef".random()
+            }.joinToString("")
+        }
+    }
+
+    fun String.encodeFirebasePath(): String {
+        return this.replace("/", "%2F")
+    }
 }

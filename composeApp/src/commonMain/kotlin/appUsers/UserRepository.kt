@@ -1,9 +1,9 @@
 package appUsers
 
 import core.domain.DataError
-import core.domain.Result
+import core.domain.AppResult
 import kotlinx.coroutines.flow.Flow
 
 interface UserRepository {
-    suspend fun getUserDetails(userId: String): Flow<Result<User, DataError.Remote>>
+    suspend fun getUserDetails(userId: String): Flow<AppResult<User, DataError.Remote>>
 }

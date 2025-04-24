@@ -1,9 +1,9 @@
 package blog.domain
 
 import core.domain.DataError
-import core.domain.Result
+import core.domain.AppResult
 import java.io.File
 
 interface BlogRepository {
-    suspend fun addBlogToDatabase(blog: BlogMaster, imageFile: File): Result<Unit, DataError.Remote>
+    suspend fun addBlogToDatabase(blog: BlogMaster, imageFile: File): AppResult<Unit, DataError.Remote>
 }

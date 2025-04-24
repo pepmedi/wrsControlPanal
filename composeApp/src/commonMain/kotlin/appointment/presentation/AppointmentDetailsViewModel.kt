@@ -2,7 +2,7 @@ package appointment.presentation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import core.domain.Result
+import core.domain.AppResult
 import hospital.domain.HospitalMaster
 import hospital.domain.HospitalRepository
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -36,14 +36,14 @@ class AppointmentDetailsViewModel(private val hospitalRepository: HospitalReposi
             hospitalRepository.getAllHospital()
                 .collect { result ->
                     when (result) {
-                        is Result.Success -> {
+                        is AppResult.Success -> {
                             val hospital = result.data
                             val hospitalId = _state.value.appointmentDetails.appointment.hospitalsId
                             val filteredHospital = hospital.filter { it.id in hospitalId }
                             _state.update { it.copy(hospitalList = filteredHospital) }
                         }
 
-                        is Result.Error -> {
+                        is AppResult.Error -> {
 
                         }
                     }

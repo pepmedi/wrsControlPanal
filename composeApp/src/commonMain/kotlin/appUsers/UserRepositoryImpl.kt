@@ -2,10 +2,9 @@ package appUsers
 
 import core.data.safeCall
 import core.domain.DataError
-import core.domain.Result
+import core.domain.AppResult
 import io.ktor.client.HttpClient
 import io.ktor.client.request.get
-import io.ktor.client.statement.HttpResponse
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
 import kotlinx.coroutines.Dispatchers
@@ -20,17 +19,17 @@ import util.DatabaseValue
 private const val BASE_URL = "${DatabaseUtil.DATABASE_URL}/${DatabaseCollection.USERS}"
 
 class UserRepositoryImpl(private val httpClient: HttpClient) : UserRepository {
-    override suspend fun getUserDetails(userId: String): Flow<Result<User, DataError.Remote>> =
+    override suspend fun getUserDetails(userId: String): Flow<AppResult<User, DataError.Remote>> =
         flow {
             try {
-                val result: Result<DatabaseDocument, DataError.Remote> = safeCall {
+                val result: AppResult<DatabaseDocument, DataError.Remote> = safeCall {
                     httpClient.get("${BASE_URL}/$userId") {
                         contentType(ContentType.Application.Json)
                     }
                 }
 
                 when (result) {
-                    is Result.Success -> {
+                    is AppResult.Success -> {
                         val documents = result.data
                         val fields = documents.fields
                         val user = User(
@@ -44,17 +43,17 @@ class UserRepositoryImpl(private val httpClient: HttpClient) : UserRepository {
                             createdAt = (fields["createdAt"] as? DatabaseValue.StringValue)?.stringValue.orEmpty(),
                             updatedAt = (fields["updatedAt"] as? DatabaseValue.StringValue)?.stringValue.orEmpty(),
                         )
-                        emit(Result.Success(user))
+                        emit(AppResult.Success(user))
                     }
 
-                    is Result.Error -> {
-                        emit(Result.Error(result.error))
+                    is AppResult.Error -> {
+                        emit(AppResult.Error(result.error))
                     }
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
                 println(e.localizedMessage)
-                emit(Result.Error(DataError.Remote.SERVER))
+                emit(AppResult.Error(DataError.Remote.SERVER))
             }
         }.flowOn(Dispatchers.IO)
 }

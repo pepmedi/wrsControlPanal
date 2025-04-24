@@ -6,7 +6,7 @@ import appUsers.User
 import appUsers.UserRepository
 import appointment.domain.AppointmentBookingMaster
 import appointment.domain.AppointmentBookingRepository
-import core.domain.Result
+import core.domain.AppResult
 import doctor.domain.DoctorMaster
 import doctor.domain.DoctorRepository
 import kotlinx.coroutines.async
@@ -41,7 +41,7 @@ class AppointmentsViewModel(
             .getAllAppointments()
             .collect { result ->
                 when (result) {
-                    is Result.Success -> {
+                    is AppResult.Success -> {
                         val appointments = result.data.toMutableList()
                         val doctorIds = appointments.map { it.doctorId }.distinct()
                         val userIds = appointments.map { it.userId }.distinct()
@@ -57,7 +57,7 @@ class AppointmentsViewModel(
                         }
                     }
 
-                    is Result.Error -> {
+                    is AppResult.Error -> {
                         _uiState.update { it.copy(isLoading = false) }
                     }
                 }
@@ -74,7 +74,7 @@ class AppointmentsViewModel(
             doctorIds.map { doctorId ->
                 async {
                     doctorRepository.getDoctor(doctorId).collect { doctorResult ->
-                        if (doctorResult is Result.Success) {
+                        if (doctorResult is AppResult.Success) {
                             doctorMap[doctorId] = doctorResult.data
                         }
                     }

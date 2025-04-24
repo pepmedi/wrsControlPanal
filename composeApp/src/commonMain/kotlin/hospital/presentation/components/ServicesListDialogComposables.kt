@@ -41,13 +41,12 @@ import androidx.compose.ui.window.DialogWindow
 import androidx.compose.ui.window.rememberDialogState
 import core.CancelButton
 import core.domain.DataError
-import core.domain.Result
-import hospital.domain.HospitalMaster
+import core.domain.AppResult
 import services.domain.ServicesMaster
 
 @Composable
 fun ServicesListDialog(
-    serviceResult: Result<List<ServicesMaster>, DataError.Remote>? = null,
+    serviceResult: AppResult<List<ServicesMaster>, DataError.Remote>? = null,
     selectedServicesList: List<ServicesMaster> = emptyList(),
     servicesList: List<ServicesMaster>? = null,
     onDismiss: () -> Unit,
@@ -57,8 +56,8 @@ fun ServicesListDialog(
     val resolvedResult = remember(serviceResult, servicesList) {
         when {
             serviceResult != null -> serviceResult
-            servicesList != null -> Result.Success(servicesList)
-            else -> Result.Error(DataError.Remote.UNKNOWN) // or a default empty/failure state
+            servicesList != null -> AppResult.Success(servicesList)
+            else -> AppResult.Error(DataError.Remote.UNKNOWN) // or a default empty/failure state
         }
     }
 
@@ -98,7 +97,7 @@ fun ServicesListDialog(
                 Spacer(modifier = Modifier.height(5.dp))
 
                 when (resolvedResult) {
-                    is Result.Success -> {
+                    is AppResult.Success -> {
                         val list = resolvedResult.data
                         LazyColumn(
                             modifier = Modifier
@@ -121,7 +120,7 @@ fun ServicesListDialog(
                         }
                     }
 
-                    is Result.Error -> { // ✅ Proper error handling
+                    is AppResult.Error -> { // ✅ Proper error handling
                         Box(
                             modifier = Modifier.fillMaxSize(),
                             contentAlignment = Alignment.Center

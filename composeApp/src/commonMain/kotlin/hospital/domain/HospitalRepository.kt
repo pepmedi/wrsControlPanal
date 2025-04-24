@@ -1,10 +1,10 @@
 package hospital.domain
 
 import core.domain.DataError
-import core.domain.Result
+import core.domain.AppResult
 import kotlinx.coroutines.flow.Flow
 
 interface HospitalRepository {
-    suspend fun getAllHospital(): Flow<Result<List<HospitalMaster>, DataError.Remote>>
-    suspend fun addHospitalToDatabase(hospital: HospitalMaster): Flow<Result<Unit, DataError.Remote>>
+    suspend fun getAllHospital(): Flow<AppResult<List<HospitalMaster>, DataError.Remote>>
+    suspend fun addHospitalToDatabase(hospital: HospitalMaster): Flow<AppResult<Unit, DataError.Remote>>
 }

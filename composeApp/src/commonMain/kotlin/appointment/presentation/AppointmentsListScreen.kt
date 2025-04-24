@@ -50,10 +50,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import appointment.domain.AppointmentBookingMaster
+import component.SlideInBottomSheet
 import component.SlideInScreen
 import controlPanalUser.domain.UserRole
 import controlPanalUser.repository.SessionManager
 import doctor.domain.DoctorMaster
+import documents.screen.AllAppointmentRecordsRoot
+import documents.screen.UploadAppointmentRecords
 import hexToComposeColor
 import org.koin.compose.viewmodel.koinViewModel
 import util.Util.toNameFormat
@@ -80,6 +83,7 @@ fun AppointmentsScreen(
     val linkedDoctorId = currentUser?.linkedDoctorId
 
     var showDetails by mutableStateOf(false)
+    var showAddRecords by mutableStateOf(false)
     var currentAppointment by mutableStateOf(AppointmentDetails())
 
     fun filterAppointments(appointment: List<AppointmentDetails>): List<AppointmentDetails> {
@@ -141,18 +145,41 @@ fun AppointmentsScreen(
                                     },
                                     isExpanded = expandedCardId == appointment.appointment.id,
                                     onExpand = { expandedCardId = appointment.appointment.id },
-                                    onCollapse = { expandedCardId = null }
+                                    onCollapse = { expandedCardId = null },
+                                    onUploadRecords = {
+                                        showAddRecords = true
+                                    }
                                 )
                             }
                         }
                     }
                 }
+
                 SlideInScreen(showDetails) {
                     AppointmentDetailsScreenRoot(
                         appointmentDetails = currentAppointment,
                         onBackClick = {
                             showDetails = false
-                        })
+                        }
+                    )
+                }
+
+                SlideInScreen(showAddRecords) {
+                    expandedCardId?.let { it1 ->
+//                        UploadAppointmentRecords(
+//                            appointmentId = it1,
+//                            onBackClick = {
+//                                showAddRecords = false
+//                            },
+//                            onSuccessfulUpload = {
+//                                showAddRecords = false
+//                            }
+//                        )
+                        AllAppointmentRecordsRoot(appointmentId = it1,
+                            onBackClick = {
+                                showAddRecords = false
+                            })
+                    }
                 }
             }
         }
@@ -169,6 +196,7 @@ fun BookingCard(
     isExpanded: Boolean,
     onExpand: () -> Unit,
     onCollapse: () -> Unit,
+    onUploadRecords: () -> Unit
 ) {
     Card(
         modifier = Modifier
@@ -307,13 +335,28 @@ fun BookingCard(
                 }
                 // Common "Details" button for all statuses
                 Spacer(modifier = Modifier.height(8.dp))
-                OutlinedButton(
-                    onClick = { onDetailsClick() },
-                    colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Black),
-                    border = BorderStroke(1.dp, SecondaryAppColor),
-                    modifier = Modifier.fillMaxWidth()
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth(),
                 ) {
-                    Text(text = "Details", fontSize = 15.sp)
+                    OutlinedButton(
+                        onClick = { onDetailsClick() },
+                        colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Black),
+                        border = BorderStroke(1.dp, SecondaryAppColor),
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Text(text = "Details", fontSize = 15.sp)
+                    }
+
+                    OutlinedButton(
+                        onClick = { onUploadRecords() },
+                        colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Black),
+                        border = BorderStroke(1.dp, SecondaryAppColor),
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Text(text = "Upload Records", fontSize = 15.sp)
+                    }
                 }
             }
         }
