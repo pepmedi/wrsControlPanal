@@ -4,6 +4,7 @@ import BackgroundColors
 import PrimaryAppColor
 import SecondaryAppColor
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
@@ -70,6 +71,7 @@ fun AppointmentsScreenRoot(viewModal: AppointmentsViewModel = koinViewModel()) {
     )
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun AppointmentsScreen(
     uiState: AppointmentsUiState
@@ -136,6 +138,10 @@ fun AppointmentsScreen(
                                 val doctor = appointment.doctor
                                 BookingCard(
                                     doctor = doctor,
+                                    modifier = Modifier.animateItem(
+                                        fadeInSpec = null,
+                                        fadeOutSpec = null
+                                    ),
                                     appointment = appointment.appointment,
                                     onCancel = {},
                                     onReschedule = {},
@@ -189,6 +195,7 @@ fun AppointmentsScreen(
 @Composable
 fun BookingCard(
     doctor: DoctorMaster,
+    modifier: Modifier,
     appointment: AppointmentBookingMaster,
     onCancel: () -> Unit,
     onReschedule: () -> Unit,
@@ -199,7 +206,7 @@ fun BookingCard(
     onUploadRecords: () -> Unit
 ) {
     Card(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 15.dp, vertical = 5.dp)
             .then(

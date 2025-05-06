@@ -1,4 +1,6 @@
+import org.gradle.internal.impldep.jcifs.Config.load
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
+import java.util.Properties
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -7,11 +9,21 @@ plugins {
     alias(libs.plugins.jetbrains.kotlin.serialization)
 }
 
+version = "1.0.1"
+
+val localProps = Properties().apply {
+    file("local.properties").takeIf { it.exists() }?.inputStream()?.use { load(it) }
+}
+
+val BASE_URL = localProps.getProperty("BASE_URL") ?: "https://fallback.com"
+
 kotlin {
     jvm("desktop")
 
     sourceSets {
-        val desktopMain by getting
+        val desktopMain by getting{
+            kotlin.srcDirs("build/generated/kmpConfig")
+        }
 
         commonMain.dependencies {
             implementation(compose.runtime)
@@ -38,6 +50,7 @@ kotlin {
 
             implementation(libs.sonner)
         }
+
         desktopMain.dependencies {
             implementation(compose.desktop.currentOs)
             implementation(libs.kotlinx.coroutines.swing)
@@ -57,8 +70,63 @@ compose.desktop {
         mainClass = "com.wrscpanel.in.MainKt"
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
-            packageName = "com.wrscpanel.in"
+            packageName = "WrsControlPanel"
             packageVersion = "1.0.0"
+
+            windows {
+                iconFile.set(project.file(".../wrs_logo.png"))
+            }
+
+            macOS {
+                iconFile.set(project.file("src/desktopMain/resources/wrs_logo.icns"))
+                bundleID = "com.wrscpanel.in"
+                signing {
+                    sign.set(true)
+                    identity.set("Developer ID Application: PEPMEDIA (FBU9XLJ353)")
+                }
+
+                notarization {
+                    appleID.set("pepmediapp@icloud.com")
+                    password.set(System.getenv("APPLE_APP_SPECIFIC_PASSWORD"))
+                    teamID.set("FBU9XLJ353")
+                }
+            }
         }
     }
+}
+
+// Generate Config.kt with the BASE_URL constant
+tasks.register("generateKmpConfig") {
+    val outputDir = file("build/generated/kmpConfig")
+    inputs.property("BASE_URL", BASE_URL)
+    outputs.dir(outputDir)
+
+    doLast {
+        val file = outputDir.resolve("Config.kt")
+        file.writeText("""
+            package com.wrscpanel.`in`.config
+
+            object Config {
+                const val BASE_URL = "$BASE_URL"
+            }
+        """.trimIndent())
+    }
+}
+
+tasks.named("compileKotlinDesktop") {
+    dependsOn("generateKmpConfig")
+}
+
+
+// getting the version from gradle.properties
+val generateBuildProperties by tasks.registering {
+    val outputFile = file("src/desktopMain/resources/build.properties")
+    outputs.file(outputFile)
+    doLast {
+        outputFile.writeText("version=${project.version}")
+    }
+}
+
+tasks.named("desktopProcessResources") {
+    dependsOn(generateBuildProperties)
 }

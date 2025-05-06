@@ -46,7 +46,6 @@ import wrscontrolpanel.composeapp.generated.resources.Res
 import wrscontrolpanel.composeapp.generated.resources.visibility
 import wrscontrolpanel.composeapp.generated.resources.visibilityoff
 
-
 @Composable
 fun LoginScreen(
     loginViewModel: LoginViewModel = koinViewModel(),

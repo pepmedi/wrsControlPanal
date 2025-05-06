@@ -33,12 +33,10 @@ import component.GradientButton
 import core.CancelButton
 import core.FileSelector
 import doctor.screen.components.TextInputField
-import documents.PatientDocumentRepositoryImpl
 import documents.modal.PatientMedicalRecordsMaster
 import documents.viewModal.UploadAppointmentRecordsViewModal
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import org.koin.compose.getKoin
 import org.koin.compose.viewmodel.koinViewModel
 import util.ToastEvent
 import util.getCurrentTimeStamp
