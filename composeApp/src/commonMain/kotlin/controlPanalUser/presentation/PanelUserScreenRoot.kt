@@ -81,6 +81,7 @@ fun PanelUserScreen(
                             items(items = uiState.users) { users ->
                                 UsersItemCard(
                                     userMaster = users,
+                                    modifier = Modifier.animateItem(),
                                     isExpanded = expandedCardId == users.id,
                                     onExpand = { expandedCardId = users.id },
                                     onCollapse = { expandedCardId = null },
@@ -125,6 +126,7 @@ fun PanelUserScreen(
 @Composable
 fun UsersItemCard(
     userMaster: UserMasterControlPanel,
+    modifier: Modifier,
     isExpanded: Boolean,
     onExpand: () -> Unit,
     onCollapse: () -> Unit,
@@ -144,7 +146,7 @@ fun UsersItemCard(
     }
 
     Card(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .padding(vertical = 4.dp)
             .clickable(

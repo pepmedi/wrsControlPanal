@@ -51,13 +51,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import appointment.domain.AppointmentBookingMaster
-import component.SlideInBottomSheet
 import component.SlideInScreen
 import controlPanalUser.domain.UserRole
 import controlPanalUser.repository.SessionManager
 import doctor.domain.DoctorMaster
 import documents.screen.AllAppointmentRecordsRoot
-import documents.screen.UploadAppointmentRecords
 import hexToComposeColor
 import org.koin.compose.viewmodel.koinViewModel
 import util.Util.toNameFormat
@@ -71,7 +69,6 @@ fun AppointmentsScreenRoot(viewModal: AppointmentsViewModel = koinViewModel()) {
     )
 }
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun AppointmentsScreen(
     uiState: AppointmentsUiState

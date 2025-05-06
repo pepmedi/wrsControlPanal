@@ -13,6 +13,9 @@ object DatabaseCollection {
     const val PATIENTs_MEDICAL_RECORDS = "patientMedicalRecords"
 }
 
+object AuthKey {
+    const val AUTH_KEY = "auth"
+}
 object StorageCollection {
     const val DOCTOR_IMAGES = "doctorImages"
     const val SERVICE_IMAGES = "serviceImages"

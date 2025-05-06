@@ -36,7 +36,8 @@ class LoginRepositoryImpl(private val httpClient: HttpClient) : LoginRepository 
                 collection = DatabaseCollection.PANEL_USER,
                 conditions = mapOf(
                     "userName" to username,
-                    "password" to password
+                    "password" to password,
+                    "isActive" to "0"
                 )
             )
             val response: HttpResponse = httpClient.post(DatabaseUtil.DATABASE_QUERY_URL) {
@@ -54,7 +55,7 @@ class LoginRepositoryImpl(private val httpClient: HttpClient) : LoginRepository 
                 val documents = databaseResponses.mapNotNull { it.document }
 
                 if (documents.isEmpty()) {
-                   return AppResult.Error(DataError.Remote.SERVER)
+                    return AppResult.Error(DataError.Remote.SERVER)
                 }
 
                 val id = documents.first().name.substringAfterLast("/")
@@ -90,17 +91,17 @@ class LoginRepositoryImpl(private val httpClient: HttpClient) : LoginRepository 
                         }
 
                         is AppResult.Error -> {
-                           return AppResult.Error(result.error)
+                            return AppResult.Error(result.error)
                         }
                     }
                 }
             } else {
-               return AppResult.Error(DataError.Remote.SERVER)
+                return AppResult.Error(DataError.Remote.SERVER)
             }
         } catch (e: Exception) {
             e.printStackTrace()
             println(e.localizedMessage)
-           return AppResult.Error(DataError.Remote.SERVER)
+            return AppResult.Error(DataError.Remote.SERVER)
         }
         return AppResult.Error(DataError.Remote.SERVER)
     }
