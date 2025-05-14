@@ -53,7 +53,11 @@ import util.getCurrentTimeStamp
 import java.io.File
 
 @Composable
-fun AddDoctorScreen(viewModal: AddDoctorViewModel = koinViewModel(), onBackClick: () -> Unit) {
+fun AddDoctorScreen(
+    viewModal: AddDoctorViewModel = koinViewModel(),
+    onBackClick: () -> Unit,
+    onDoctorAdded: (DoctorMaster) -> Unit
+) {
 
     val doctorSubmissionState by viewModal.doctorSubmissionState.collectAsStateWithLifecycle()
     val hospitalListState = viewModal.hospitalList.collectAsStateWithLifecycle()
@@ -90,7 +94,8 @@ fun AddDoctorScreen(viewModal: AddDoctorViewModel = koinViewModel(), onBackClick
 
 
     LaunchedEffect(doctorSubmissionState) {
-        if (doctorSubmissionState is DoctorSubmissionState.Success) {
+        val state = doctorSubmissionState
+        if (state is DoctorSubmissionState.Success) {
             viewModal.resetSubmissionState() // Reset state
             toaster.show(
                 message = "Doctor Added Successfully",
@@ -102,6 +107,7 @@ fun AddDoctorScreen(viewModal: AddDoctorViewModel = koinViewModel(), onBackClick
                     }
                 )
             )
+            onDoctorAdded(state.doctor)
             onBackClick() // Navigate back
         }
     }

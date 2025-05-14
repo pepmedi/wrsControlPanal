@@ -1,6 +1,7 @@
 package com.wrscpanel.`in`
 
 import DATA_STORE_FILE_NAME
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -13,7 +14,24 @@ import controlPanalUser.domain.UserRole
 import controlPanalUser.repository.SessionManager
 import createDataStore
 import dashboard.DashboardApp
+import io.ktor.client.HttpClient
+import io.ktor.client.request.header
+import io.ktor.client.request.post
+import io.ktor.client.request.setBody
+import io.ktor.client.statement.bodyAsText
+import io.ktor.http.ContentType
+import io.ktor.http.HttpHeaders
+import io.ktor.http.contentType
 import login.presentation.LoginScreen
+import util.DatabaseCollection
+import util.DatabaseUtil
+import io.ktor.client.*
+
+import io.ktor.client.request.*
+import io.ktor.client.statement.*
+import io.ktor.http.*
+import kotlinx.serialization.json.*
+import kotlinx.coroutines.*
 
 fun main() {
     val prefs = createDataStore {
@@ -35,6 +53,9 @@ fun main() {
 //            App(
 //                prefs = prefs
 //            )
+//            LaunchedEffect(Unit) {
+//                getTotalAppointmentCount()
+//            }
             var isLoggedIn by remember { mutableStateOf(SessionManager.currentUser != null) }
 //
             if (isLoggedIn && SessionManager.currentUser != null) {
@@ -58,3 +79,47 @@ fun main() {
         }
     }
 }
+
+
+//suspend fun getTotalAppointmentCount() {
+//    try {
+        val BASe_URL = DatabaseUtil.DATABASE_URL
+        val appointment = DatabaseCollection.APPOINTMENTS
+        val client = HttpClient()
+//
+//        val requestBody = buildJsonObject {
+//            putJsonObject("structuredAggregationQuery") {
+//                putJsonArray("aggregations") {
+//                    add(buildJsonObject { putJsonObject("count") {}; put("alias", "count") })
+//                }
+//                putJsonObject("structuredQuery") {
+//                    putJsonArray("from") {
+//                        add(buildJsonObject { put("collectionId", appointment) })
+//                    }
+//                }
+//            }
+//        }
+//
+//        val response = client.post("$BASe_URL:runAggregationQuery") {
+//            contentType(ContentType.Application.Json)
+//            setBody(requestBody.toString())
+//        }
+//
+//        val resultArray = Json.parseToJsonElement(response.bodyAsText()).jsonArray
+//        val countString = resultArray
+//            .firstOrNull()
+//            ?.jsonObject?.get("result")
+//            ?.jsonObject?.get("aggregateFields")
+//            ?.jsonObject?.get("count")
+//            ?.jsonObject?.get("integerValue")
+//            ?.jsonPrimitive?.content
+//
+//        val count = countString?.toIntOrNull() ?: 0
+//        println("🔥 Appointment count: $count")
+//
+//        client.close()
+//    } catch (e: Exception) {
+//        e.printStackTrace()
+//        println(e.localizedMessage)
+//    }
+//}

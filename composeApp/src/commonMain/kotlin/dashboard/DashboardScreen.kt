@@ -26,26 +26,26 @@ fun DashboardScreenUi() {
     var imageBitmap by remember { mutableStateOf<ImageBitmap?>(null) }
     var fileName by remember { mutableStateOf("") }
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color.White),
-        contentAlignment = Alignment.Center
-    ) {
-        Card(
-            elevation = CardDefaults.cardElevation(8.dp),
-            shape = RoundedCornerShape(16.dp),
-            modifier = Modifier.padding(16.dp)
-                .align(Alignment.TopStart)
-        ) {
-            FileSelector(
-                imageBitmap = imageBitmap,
-                fileName = fileName,
-                errorMessage = { },
-                onFileSelected = { _,_ -> },
-            )
-        }
-    }
+//    Box(
+//        modifier = Modifier
+//            .fillMaxSize()
+//            .background(Color.White),
+//        contentAlignment = Alignment.Center
+//    ) {
+//        Card(
+//            elevation = CardDefaults.cardElevation(8.dp),
+//            shape = RoundedCornerShape(16.dp),
+//            modifier = Modifier.padding(16.dp)
+//                .align(Alignment.TopStart)
+//        ) {
+//            FileSelector(
+//                imageBitmap = imageBitmap,
+//                fileName = fileName,
+//                errorMessage = { },
+//                onFileSelected = { _,_ -> },
+//            )
+//        }
+//    }
 }
 
 

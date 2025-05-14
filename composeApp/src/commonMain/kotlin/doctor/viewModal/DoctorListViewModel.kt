@@ -27,7 +27,7 @@ class DoctorListViewModel(private val doctorRepository: DoctorRepository) : View
 
     fun onAction(action: DoctorListActions) {
         when (action) {
-            is DoctorListActions.OnDoctorUpdate -> {
+            is DoctorListActions.OnDoctorUpdated -> {
                 _state.update {
                     it.copy(doctorList = it.doctorList.map { doctor ->
                         if (doctor.id == action.doctor.id) {
@@ -36,6 +36,12 @@ class DoctorListViewModel(private val doctorRepository: DoctorRepository) : View
                             doctor
                         }
                     })
+                }
+            }
+
+            is DoctorListActions.OnDoctorAdded -> {
+                _state.update {
+                    it.copy(doctorList = it.doctorList + action.doctor)
                 }
             }
         }
@@ -75,5 +81,6 @@ data class DoctorListUiState(
 )
 
 sealed interface DoctorListActions {
-    data class OnDoctorUpdate(val doctor: DoctorMaster) : DoctorListActions
+    data class OnDoctorUpdated(val doctor: DoctorMaster) : DoctorListActions
+    data class OnDoctorAdded(val doctor: DoctorMaster) : DoctorListActions
 }

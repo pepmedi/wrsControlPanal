@@ -81,7 +81,7 @@ class DoctorRepositoryImpl(private val httpClient: HttpClient) : DoctorRepositor
     override suspend fun addDoctorToDatabase(
         doctor: DoctorMaster,
         imageFile: File
-    ): Flow<AppResult<Unit, DataError.Remote>> =
+    ): Flow<AppResult<DoctorMaster, DataError.Remote>> =
         flow {
             val url = "$BASE_URL/${DatabaseCollection.DOCTORS}"
             try {
@@ -169,7 +169,11 @@ class DoctorRepositoryImpl(private val httpClient: HttpClient) : DoctorRepositor
                         }
 
                     if (patchImageResponse.status == HttpStatusCode.OK) {
-                        emit(AppResult.Success(Unit))
+                        val updatedDoctor = doctor.copy(
+                            id = generatedId,
+                            profilePic = downloadUrl
+                        )
+                        emit(AppResult.Success(updatedDoctor))
                     } else {
                         emit(AppResult.Error(DataError.Remote.SERVER))
                     }

@@ -7,7 +7,10 @@ import core.domain.DataError
 import core.domain.AppResult
 import io.ktor.client.HttpClient
 import io.ktor.client.request.get
+import io.ktor.client.request.patch
+import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
+import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -15,8 +18,10 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import util.DatabaseCollection
 import util.DatabaseDocumentsResponse
+import util.DatabaseRequest
 import util.DatabaseUtil
 import util.DatabaseValue
+import util.buildUpdateMask
 
 private const val BASE_URL = "${DatabaseUtil.DATABASE_URL}/${DatabaseCollection.APPOINTMENTS}"
 
@@ -65,5 +70,37 @@ class AppointmentBookingRepositoryImpl(private val httpClient: HttpClient) :
             }
         }.flowOn(Dispatchers.IO)
 
+    override suspend fun updateAppointmentStatus(
+        appointmentId: String,
+        status: String
+    ): Flow<AppResult<Boolean, DataError.Remote>> =
+        flow {
+            val url =
+                "${DatabaseUtil.DATABASE_URL}/${DatabaseCollection.APPOINTMENTS}/$appointmentId?${
+                    buildUpdateMask("status")
+                }"
+            try {
+                val patchResponse = httpClient.patch(url) {
+                    contentType(ContentType.Application.Json)
+                    setBody(
+                        DatabaseRequest(
+                            fields = mapOf(
+                                "status" to DatabaseValue.StringValue(status)
+                            )
+                        )
+                    )
+                }
+
+                if (patchResponse.status == HttpStatusCode.OK) {
+                    emit(AppResult.Success(true))
+                } else {
+                    emit(AppResult.Error(DataError.Remote.SERVER))
+                }
+
+            } catch (e: Exception) {
+                emit(AppResult.Error(DataError.Remote.SERVER))
+                println(e.localizedMessage)
+            }
+        }.flowOn(Dispatchers.IO)
 
 }

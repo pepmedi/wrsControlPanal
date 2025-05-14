@@ -26,16 +26,28 @@ class AddDoctorViewModel(
 ) : ViewModel() {
 
     private val _doctorList =
-        MutableStateFlow<AppResult<List<DoctorMaster>, DataError.Remote>>(AppResult.Success(emptyList()))
+        MutableStateFlow<AppResult<List<DoctorMaster>, DataError.Remote>>(
+            AppResult.Success(
+                emptyList()
+            )
+        )
     val doctorList: StateFlow<AppResult<List<DoctorMaster>, DataError.Remote>> get() = _doctorList
 
     private val _hospitalList =
-        MutableStateFlow<AppResult<List<HospitalMaster>, DataError.Remote>>(AppResult.Success(emptyList()))
+        MutableStateFlow<AppResult<List<HospitalMaster>, DataError.Remote>>(
+            AppResult.Success(
+                emptyList()
+            )
+        )
 
     val hospitalList: StateFlow<AppResult<List<HospitalMaster>, DataError.Remote>> get() = _hospitalList
 
     private val _servicesList =
-        MutableStateFlow<AppResult<List<ServicesMaster>, DataError.Remote>>(AppResult.Success(emptyList()))
+        MutableStateFlow<AppResult<List<ServicesMaster>, DataError.Remote>>(
+            AppResult.Success(
+                emptyList()
+            )
+        )
 
     val servicesList: StateFlow<AppResult<List<ServicesMaster>, DataError.Remote>> get() = _servicesList
 
@@ -106,7 +118,7 @@ class AddDoctorViewModel(
             doctorRepository.addDoctorToDatabase(doctorsMaster, file)
                 .collect { result ->
                     _doctorSubmissionState.value = when (result) {
-                        is AppResult.Success -> DoctorSubmissionState.Success
+                        is AppResult.Success -> DoctorSubmissionState.Success(result.data)
                         is AppResult.Error -> DoctorSubmissionState.Error(result.error)
                     }
                 }

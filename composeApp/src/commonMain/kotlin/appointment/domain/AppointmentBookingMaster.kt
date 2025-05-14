@@ -6,7 +6,7 @@ data class AppointmentBookingMaster(
     val doctorId: String = "",
     val slotId: List<String> = emptyList(),
     val dates: List<String> = emptyList(),
-    val status: String = "", // 0 -> completed , 1 -> Cancel , 2 -> Hold , 3-> upcoming
+    val status: String = "", // 0 -> completed , 1 -> Cancel , 2 ->  for c-panel waiting and for user hold , 3-> upcoming
     val patientName: String = "",
     val age: String = "",
     val gender: String = "",
