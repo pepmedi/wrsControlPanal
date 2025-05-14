@@ -63,7 +63,7 @@ val sharedModule = module {
     viewModel { ServicesViewModel(get()) }
     viewModel { PanelUserCreationViewModel(get(), get()) }
     viewModel { LoginViewModel(get()) }
-    viewModel { AppointmentsViewModel(get(), get(), get()) }
+    viewModel { AppointmentsViewModel(get(), get()) }
     viewModel { PanelUserScreenViewModel(get()) }
     viewModel { AppointmentDetailsViewModel(get()) }
     viewModel { AddSlotsViewModel(get()) }

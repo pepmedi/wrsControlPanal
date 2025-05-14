@@ -116,7 +116,8 @@ fun UpdateInfoScreen() {
             SlideInScreen(addDoctorUiScreen) {
                 AddDoctorScreen(onBackClick = {
                     addDoctorUiScreen = false
-                })
+                },
+                    onDoctorAdded = {})
             }
 
             SlideInScreen(addHospitalUiScreen) {

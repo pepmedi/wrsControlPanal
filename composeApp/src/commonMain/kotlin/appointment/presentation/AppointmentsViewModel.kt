@@ -3,7 +3,6 @@ package appointment.presentation
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import appUsers.User
-import appUsers.UserRepository
 import appointment.domain.AppointmentBookingMaster
 import appointment.domain.AppointmentBookingRepository
 import core.domain.AppResult
@@ -21,8 +20,7 @@ import kotlinx.coroutines.launch
 
 class AppointmentsViewModel(
     private val repository: AppointmentBookingRepository,
-    private val doctorRepository: DoctorRepository,
-    private val userRepository: UserRepository
+    private val doctorRepository: DoctorRepository
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(AppointmentsUiState())
     val uiState = _uiState.asStateFlow()
@@ -44,7 +42,6 @@ class AppointmentsViewModel(
                     is AppResult.Success -> {
                         val appointments = result.data.toMutableList()
                         val doctorIds = appointments.map { it.doctorId }.distinct()
-                        val userIds = appointments.map { it.userId }.distinct()
                         if (doctorIds.isNotEmpty()) {
                             fetchDoctorsDetails(doctorIds, appointments)
                         } else {
@@ -111,6 +108,57 @@ class AppointmentsViewModel(
         }
     }
 
+    fun onAction(action: AppointmentScreenAction) {
+        when (action) {
+            is AppointmentScreenAction.OnStatusChange -> {
+                viewModelScope.launch {
+                    repository.updateAppointmentStatus(
+                        appointmentId = action.appointmentId,
+                        status = action.status
+                    ).collect { result ->
+                        when (result) {
+                            is AppResult.Success -> {
+                                _uiState.update { currentState ->
+                                    val updatedAppointments =
+                                        currentState.appointments.map { appointment ->
+                                            if (appointment.id == action.appointmentId) {
+                                                appointment.copy(status = action.status)
+                                            } else {
+                                                appointment
+                                            }
+                                        }
+
+                                    val updatedAllAppointments =
+                                        updatedAppointments.map { appointment ->
+                                            AppointmentDetails(
+                                                appointment = appointment,
+                                                doctor = currentState.doctorMap[appointment.doctorId]
+                                                    ?: DoctorMaster()
+                                            )
+                                        }
+
+                                    currentState.copy(
+                                        appointments = updatedAppointments.toMutableList(),
+                                        allAppointment = updatedAllAppointments,
+                                        completedAppointment = updatedAllAppointments.filter { it.appointment.status == "0" }, // appointment completed
+                                        canceledAppointments = updatedAllAppointments.filter { it.appointment.status == "1" }, // appointment canceled
+                                        waitingAppointments = updatedAllAppointments.filter { it.appointment.status == "2" }, // appointment waiting for confirmation (not confirmed)
+                                        upcomingAppointment = updatedAllAppointments.filter { it.appointment.status == "3" }  // appointment confirmed and not completed
+                                    )
+                                }
+                            }
+
+                            is AppResult.Error -> {
+                                // You can update an error message in the UI state if needed
+                                _uiState.update { it.copy(error = "Failed to update status") }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
 }
 
 data class AppointmentsUiState(
@@ -130,3 +178,8 @@ data class AppointmentDetails(
     val doctor: DoctorMaster = DoctorMaster(),
     val user: User = User()
 )
+
+sealed interface AppointmentScreenAction {
+    data class OnStatusChange(val appointmentId: String, val status: String) :
+        AppointmentScreenAction
+}

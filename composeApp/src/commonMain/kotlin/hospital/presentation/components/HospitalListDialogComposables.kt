@@ -43,6 +43,7 @@ import core.CancelButton
 import core.domain.DataError
 import core.domain.AppResult
 import hospital.domain.HospitalMaster
+import util.Util.toNameFormat
 
 @Composable
 fun HospitalListDialog(
@@ -179,7 +180,7 @@ fun HospitalItem(
     ) {
         Row(modifier = Modifier.fillMaxWidth()) {
             Text(
-                text = hospital.name,
+                text = "${hospital.name.toNameFormat()} Hospital",
                 style = TextStyle(fontSize = 16.sp),
                 modifier = Modifier.padding(1.dp)
             )

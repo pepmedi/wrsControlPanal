@@ -3,6 +3,7 @@ package documents.screen
 import PrimaryAppColor
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -91,6 +92,7 @@ fun AllAppointmentRecordsRoot(
 
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun AllAppointmentRecords(
     appointmentId: String,
@@ -153,6 +155,10 @@ fun AllAppointmentRecords(
                                 key = { it.id }) { record ->
                                 MedicalRecordsCard(
                                     medicalRecord = record,
+                                    modifier = Modifier.animateItem(
+                                        fadeInSpec = null,
+                                        fadeOutSpec = null
+                                    ),
                                     isExpanded = expandedCardId == record.id,
                                     onExpand = { expandedCardId = record.id },
                                     onCollapse = { expandedCardId = null },
@@ -205,13 +211,14 @@ fun AllAppointmentRecords(
 @Composable
 fun MedicalRecordsCard(
     medicalRecord: PatientMedicalRecordsMaster,
+    modifier: Modifier,
     isExpanded: Boolean,
     onExpand: () -> Unit,
     onCollapse: () -> Unit,
     onShowClick: (PatientMedicalRecordsMaster) -> Unit
 ) {
     Card(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .padding(vertical = 5.dp)
             .shadow(8.dp, RoundedCornerShape(16.dp))

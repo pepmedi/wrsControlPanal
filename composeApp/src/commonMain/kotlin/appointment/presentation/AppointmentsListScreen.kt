@@ -4,9 +4,11 @@ import BackgroundColors
 import PrimaryAppColor
 import SecondaryAppColor
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -44,19 +46,18 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import appointment.domain.AppointmentBookingMaster
-import component.SlideInBottomSheet
 import component.SlideInScreen
 import controlPanalUser.domain.UserRole
 import controlPanalUser.repository.SessionManager
 import doctor.domain.DoctorMaster
 import documents.screen.AllAppointmentRecordsRoot
-import documents.screen.UploadAppointmentRecords
 import hexToComposeColor
 import org.koin.compose.viewmodel.koinViewModel
 import util.Util.toNameFormat
@@ -66,13 +67,17 @@ fun AppointmentsScreenRoot(viewModal: AppointmentsViewModel = koinViewModel()) {
 
     val uiState by viewModal.uiState.collectAsStateWithLifecycle(initialValue = AppointmentsUiState())
     AppointmentsScreen(
-        uiState = uiState
+        uiState = uiState,
+        onAction = { action ->
+            viewModal.onAction(action)
+        }
     )
 }
 
 @Composable
 fun AppointmentsScreen(
-    uiState: AppointmentsUiState
+    uiState: AppointmentsUiState,
+    onAction: (AppointmentScreenAction) -> Unit
 ) {
     val tabs = listOf("All", "Waiting", "Completed", "Upcoming", "Cancelled")
     var selectedTab by remember { mutableStateOf(0) }
@@ -136,9 +141,35 @@ fun AppointmentsScreen(
                                 val doctor = appointment.doctor
                                 BookingCard(
                                     doctor = doctor,
+                                    modifier = Modifier.animateItem(
+                                        fadeInSpec = null,
+                                        fadeOutSpec = null
+                                    ),
                                     appointment = appointment.appointment,
-                                    onCancel = {},
-                                    onReschedule = {},
+                                    onCancel = {
+                                        onAction(
+                                            AppointmentScreenAction.OnStatusChange(
+                                                appointment.appointment.id,
+                                                "1"
+                                            )
+                                        )
+                                    },
+                                    onConfirm = {
+                                        onAction(
+                                            AppointmentScreenAction.OnStatusChange(
+                                                appointment.appointment.id,
+                                                "3"
+                                            )
+                                        )
+                                    },
+                                    onCompleted = {
+                                        onAction(
+                                            AppointmentScreenAction.OnStatusChange(
+                                                appointmentId = appointment.appointment.id,
+                                                status = "0"
+                                            )
+                                        )
+                                    },
                                     onDetailsClick = {
                                         currentAppointment = appointment
                                         showDetails = true
@@ -166,15 +197,6 @@ fun AppointmentsScreen(
 
                 SlideInScreen(showAddRecords) {
                     expandedCardId?.let { it1 ->
-//                        UploadAppointmentRecords(
-//                            appointmentId = it1,
-//                            onBackClick = {
-//                                showAddRecords = false
-//                            },
-//                            onSuccessfulUpload = {
-//                                showAddRecords = false
-//                            }
-//                        )
                         AllAppointmentRecordsRoot(appointmentId = it1,
                             onBackClick = {
                                 showAddRecords = false
@@ -189,22 +211,31 @@ fun AppointmentsScreen(
 @Composable
 fun BookingCard(
     doctor: DoctorMaster,
+    modifier: Modifier,
     appointment: AppointmentBookingMaster,
     onCancel: () -> Unit,
-    onReschedule: () -> Unit,
+    onConfirm: () -> Unit,
+    onCompleted: () -> Unit,
     onDetailsClick: () -> Unit,
     isExpanded: Boolean,
     onExpand: () -> Unit,
     onCollapse: () -> Unit,
     onUploadRecords: () -> Unit
 ) {
+    val interactionSource = remember { MutableInteractionSource() }
     Card(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 15.dp, vertical = 5.dp)
+            .shadow(6.dp, RoundedCornerShape(12.dp), clip = false)
             .then(
-                if (isExpanded) Modifier.clickable(onClick = { onCollapse() }) else Modifier.clickable(
-                    onClick = { onExpand() })
+                Modifier.clickable(
+                    interactionSource = interactionSource,
+                    indication = LocalIndication.current, // default ripple
+                    onClick = {
+                        if (isExpanded) onCollapse() else onExpand()
+                    }
+                )
             ),
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
@@ -272,37 +303,37 @@ fun BookingCard(
                 when (appointment.status) {
                     "0" -> { // Completed
 
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(
-                                12.dp,
-                                Alignment.CenterHorizontally
-                            )
-                        ) {
-                            OutlinedButton(
-                                onClick = {},
-                                colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Blue),
-                                border = BorderStroke(1.dp, SecondaryAppColor),
-                                modifier = Modifier.weight(1f)
-                            ) {
-                                Text(text = "Reschedule", color = Color.Black, fontSize = 15.sp)
-                            }
+//                        Row(
+//                            modifier = Modifier.fillMaxWidth(),
+//                            horizontalArrangement = Arrangement.spacedBy(
+//                                12.dp,
+//                                Alignment.CenterHorizontally
+//                            )
+//                        ) {
+//                            OutlinedButton(
+//                                onClick = { onConfirm() },
+//                                colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Blue),
+//                                border = BorderStroke(1.dp, SecondaryAppColor),
+//                                modifier = Modifier.weight(1f)
+//                            ) {
+//                                Text(text = "Confirm", color = Color.Black, fontSize = 15.sp)
+//                            }
 
-                            OutlinedButton(
-                                onClick = {},
-                                colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Blue),
-                                border = BorderStroke(1.dp, SecondaryAppColor),
-                                modifier = Modifier.weight(1f)
-                            ) {
-                                Text(text = "Add Review", color = Color.Black, fontSize = 15.sp)
-                            }
-                        }
+//                            OutlinedButton(
+//                                onClick = {},
+//                                colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Blue),
+//                                border = BorderStroke(1.dp, SecondaryAppColor),
+//                                modifier = Modifier.weight(1f)
+//                            ) {
+//                                Text(text = "Add Review", color = Color.Black, fontSize = 15.sp)
+//                            }
+//                        }
                     }
 
                     "1" -> { /* Canceled - No Buttons */
                     }
 
-                    "2", "3" -> { // Hold or Upcoming → Show Re-Book
+                    "2" -> { // waiting
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.spacedBy(
@@ -311,7 +342,7 @@ fun BookingCard(
                             )
                         ) {
                             OutlinedButton(
-                                onClick = {},
+                                onClick = { onCancel() },
                                 colors = ButtonDefaults.outlinedButtonColors(
                                     contentColor = Color.Black,
                                     containerColor = hexToComposeColor("#E5E7EB")
@@ -319,16 +350,47 @@ fun BookingCard(
                                 border = BorderStroke(1.dp, SecondaryAppColor),
                                 modifier = Modifier.weight(1f)
                             ) {
-                                Text(text = "Canceled", color = Color.Black, fontSize = 15.sp)
+                                Text(text = "Cancel", color = Color.Black, fontSize = 15.sp)
                             }
 
                             OutlinedButton(
-                                onClick = {},
+                                onClick = { onConfirm() },
                                 colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Blue),
                                 border = BorderStroke(1.dp, SecondaryAppColor),
                                 modifier = Modifier.weight(1f)
                             ) {
-                                Text(text = "Reschedule", color = Color.Black, fontSize = 15.sp)
+                                Text(text = "Confirm", color = Color.Black, fontSize = 15.sp)
+                            }
+                        }
+                    }
+
+                    "3" -> {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(
+                                12.dp,
+                                Alignment.CenterHorizontally
+                            )
+                        ) {
+                            OutlinedButton(
+                                onClick = { onCancel() },
+                                colors = ButtonDefaults.outlinedButtonColors(
+                                    contentColor = Color.Black,
+                                    containerColor = hexToComposeColor("#E5E7EB")
+                                ),
+                                border = BorderStroke(1.dp, SecondaryAppColor),
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                Text(text = "Cancel", color = Color.Black, fontSize = 15.sp)
+                            }
+
+                            OutlinedButton(
+                                onClick = { onCompleted() },
+                                colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Blue),
+                                border = BorderStroke(1.dp, SecondaryAppColor),
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                Text(text = "Completed", color = Color.Black, fontSize = 15.sp)
                             }
                         }
                     }

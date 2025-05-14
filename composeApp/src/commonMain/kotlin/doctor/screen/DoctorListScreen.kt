@@ -160,7 +160,10 @@ fun DoctorListScreen(
         SlideInScreen(visible = addDoctorUiScreen) {
             AddDoctorScreen(onBackClick = {
                 addDoctorUiScreen = false
-            })
+            },
+                onDoctorAdded = {
+                    onAction(DoctorListActions.OnDoctorAdded(it))
+                })
         }
 
         SlideInScreen(visible = showUpdateDoctorScreen) {
@@ -168,6 +171,7 @@ fun DoctorListScreen(
                 showUpdateDoctorScreen = false
             },
                 onSuccessful = {
+                    onAction(DoctorListActions.OnDoctorUpdated(it))
                     toasterEvent(ToastEvent("Doctor Updated Successfully"))
                 })
         }
