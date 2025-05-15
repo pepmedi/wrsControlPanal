@@ -114,6 +114,8 @@ fun AddBlogScreen(
     val scope = rememberCoroutineScope()
     var snackBarMessage by remember { mutableStateOf("") }
 
+    var showDoctorList by remember { mutableStateOf(false) }
+
     Box(
         modifier = Modifier.fillMaxSize().background(Color.White).padding(10.dp),
         contentAlignment = Alignment.Center
@@ -140,7 +142,10 @@ fun AddBlogScreen(
 
             TextInputField(
                 value = uiState.doctor.name.toNameFormat(),
-                onValueChange = { onAction(AddBlogAction.OnShowDoctorListClicked(true)) },
+                onValueChange = {
+                    onAction(AddBlogAction.OnShowDoctorListClicked(true))
+                    showDoctorList = true
+                },
                 label = "Doctor Name",
                 enabled = false,
                 icon = Icons.Default.Person
@@ -179,10 +184,14 @@ fun AddBlogScreen(
             CancelButton({ onAction(AddBlogAction.OnCancel) })
         }
 
-        if (uiState.showDoctorList) {
-            DoctorListDialog(doctorList = uiState.doctorList,
-                onDismiss = { onAction(AddBlogAction.OnShowDoctorListClicked(false)) },
-                onSubmit = { onAction(AddBlogAction.OnDoctorChange(it)) })
-        }
+    }
+    if (showDoctorList) {
+        DoctorListDialog(
+            doctorList = uiState.doctorList,
+            onDismiss = {
+                onAction(AddBlogAction.OnShowDoctorListClicked(false))
+                showDoctorList = false
+            },
+            onSubmit = { onAction(AddBlogAction.OnDoctorChange(it)) })
     }
 }

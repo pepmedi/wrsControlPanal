@@ -115,14 +115,15 @@ data class AddBlogState(
     val doctorList: List<DoctorMaster> = emptyList(),
 ) {
     val isFormValid: Boolean
-        get() = title.isNotBlank() && blogDescription.isNotBlank() && imageFile != null && doctor.id.isNotBlank()
+        get() = title.isNotBlank() && blogDescription.isNotBlank() && imageFile != null
+//                && doctor.id.isNotBlank()
 
     fun getError(): String {
         return when {
             title.isBlank() -> "Title is required"
             blogDescription.isBlank() -> "Description is required"
             imageFile == null -> "Image is required"
-            doctor.id.isBlank() -> "Doctor is required"
+//            doctor.id.isBlank() -> "Doctor is required"
             else -> ""
         }
     }

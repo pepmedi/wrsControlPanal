@@ -55,8 +55,8 @@ class UpdateDoctorViewModel(
                 _state.update { it.copy(doctorDetails = it.doctorDetails.copy(experience = action.experience)) }
             }
 
-            is UpdateDoctorActions.OnConsultationFeeChange -> {
-                _state.update { it.copy(doctorDetails = it.doctorDetails.copy(consltFee = action.fee)) }
+            is UpdateDoctorActions.OnQualificationChange -> {
+                _state.update { it.copy(doctorDetails = it.doctorDetails.copy(qualification = action.qualification)) }
             }
 
             is UpdateDoctorActions.OnHospitalChange -> {
@@ -112,6 +112,7 @@ class UpdateDoctorViewModel(
                         hospital = _state.value.selectedHospitals.map { it.id },
                         services = _state.value.selectedServices.map { it.id },
                         slots = _state.value.selectedSlots.map { it.id },
+                        qualification = doctorState.qualification,
                         updatedAt = getCurrentTimeStamp()
                     ),
                     imageFile = _state.value.profilePicChange
@@ -119,10 +120,16 @@ class UpdateDoctorViewModel(
                 .collect { result ->
                     when (result) {
                         is AppResult.Success -> {
-                            if(result.data == null){
+                            if (result.data == null) {
                                 _state.update { it.copy(isUpdating = false, isSuccessful = true) }
-                            }else {
-                                _state.update { it.copy(doctorDetails = doctorState.copy(profilePic = result.data), isUpdating = false, isSuccessful = false) }
+                            } else {
+                                _state.update {
+                                    it.copy(
+                                        doctorDetails = doctorState.copy(profilePic = result.data),
+                                        isUpdating = false,
+                                        isSuccessful = false
+                                    )
+                                }
                             }
                         }
 
@@ -246,7 +253,7 @@ data class UpdateDoctorUiState(
     val isFormValid: Boolean
         get() = selectedHospitals.isNotEmpty() && selectedServices.isNotEmpty()
                 && selectedSlots.isNotEmpty() && doctorDetails.name.isNotEmpty()
-                && doctorDetails.age.isNotEmpty() && doctorDetails.consltFee.isNotEmpty()
+                && doctorDetails.age.isNotEmpty() && doctorDetails.qualification.isNotEmpty()
                 && doctorDetails.experience.isNotEmpty() && doctorDetails.profilePic.isNotEmpty()
 
     fun getErrorMessage(): String {
@@ -256,7 +263,7 @@ data class UpdateDoctorUiState(
             selectedSlots.isEmpty() -> "Please select at least one slot."
             doctorDetails.name.isEmpty() -> "Doctor name cannot be empty."
             doctorDetails.age.isEmpty() -> "Doctor age cannot be empty."
-            doctorDetails.consltFee.isEmpty() -> "Consultation fee cannot be empty."
+            doctorDetails.qualification.isEmpty() -> "Qualification fee cannot be empty."
             doctorDetails.experience.isEmpty() -> "Doctor experience cannot be empty."
             doctorDetails.profilePic.isEmpty() -> "Profile picture cannot be empty."
             else -> ""
@@ -269,7 +276,7 @@ sealed interface UpdateDoctorActions {
     data class OnDoctorNameChange(val name: String) : UpdateDoctorActions
     data class OnAgeChange(val age: String) : UpdateDoctorActions
     data class OnExperienceChange(val experience: String) : UpdateDoctorActions
-    data class OnConsultationFeeChange(val fee: String) : UpdateDoctorActions
+    data class OnQualificationChange(val qualification: String) : UpdateDoctorActions
     data class OnSpecialityChange(val speciality: String) : UpdateDoctorActions
     data class OnHospitalChange(val hospitals: List<HospitalMaster>) : UpdateDoctorActions
     data class OnServicesChange(val services: List<ServicesMaster>) : UpdateDoctorActions

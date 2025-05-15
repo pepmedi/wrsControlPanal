@@ -118,7 +118,7 @@ class ServicesRepositoryImpl(private val httpClient: HttpClient) : ServicesRepos
 
                     val servicesIconUrl = uploadImageToFirebaseStorage(
                         httpClient = httpClient,
-                        file = imageFile,
+                        file = iconFile,
                         folderName = StorageCollection.SERVICE_ICON,
                         fileName = generatedId
                     )

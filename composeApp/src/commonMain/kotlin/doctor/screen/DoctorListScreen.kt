@@ -66,9 +66,10 @@ fun DoctorListScreenRoot(
 ) {
     val uiState by viewModal.state.collectAsStateWithLifecycle()
 
-    DoctorListScreen(uiState, onDoctorClick = {
-        onDoctorClick(it)
-    },
+    DoctorListScreen(
+        uiState, onDoctorClick = {
+            onDoctorClick(it)
+        },
         onAction = { action ->
             viewModal.onAction(action)
         })
@@ -158,18 +159,20 @@ fun DoctorListScreen(
         }
 
         SlideInScreen(visible = addDoctorUiScreen) {
-            AddDoctorScreen(onBackClick = {
-                addDoctorUiScreen = false
-            },
+            AddDoctorScreen(
+                onBackClick = {
+                    addDoctorUiScreen = false
+                },
                 onDoctorAdded = {
                     onAction(DoctorListActions.OnDoctorAdded(it))
                 })
         }
 
         SlideInScreen(visible = showUpdateDoctorScreen) {
-            UpdateDoctorDetailsScreenRoot(doctorId = currentDoctorId, onBackClick = {
-                showUpdateDoctorScreen = false
-            },
+            UpdateDoctorDetailsScreenRoot(
+                doctorId = currentDoctorId, onBackClick = {
+                    showUpdateDoctorScreen = false
+                },
                 onSuccessful = {
                     onAction(DoctorListActions.OnDoctorUpdated(it))
                     toasterEvent(ToastEvent("Doctor Updated Successfully"))
@@ -230,7 +233,7 @@ fun DoctorItem(
             )
 
             Text(
-                text = "Experience : ${doctor.experience} years",
+                text = "Qualification : ${doctor.qualification}",
                 fontSize = 14.sp,
                 color = Color.Gray
             )

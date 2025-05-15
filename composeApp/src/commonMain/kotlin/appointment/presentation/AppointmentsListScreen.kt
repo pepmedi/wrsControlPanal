@@ -222,24 +222,18 @@ fun BookingCard(
     onCollapse: () -> Unit,
     onUploadRecords: () -> Unit
 ) {
-    val interactionSource = remember { MutableInteractionSource() }
+
     Card(
         modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 15.dp, vertical = 5.dp)
-            .shadow(6.dp, RoundedCornerShape(12.dp), clip = false)
+            .shadow(6.dp, RoundedCornerShape(16.dp))
             .then(
-                Modifier.clickable(
-                    interactionSource = interactionSource,
-                    indication = LocalIndication.current, // default ripple
-                    onClick = {
-                        if (isExpanded) onCollapse() else onExpand()
-                    }
-                )
+                if (isExpanded) Modifier.clickable(onClick = { onCollapse() }) else Modifier.clickable(
+                    onClick = { onExpand() })
             ),
-        shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
-        elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
     ) {
         Column(modifier = Modifier.padding(12.dp)) {
             Row(modifier = Modifier.fillMaxWidth()) {

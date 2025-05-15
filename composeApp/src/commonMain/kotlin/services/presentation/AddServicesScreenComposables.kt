@@ -51,6 +51,7 @@ fun AddServicesScreenUI(viewModal: ServicesViewModel = koinViewModel(), onBackCl
     val servicesState by viewModal.serviceStates.collectAsStateWithLifecycle()
 
     var serviceName by remember { mutableStateOf("") }
+    var serviceDescription by remember { mutableStateOf("") }
 
     var imageBitmap by remember { mutableStateOf<ImageBitmap?>(null) }
     var imageFile by remember { mutableStateOf<File?>(null) }
@@ -97,6 +98,7 @@ fun AddServicesScreenUI(viewModal: ServicesViewModel = koinViewModel(), onBackCl
         val errors = mutableListOf<String>()
 
         if (serviceName.isBlank()) errors.add("Service Name is required")
+        if (serviceDescription.isBlank()) errors.add("ServiceDescription Name is required")
         if (imageBitmap == null) errors.add("Service Image is required")
         if (iconBitMap == null) errors.add("Service Icon is required")
 
@@ -124,7 +126,12 @@ fun AddServicesScreenUI(viewModal: ServicesViewModel = koinViewModel(), onBackCl
                         value = serviceName,
                         onValueChange = { serviceName = it },
                         label = "Service Name",
-                        icon = Icons.Outlined.Home
+                    )
+
+                    TextInputField(
+                        value = serviceDescription,
+                        onValueChange = { serviceDescription = it },
+                        label = "Service Description",
                     )
 
                     Row(
@@ -165,7 +172,8 @@ fun AddServicesScreenUI(viewModal: ServicesViewModel = koinViewModel(), onBackCl
                     if (servicesState == ServiceStates.Loading) {
                         CircularProgressIndicator()
                     } else {
-                        GradientButton(modifier = Modifier.fillMaxWidth(),
+                        GradientButton(
+                            modifier = Modifier.fillMaxWidth(),
                             onClick = {
                                 if (validateForm()) {
                                     scope.launch {
@@ -175,6 +183,7 @@ fun AddServicesScreenUI(viewModal: ServicesViewModel = koinViewModel(), onBackCl
                                                     service = ServicesMaster(
                                                         id = "",
                                                         name = serviceName,
+                                                        description = serviceDescription,
                                                         createdAt = getCurrentTimeStamp(),
                                                         updatedAt = getCurrentTimeStamp()
                                                     ),

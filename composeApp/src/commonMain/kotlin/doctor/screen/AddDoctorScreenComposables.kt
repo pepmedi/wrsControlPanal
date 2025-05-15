@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material3.CircularProgressIndicator
@@ -68,7 +69,7 @@ fun AddDoctorScreen(
     var doctorExperience by remember { mutableStateOf("") }
     var age by remember { mutableStateOf("") }
 
-    var consultantFee by remember { mutableStateOf("") }
+    var qualification by remember { mutableStateOf("") }
 
     var speciality by remember { mutableStateOf("") }
     var imageBitmap1 by remember { mutableStateOf<ImageBitmap?>(null) }
@@ -136,7 +137,7 @@ fun AddDoctorScreen(
         if (doctorFocus.isBlank()) errors.add("Focus is required.")
         if (selectedHospitals.isEmpty()) errors.add("Hospital is required.")
         if (selectedServices.isEmpty()) errors.add("Services is required.")
-        if (consultantFee.isBlank()) errors.add("Consultation Fee is required.")
+        if (qualification.isBlank()) errors.add("Qualification Fee is required.")
         if (speciality.isBlank()) errors.add("Speciality is required.")
         if (selectedSlots.isEmpty()) errors.add("Slots Are required")
 
@@ -176,35 +177,30 @@ fun AddDoctorScreen(
                         value = age,
                         onValueChange = { age = it },
                         label = "Age",
-                        icon = Icons.Default.Person,
                     )
 
                     TextInputField(
-                        value = consultantFee,
-                        onValueChange = { consultantFee = it },
-                        label = "Consultation Fee",
-                        icon = Icons.Default.Person,
+                        value = qualification,
+                        onValueChange = { qualification = it },
+                        label = "Qualification",
                     )
 
                     TextInputField(
                         value = doctorExperience,
                         onValueChange = { doctorExperience = it },
                         label = "Doctor Experience",
-                        icon = Icons.Default.Person,
                     )
 
                     TextInputField(
                         value = speciality,
                         onValueChange = { speciality = it },
                         label = "Doctor Speciality",
-                        icon = Icons.Default.Person,
                     )
 
                     TextInputField(
                         value = doctorProfileText,
                         onValueChange = { doctorProfileText = it },
                         label = "Doctor Profile",
-                        icon = Icons.Default.Person,
                         minLines = 3,
                     )
 
@@ -212,7 +208,6 @@ fun AddDoctorScreen(
                         value = doctorCareerPath,
                         onValueChange = { doctorCareerPath = it },
                         label = "Career Path",
-                        icon = Icons.Default.Person,
                         minLines = 3,
                     )
 
@@ -220,7 +215,6 @@ fun AddDoctorScreen(
                         value = doctorFocus,
                         onValueChange = { doctorFocus = it },
                         label = "Doctor Focus",
-                        icon = Icons.Default.Person,
                         minLines = 3,
                     )
 
@@ -228,7 +222,7 @@ fun AddDoctorScreen(
                         value = selectedHospitals.joinToString(", ") { it.name },
                         onValueChange = { },
                         label = "Hospital",
-                        icon = Icons.Default.Person,
+                        icon = Icons.Default.Home,
                         enabled = false,
                         onClick = { showHospitalList = true }
                     )
@@ -237,7 +231,6 @@ fun AddDoctorScreen(
                         value = selectedServices.joinToString(", ") { it.name },
                         onValueChange = { },
                         label = "Services",
-                        icon = Icons.Default.Person,
                         enabled = false,
                         onClick = { showServiceList = true }
                     )
@@ -246,7 +239,6 @@ fun AddDoctorScreen(
                         value = selectedSlots.joinToString(", ") { it.name },
                         onValueChange = { },
                         label = "Slots",
-                        icon = Icons.Outlined.CheckCircle,
                         enabled = false,
                         onClick = { showSlotsList = true }
                     )
@@ -282,7 +274,7 @@ fun AddDoctorScreen(
                                                     age = age,
                                                     services = selectedServices.map { it.id },
                                                     hospital = selectedHospitals.map { it.id },
-                                                    consltFee = consultantFee,
+                                                    qualification = qualification,
                                                     reviews = "",
                                                     careerPath = doctorCareerPath,
                                                     focus = doctorFocus,

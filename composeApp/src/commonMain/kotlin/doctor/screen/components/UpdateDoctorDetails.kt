@@ -10,7 +10,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -167,14 +166,12 @@ fun UpdateDoctorDetailsScreen(
                         value = uiState.doctorDetails.age,
                         onValueChange = { onAction(UpdateDoctorActions.OnAgeChange(it)) },
                         label = "Age",
-                        icon = Icons.Default.Person,
                     )
 
                     TextInputField(
-                        value = uiState.doctorDetails.consltFee,
-                        onValueChange = { onAction(UpdateDoctorActions.OnConsultationFeeChange(it)) },
-                        label = "Consultation Fee",
-                        icon = Icons.Default.Person,
+                        value = uiState.doctorDetails.qualification,
+                        onValueChange = { onAction(UpdateDoctorActions.OnQualificationChange(it)) },
+                        label = "Qualification",
                     )
 
                     TextInputField(
@@ -188,14 +185,12 @@ fun UpdateDoctorDetailsScreen(
                         value = uiState.doctorDetails.speciality,
                         onValueChange = { onAction(UpdateDoctorActions.OnSpecialityChange(it)) },
                         label = "Doctor Speciality",
-                        icon = Icons.Default.Person,
                     )
 
                     TextInputField(
                         value = uiState.doctorDetails.profile,
                         onValueChange = { onAction(UpdateDoctorActions.OnProfileTextChange(it)) },
                         label = "Doctor Profile",
-                        icon = Icons.Default.Person,
                         minLines = 3,
                     )
 
@@ -203,7 +198,6 @@ fun UpdateDoctorDetailsScreen(
                         value = uiState.doctorDetails.careerPath,
                         onValueChange = { onAction(UpdateDoctorActions.OnCareerPathChange(it)) },
                         label = "Career Path",
-                        icon = Icons.Default.Person,
                         minLines = 3,
                     )
 
@@ -211,7 +205,6 @@ fun UpdateDoctorDetailsScreen(
                         value = uiState.doctorDetails.focus,
                         onValueChange = { onAction(UpdateDoctorActions.OnFocusChange(it)) },
                         label = "Doctor Focus",
-                        icon = Icons.Default.Person,
                         minLines = 3,
                     )
 
@@ -219,7 +212,6 @@ fun UpdateDoctorDetailsScreen(
                         value = uiState.selectedHospitals.joinToString(", ") { it.name },
                         onValueChange = { },
                         label = "Hospital",
-                        icon = Icons.Default.Person,
                         enabled = false,
                         onClick = { showHospitalList = true }
                     )
@@ -228,7 +220,6 @@ fun UpdateDoctorDetailsScreen(
                         value = uiState.selectedServices.joinToString(", ") { it.name },
                         onValueChange = { },
                         label = "Services",
-                        icon = Icons.Default.Person,
                         enabled = false,
                         onClick = { showServiceList = true }
                     )
@@ -237,7 +228,6 @@ fun UpdateDoctorDetailsScreen(
                         value = uiState.selectedSlots.joinToString(", ") { it.name },
                         onValueChange = { },
                         label = "Slots",
-                        icon = Icons.Outlined.CheckCircle,
                         enabled = false,
                         onClick = { showSlotsList = true }
                     )
