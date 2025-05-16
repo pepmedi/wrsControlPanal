@@ -1,4 +1,4 @@
-package services.presentation
+package services.viewModel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -27,9 +27,8 @@ class ServicesViewModel(private val servicesRepository: ServicesRepository) : Vi
             )
                 .collect { result ->
                     _serviceStates.value = when (result) {
-                        is AppResult.Success -> ServiceStates.Success
+                        is AppResult.Success -> ServiceStates.Success(result.data)
                         is AppResult.Error -> ServiceStates.Error(result.error)
-                        else -> ServiceStates.Idle
                     }
                 }
         }

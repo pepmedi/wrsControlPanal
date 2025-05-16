@@ -7,5 +7,15 @@ import java.io.File
 
 interface ServicesRepository {
     suspend fun getAllServices(): Flow<AppResult<List<ServicesMaster>, DataError.Remote>>
-    suspend fun addServiceToDatabase(service: ServicesMaster, imageFile: File, iconFile: File): Flow<AppResult<Unit, DataError.Remote>>
+    suspend fun addServiceToDatabase(
+        service: ServicesMaster,
+        imageFile: File,
+        iconFile: File
+    ): Flow<AppResult<ServicesMaster, DataError.Remote>>
+
+    suspend fun updateService(
+        service: ServicesMaster,
+        iconFile: File?,
+        imageFile: File?
+    ): Flow<AppResult<ServicesMaster, DataError.Remote>>
 }

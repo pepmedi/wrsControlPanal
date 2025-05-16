@@ -50,17 +50,17 @@ import java.io.File
 @Composable
 fun UpdateDoctorDetailsScreenRoot(
     doctorId: String,
-    viewModal: UpdateDoctorViewModel = koinViewModel(),
+    viewModel: UpdateDoctorViewModel = koinViewModel(),
     onSuccessful: (DoctorMaster) -> Unit,
     onBackClick: () -> Unit
 ) {
-    val uiState by viewModal.state.collectAsStateWithLifecycle()
+    val uiState by viewModel.state.collectAsStateWithLifecycle()
 
     var toasterEvent by remember { mutableStateOf<ToastEvent?>(null) }
     val toaster = rememberToasterState()
 
     LaunchedEffect(doctorId) {
-        viewModal.getDoctor(doctorId)
+        viewModel.getDoctor(doctorId)
     }
 
     LaunchedEffect(toasterEvent?.id) {
@@ -83,7 +83,7 @@ fun UpdateDoctorDetailsScreenRoot(
                 type = ToastType.Success
             )
             onSuccessful(uiState.doctorDetails)
-            viewModal.resetData()
+            viewModel.resetData()
             onBackClick()
         } else if (uiState.error != null) {
             toasterEvent = ToastEvent(message = "SomeThing went wrong.\n please try again ")
@@ -102,7 +102,7 @@ fun UpdateDoctorDetailsScreenRoot(
 
                 else -> Unit
             }
-            viewModal.onAction(action)
+            viewModel.onAction(action)
         },
         toasterEvent = {
             toasterEvent = it

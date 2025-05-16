@@ -48,7 +48,7 @@ class AddBlogViewModel(
             }
 
             is AddBlogAction.OnSubmit -> {
-                if(_state.value.isFormValid){
+                if (_state.value.isFormValid) {
                     addBlogToDatabase()
                 }
             }
@@ -78,6 +78,10 @@ class AddBlogViewModel(
         }
     }
 
+    fun reset() {
+        _state.value = AddBlogState()
+    }
+
     private fun addBlogToDatabase() {
         val state = _state.value
         _state.update { it.copy(isUploading = true) }
@@ -93,8 +97,14 @@ class AddBlogViewModel(
                         doctorId = state.doctor.id
                     )
                 )
-                    .onSuccess {
-                        _state.update { it.copy(isSuccessful = true, isUploading = false) }
+                    .onSuccess { addedBlog ->
+                        _state.update {
+                            it.copy(
+                                isSuccessful = true,
+                                isUploading = false,
+                                addedBlog = addedBlog
+                            )
+                        }
                     }
                     .onError {
                         _state.update { it.copy(isSuccessful = false, isUploading = false) }
@@ -112,6 +122,7 @@ data class AddBlogState(
     val showDoctorList: Boolean = false,
     val isUploading: Boolean = false,
     val isSuccessful: Boolean = false,
+    val addedBlog: BlogMaster? = null,
     val doctorList: List<DoctorMaster> = emptyList(),
 ) {
     val isFormValid: Boolean

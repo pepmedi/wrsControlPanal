@@ -84,6 +84,10 @@ class AddDoctorViewModel(
         }
     }
 
+    fun reset() {
+        _doctorSubmissionState.value = DoctorSubmissionState.Idle
+    }
+
     private fun getDoctorList() {
         println("fetched:-")
         viewModelScope.launch {

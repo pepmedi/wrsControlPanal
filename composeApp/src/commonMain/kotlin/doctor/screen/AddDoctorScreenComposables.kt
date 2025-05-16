@@ -97,7 +97,7 @@ fun AddDoctorScreen(
     LaunchedEffect(doctorSubmissionState) {
         val state = doctorSubmissionState
         if (state is DoctorSubmissionState.Success) {
-            viewModal.resetSubmissionState() // Reset state
+            viewModal.resetSubmissionState()
             toaster.show(
                 message = "Doctor Added Successfully",
                 type = ToastType.Success,
@@ -109,7 +109,8 @@ fun AddDoctorScreen(
                 )
             )
             onDoctorAdded(state.doctor)
-            onBackClick() // Navigate back
+            viewModal.reset()
+            onBackClick()
         }
     }
 

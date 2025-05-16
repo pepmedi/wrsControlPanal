@@ -114,9 +114,10 @@ fun UpdateInfoScreen() {
             }
 
             SlideInScreen(addDoctorUiScreen) {
-                AddDoctorScreen(onBackClick = {
-                    addDoctorUiScreen = false
-                },
+                AddDoctorScreen(
+                    onBackClick = {
+                        addDoctorUiScreen = false
+                    },
                     onDoctorAdded = {})
             }
 
@@ -127,9 +128,13 @@ fun UpdateInfoScreen() {
             }
 
             SlideInScreen(addServicesUiScreen) {
-                AddServicesScreenUI(onBackClick = {
-                    addServicesUiScreen = false
-                })
+                AddServicesScreenUI(
+                    onBackClick = {
+                        addServicesUiScreen = false
+                    },
+                    onServiceAdded = {
+
+                    })
             }
 
             SlideInScreen(visible = addSlotsUiScreen) {
@@ -142,6 +147,9 @@ fun UpdateInfoScreen() {
                 AddBlogScreenRoot(
                     onBackClick = {
                         addBlogUiScreen = false
+                    },
+                    onBlogAdded = {
+
                     }
                 )
             }

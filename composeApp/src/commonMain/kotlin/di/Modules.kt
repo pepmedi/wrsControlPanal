@@ -10,6 +10,8 @@ import appointment.presentation.AppointmentsViewModel
 import blog.domain.BlogRepository
 import blog.repository.BlogRepositoryImpl
 import blog.viewModel.AddBlogViewModel
+import blog.viewModel.AllBLogListViewModel
+import blog.viewModel.UpdateBlogViewModel
 import controlPanalUser.domain.PanelUserRepository
 import controlPanalUser.presentation.PanelUserCreationViewModel
 import controlPanalUser.presentation.PanelUserScreenViewModel
@@ -36,8 +38,10 @@ import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.bind
 import org.koin.dsl.module
 import services.domain.ServicesRepository
-import services.presentation.ServicesViewModel
+import services.viewModel.ServicesViewModel
 import services.repository.ServicesRepositoryImpl
+import services.viewModel.AllServicesListViewModel
+import services.viewModel.UpdateServicesViewModel
 import slots.domain.SlotsRepository
 import slots.repository.SlotsRepositoryImpl
 import slots.viewModel.AddSlotsViewModel
@@ -72,4 +76,8 @@ val sharedModule = module {
     viewModel { UpdateDoctorViewModel(get(), get(), get(), get()) }
     viewModel { UploadAppointmentRecordsViewModal(get()) }
     viewModel { AllRecordsViewModal(get()) }
+    viewModel { AllBLogListViewModel(get()) }
+    viewModel { UpdateBlogViewModel(get(), get()) }
+    viewModel { AllServicesListViewModel(get()) }
+    viewModel { UpdateServicesViewModel(get()) }
 }

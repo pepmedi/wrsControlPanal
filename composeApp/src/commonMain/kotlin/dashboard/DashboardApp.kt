@@ -33,10 +33,12 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import appointment.presentation.AppointmentsScreenRoot
+import blog.screen.AllBLogListScreenRoot
 import controlPanalUser.domain.UserRole
 import controlPanalUser.domain.UserSession
 import controlPanalUser.presentation.PanelUserScreenRoot
 import doctor.screen.DoctorListScreenRoot
+import services.presentation.AllServicesListScreenRoot
 import updateInfo.presentation.UpdateInfoScreen
 
 @Composable
@@ -84,6 +86,9 @@ fun DashboardApp(userSession: UserSession, userRole: UserRole, onLogout: () -> U
                     SidebarItem.DOCTORS -> DoctorListScreenRoot(onDoctorClick = {
 
                     })
+
+                    SidebarItem.BLOGS -> AllBLogListScreenRoot()
+                    SidebarItem.SERVICES -> AllServicesListScreenRoot()
 
                     SidebarItem.LOGOUT -> {
                         onLogout()
