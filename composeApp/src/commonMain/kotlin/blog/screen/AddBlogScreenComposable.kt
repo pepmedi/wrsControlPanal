@@ -23,6 +23,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.unit.dp
+import blog.domain.BlogMaster
 import blog.viewModel.AddBlogAction
 import blog.viewModel.AddBlogState
 import blog.viewModel.AddBlogViewModel
@@ -44,7 +45,11 @@ import util.ToastEvent
 import util.Util.toNameFormat
 
 @Composable
-fun AddBlogScreenRoot(viewModel: AddBlogViewModel = koinViewModel(), onBackClick: () -> Unit) {
+fun AddBlogScreenRoot(
+    viewModel: AddBlogViewModel = koinViewModel(),
+    onBackClick: () -> Unit,
+    onBlogAdded: (BlogMaster?) -> Unit
+) {
 
     val state by viewModel.state.collectAsState()
 
@@ -52,7 +57,7 @@ fun AddBlogScreenRoot(viewModel: AddBlogViewModel = koinViewModel(), onBackClick
     var toasterEvent by remember { mutableStateOf<ToastEvent?>(null) }
 
     LaunchedEffect(state.isSuccessful) {
-        if (state.isSuccessful) {
+        if (state.isSuccessful && state.addedBlog != null) {
             toaster.show(
                 message = "Blog Added Successfully",
                 type = ToastType.Success,
@@ -63,6 +68,8 @@ fun AddBlogScreenRoot(viewModel: AddBlogViewModel = koinViewModel(), onBackClick
                     }
                 )
             )
+            onBlogAdded(state.addedBlog)
+            viewModel.reset()
             onBackClick()
         }
     }
@@ -84,7 +91,11 @@ fun AddBlogScreenRoot(viewModel: AddBlogViewModel = koinViewModel(), onBackClick
         uiState = state,
         onAction = { action ->
             when (action) {
-                is AddBlogAction.OnCancel -> onBackClick()
+                is AddBlogAction.OnCancel -> {
+                    viewModel.reset()
+                    onBackClick()
+                }
+
                 is AddBlogAction.OnSubmit -> {
                     if (state.isFormValid) {
                         viewModel.onAction(action)
@@ -114,9 +125,10 @@ fun AddBlogScreen(
     val scope = rememberCoroutineScope()
     var snackBarMessage by remember { mutableStateOf("") }
 
+    var showDoctorList by remember { mutableStateOf(false) }
+
     Box(
-        modifier = Modifier.fillMaxSize().background(Color.White).padding(10.dp),
-        contentAlignment = Alignment.Center
+        modifier = Modifier.fillMaxSize().background(Color.White).padding(10.dp)
     ) {
         Column(
             modifier = Modifier
@@ -140,7 +152,10 @@ fun AddBlogScreen(
 
             TextInputField(
                 value = uiState.doctor.name.toNameFormat(),
-                onValueChange = { onAction(AddBlogAction.OnShowDoctorListClicked(true)) },
+                onValueChange = {
+                    onAction(AddBlogAction.OnShowDoctorListClicked(true))
+                    showDoctorList = true
+                },
                 label = "Doctor Name",
                 enabled = false,
                 icon = Icons.Default.Person
@@ -179,10 +194,14 @@ fun AddBlogScreen(
             CancelButton({ onAction(AddBlogAction.OnCancel) })
         }
 
-        if (uiState.showDoctorList) {
-            DoctorListDialog(doctorList = uiState.doctorList,
-                onDismiss = { onAction(AddBlogAction.OnShowDoctorListClicked(false)) },
-                onSubmit = { onAction(AddBlogAction.OnDoctorChange(it)) })
-        }
+    }
+    if (showDoctorList) {
+        DoctorListDialog(
+            doctorList = uiState.doctorList,
+            onDismiss = {
+                onAction(AddBlogAction.OnShowDoctorListClicked(false))
+                showDoctorList = false
+            },
+            onSubmit = { onAction(AddBlogAction.OnDoctorChange(it)) })
     }
 }

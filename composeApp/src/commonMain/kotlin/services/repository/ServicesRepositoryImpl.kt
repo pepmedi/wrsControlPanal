@@ -68,7 +68,7 @@ class ServicesRepositoryImpl(private val httpClient: HttpClient) : ServicesRepos
         service: ServicesMaster,
         imageFile: File,
         iconFile: File
-    ): Flow<AppResult<Unit, DataError.Remote>> =
+    ): Flow<AppResult<ServicesMaster, DataError.Remote>> =
         flow {
 
             try {
@@ -118,7 +118,7 @@ class ServicesRepositoryImpl(private val httpClient: HttpClient) : ServicesRepos
 
                     val servicesIconUrl = uploadImageToFirebaseStorage(
                         httpClient = httpClient,
-                        file = imageFile,
+                        file = iconFile,
                         folderName = StorageCollection.SERVICE_ICON,
                         fileName = generatedId
                     )
@@ -144,7 +144,15 @@ class ServicesRepositoryImpl(private val httpClient: HttpClient) : ServicesRepos
                         }
 
                     if (patchImagesUrlResponse.status == HttpStatusCode.OK) {
-                        emit(AppResult.Success(Unit))
+                        emit(
+                            AppResult.Success(
+                                service.copy(
+                                    id = generatedId,
+                                    imageUrl = servicesImageUrl,
+                                    iconUrl = servicesIconUrl
+                                )
+                            )
+                        )
                     } else {
                         emit(AppResult.Error(DataError.Remote.SERVER))
                     }
@@ -157,6 +165,104 @@ class ServicesRepositoryImpl(private val httpClient: HttpClient) : ServicesRepos
                 emit(AppResult.Error(DataError.Remote.SERVER))
             }
 
+        }.flowOn(Dispatchers.IO)
+
+    override suspend fun updateService(
+        service: ServicesMaster,
+        iconFile: File?,
+        imageFile: File?
+    ): Flow<AppResult<ServicesMaster, DataError.Remote>> =
+        flow {
+            try {
+                val patchResponse = httpClient.patch(
+                    "$BASE_URL/${service.id}?${
+                        buildUpdateMask(
+                            "name",
+                            "description",
+                            "updatedAt"
+                        )
+                    }"
+                ) {
+                    contentType(ContentType.Application.Json)
+                    setBody(
+                        DatabaseRequest(
+                            fields = mapOf(
+                                "name" to DatabaseValue.StringValue(service.name),
+                                "description" to DatabaseValue.StringValue(service.description),
+                                "updatedAt" to DatabaseValue.StringValue(service.updatedAt)
+                            )
+                        )
+                    )
+                }
+
+                if (patchResponse.status == HttpStatusCode.OK) {
+
+                    if (iconFile != null || imageFile != null) {
+                        val updatedFields = mutableMapOf<String, DatabaseValue>()
+                        var updatedImageUrl: String? = null
+                        var updatedIconUrl: String? = null
+
+                        // Upload profile image if available
+                        if (imageFile != null) {
+                            updatedImageUrl = uploadImageToFirebaseStorage(
+                                httpClient = httpClient,
+                                file = imageFile,
+                                folderName = StorageCollection.SERVICE_IMAGES,
+                                fileName = service.id
+                            )
+                            updatedFields["imageUrl"] = DatabaseValue.StringValue(updatedImageUrl)
+                        }
+
+                        // Upload icon if available
+                        if (iconFile != null) {
+                            updatedIconUrl = uploadImageToFirebaseStorage(
+                                httpClient = httpClient,
+                                file = iconFile,
+                                folderName = StorageCollection.SERVICE_ICON,
+                                fileName = service.id
+                            )
+                            updatedFields["iconUrl"] = DatabaseValue.StringValue(updatedIconUrl)
+                        }
+
+                        if (updatedFields.isNotEmpty()) {
+                            val fieldPaths =
+                                updatedFields.keys.joinToString("&updateMask.fieldPaths=")
+
+                            val patchImageResponse = httpClient.patch(
+                                "$BASE_URL/${DatabaseCollection.SERVICES}/${service.id}?updateMask.fieldPaths=$fieldPaths"
+                            ) {
+                                contentType(ContentType.Application.Json)
+                                setBody(DatabaseRequest(fields = updatedFields))
+                            }
+
+                            if (patchImageResponse.status == HttpStatusCode.OK) {
+                                emit(
+                                    AppResult.Success(
+                                        service.copy(
+                                            imageUrl = updatedImageUrl ?: service.imageUrl,
+                                            iconUrl = updatedIconUrl ?: service.iconUrl
+                                        )
+                                    )
+                                ) // You can return a map or individual values
+                            } else {
+                                emit(AppResult.Error(DataError.Remote.SERVER))
+                            }
+                        } else {
+                            // No files to upload or patch
+                            emit(AppResult.Success(service))
+                        }
+                    } else {
+                        emit(AppResult.Success(service))
+                    }
+                } else {
+                    emit(AppResult.Error(DataError.Remote.SERVER))
+                }
+
+            } catch (e: Exception) {
+                e.printStackTrace()
+                println(e.localizedMessage)
+                emit(AppResult.Error(DataError.Remote.SERVER))
+            }
         }.flowOn(Dispatchers.IO)
 }
 

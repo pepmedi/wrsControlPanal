@@ -1,15 +1,15 @@
-package doctor.screen
+package blog.screen
 
-import BackgroundColors
 import PrimaryAppColor
 import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -21,13 +21,13 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material.Icon
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -38,72 +38,66 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import blog.domain.BlogMaster
+import blog.viewModel.AllBLogListViewModel
+import blog.viewModel.BLogListUiState
+import blog.viewModel.BlogListActions
 import coil3.compose.AsyncImage
 import component.AppCircularProgressIndicator
 import component.SlideInScreen
 import core.components.SearchBar
-import doctor.domain.DoctorMaster
-import doctor.screen.components.UpdateDoctorDetailsScreenRoot
-import doctor.viewModal.DoctorListActions
-import doctor.viewModal.DoctorListUiState
-import doctor.viewModal.DoctorListViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.koin.compose.viewmodel.koinViewModel
-import util.ToastEvent
 
 @Composable
-fun DoctorListScreenRoot(
-    viewModal: DoctorListViewModel = koinViewModel(),
-    onDoctorClick: (DoctorMaster) -> Unit
-) {
-    val uiState by viewModal.state.collectAsStateWithLifecycle()
+fun AllBLogListScreenRoot(viewModel: AllBLogListViewModel = koinViewModel()) {
+    val uiState by viewModel.state.collectAsStateWithLifecycle()
 
-    DoctorListScreen(
-        uiState, onDoctorClick = {
-            onDoctorClick(it)
-        },
+    AllBLogListScreen(
+        uiState = uiState,
         onAction = { action ->
-            viewModal.onAction(action)
+            viewModel.onAction(action)
         })
 }
 
 @Composable
-fun DoctorListScreen(
-    uiState: DoctorListUiState,
-    onDoctorClick: (DoctorMaster) -> Unit,
-    toasterEvent: (ToastEvent) -> Unit = {},
-    onAction: (DoctorListActions) -> Unit
+fun AllBLogListScreen(
+    uiState: BLogListUiState,
+    onAction: (BlogListActions) -> Unit
 ) {
     var expandedCardId by remember { mutableStateOf<String?>(null) }
     var searchQuery by remember { mutableStateOf("") }
 
-    var addDoctorUiScreen by remember { mutableStateOf(false) }
-    var filteredDoctor by remember { mutableStateOf<List<DoctorMaster>>(emptyList()) }
+    var addBlogUiScreen by remember { mutableStateOf(false) }
+    var filteredBlog by remember { mutableStateOf<List<BlogMaster>>(emptyList()) }
 
-    var showUpdateDoctorScreen by remember { mutableStateOf(false) }
-    var currentDoctorId by remember { mutableStateOf("") }
+    var showUpdateBlogScreen by remember { mutableStateOf(false) }
+    var currentBlogId by remember { mutableStateOf("") }
 
     LaunchedEffect(searchQuery, uiState) {
         withContext(Dispatchers.Default) {
-            val filtered = uiState.doctorList.filter {
-                it.name.contains(searchQuery, ignoreCase = true)
+            val filtered = uiState.blogList.filter {
+                it.title.contains(searchQuery, ignoreCase = true)
             }
             withContext(Dispatchers.Main) {
-                filteredDoctor = filtered
+                filteredBlog = filtered
             }
         }
     }
 
-    val displayedDoctors = remember(searchQuery, uiState.doctorList) {
-        if (searchQuery.isNotEmpty()) filteredDoctor else uiState.doctorList
+    val displayedBlogs = remember(searchQuery, uiState.blogList) {
+        if (searchQuery.isNotEmpty()) filteredBlog else uiState.blogList
     }
 
     Box(
@@ -117,7 +111,6 @@ fun DoctorListScreen(
             if (uiState.isLoading) {
                 AppCircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
             } else {
-
                 SearchBar(
                     searchQuery = searchQuery,
                     onSearchQueryChange = { searchQuery = it },
@@ -131,17 +124,17 @@ fun DoctorListScreen(
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    items(displayedDoctors) { doctor ->
-                        DoctorItem(
-                            doctor,
-                            onDoctorClick,
-                            isExpanded = expandedCardId == doctor.id,
-                            onExpand = { expandedCardId = doctor.id },
-                            onCollapse = { expandedCardId = null },
+                    items(displayedBlogs) { blog ->
+                        BlogCardItem(
+                            blog = blog,
+                            modifier = Modifier,
                             onUpdateClick = {
-                                currentDoctorId = it
-                                showUpdateDoctorScreen = true
-                            }
+                                currentBlogId = blog.id
+                                showUpdateBlogScreen = true
+                            },
+                            isExpanded = expandedCardId == blog.id,
+                            onExpand = { expandedCardId = blog.id },
+                            onCollapse = { expandedCardId = null }
                         )
                     }
                 }
@@ -149,7 +142,7 @@ fun DoctorListScreen(
         }
 
         FloatingActionButton(
-            onClick = { addDoctorUiScreen = true },
+            onClick = { addBlogUiScreen = true },
             modifier = Modifier
                 .align(Alignment.BottomEnd)
                 .padding(16.dp),
@@ -159,42 +152,55 @@ fun DoctorListScreen(
             Icon(imageVector = Icons.Default.Add, contentDescription = "Add Shop")
         }
 
-        SlideInScreen(visible = addDoctorUiScreen) {
-            AddDoctorScreen(
+        SlideInScreen(visible = addBlogUiScreen) {
+            AddBlogScreenRoot(
                 onBackClick = {
-                    addDoctorUiScreen = false
+                    addBlogUiScreen = false
                 },
-                onDoctorAdded = {
-                    onAction(DoctorListActions.OnDoctorAdded(it))
+                onBlogAdded = { addedBlog ->
+                    if (addedBlog != null) {
+                        onAction(BlogListActions.OnBlogAdded(addedBlog))
+                    }
                 })
         }
 
-        SlideInScreen(visible = showUpdateDoctorScreen) {
-            UpdateDoctorDetailsScreenRoot(
-                doctorId = currentDoctorId, onBackClick = {
-                    showUpdateDoctorScreen = false
+        SlideInScreen(visible = showUpdateBlogScreen) {
+            UpdateBlogScreenRoot(
+                blog = uiState.blogList.find { it.id == currentBlogId }!!,
+                onBack = {
+                    showUpdateBlogScreen = false
                 },
-                onSuccessful = {
-                    onAction(DoctorListActions.OnDoctorUpdated(it))
-                    toasterEvent(ToastEvent("Doctor Updated Successfully"))
-                })
+                onBlogUpdated = {
+                    if (it != null) {
+                        onAction(BlogListActions.OnBlogUpdated(it))
+                    }
+                }
+            )
         }
     }
 }
 
 @Composable
-fun DoctorItem(
-    doctor: DoctorMaster,
-    onDoctorClick: (DoctorMaster) -> Unit,
+fun BlogCardItem(
+    blog: BlogMaster,
+    modifier: Modifier,
+    onUpdateClick: (BlogMaster) -> Unit,
     isExpanded: Boolean,
     onExpand: () -> Unit,
     onCollapse: () -> Unit,
-    onUpdateClick: (String) -> Unit
 ) {
+    val alpha by animateFloatAsState(
+        targetValue = 1f,
+        animationSpec = tween(durationMillis = 1000),
+        label = "fadeIn"
+    )
+
     Card(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
-            .padding(vertical = 5.dp)
+            .animateContentSize()
+            .alpha(alpha)
+            .padding(5.dp)
             .shadow(8.dp, RoundedCornerShape(16.dp))
             .then(
                 if (isExpanded) Modifier.clickable(onClick = { onCollapse() }) else Modifier.clickable(
@@ -207,36 +213,40 @@ fun DoctorItem(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp, vertical = 8.dp)
-                .animateContentSize()
         ) {
-            val backgroundColor =
-                remember { BackgroundColors.random() }
-            Box(
+            // Blog image
+            AsyncImage(
+                model = blog.imageUrl,
+                contentDescription = "Blog Image",
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(150.dp)
-                    .background(backgroundColor),
-                contentAlignment = Alignment.Center
-            ) {
-                AsyncImage(
-                    model = doctor.profilePic,
-                    contentDescription = "Doctor Image",
-                    modifier = Modifier.fillMaxSize(),
-                    contentScale = ContentScale.Inside
-                )
-            }
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Text(
-                text = doctor.name,
-                fontWeight = FontWeight.Bold,
-                fontSize = 18.sp
+                    .height(180.dp)
+                    .clip(RoundedCornerShape(12.dp)),
+                contentScale = ContentScale.Crop
             )
 
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // Blog title
             Text(
-                text = "Qualification : ${doctor.qualification}",
+                text = blog.title.trim(),
+                fontWeight = FontWeight.Bold,
+                fontSize = 18.sp,
+                color = Color.Black,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis
+            )
+
+            Spacer(modifier = Modifier.height(4.dp))
+
+            // Blog description
+            Text(
+                text = blog.description.trim(),
+                fontWeight = FontWeight.Normal,
                 fontSize = 14.sp,
-                color = Color.Gray
+                color = Color.DarkGray,
+                maxLines = 3,
+                overflow = TextOverflow.Ellipsis
             )
 
             if (isExpanded) {
@@ -246,22 +256,11 @@ fun DoctorItem(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     TextButton(
-                        modifier = Modifier.padding(start = 0.dp),
-                        shape = RoundedCornerShape(20.dp),
-                        colors = ButtonDefaults.textButtonColors(containerColor = Color.White),
-                        border = BorderStroke(1.dp, PrimaryAppColor),
-                        onClick = { onDoctorClick(doctor) },
-                        contentPadding = PaddingValues(0.dp)
-                    ) {
-                        Text("Info")
-                    }
-
-                    TextButton(
                         modifier = Modifier.padding(end = 10.dp),
                         shape = RoundedCornerShape(20.dp),
                         colors = ButtonDefaults.textButtonColors(containerColor = Color.White),
                         border = BorderStroke(1.dp, PrimaryAppColor),
-                        onClick = { onUpdateClick(doctor.id) }
+                        onClick = { onUpdateClick(blog) }
                     ) {
                         Text("Update")
                     }

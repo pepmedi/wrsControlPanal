@@ -53,9 +53,11 @@ class DoctorRepositoryImpl(private val httpClient: HttpClient) : DoctorRepositor
                             id = document.name.substringAfterLast("/"),
                             name = (fields["name"] as? DatabaseValue.StringValue)?.stringValue.orEmpty(),
                             age = (fields["age"] as? DatabaseValue.StringValue)?.stringValue.orEmpty(),
+                            qualification = (fields["qualification"] as? DatabaseValue.StringValue)?.stringValue.orEmpty(),
                             profilePic = (fields["profilePic"] as? DatabaseValue.StringValue)?.stringValue.orEmpty(),
                             consltFee = (fields["consltFee"] as? DatabaseValue.StringValue)?.stringValue.orEmpty(),
                             reviews = (fields["reviews"] as? DatabaseValue.StringValue)?.stringValue.orEmpty(),
+
                             experience = (fields["experience"] as? DatabaseValue.StringValue)?.stringValue.orEmpty(),
                             hospital = (fields["hospital"] as? DatabaseValue.ArrayValue)?.values?.mapNotNull { (it as? DatabaseValue.StringValue)?.stringValue }
                                 .orEmpty(),
@@ -92,6 +94,7 @@ class DoctorRepositoryImpl(private val httpClient: HttpClient) : DoctorRepositor
                             fields = mapOf(
                                 "name" to DatabaseValue.StringValue(doctor.name),
                                 "age" to DatabaseValue.StringValue(doctor.age),
+                                "qualification" to DatabaseValue.StringValue(doctor.qualification),
                                 "experience" to DatabaseValue.StringValue(doctor.experience),
                                 "profilePic" to DatabaseValue.StringValue(doctor.profilePic),
                                 "hospital" to DatabaseValue.ArrayValue(doctor.hospital.map {
@@ -209,6 +212,7 @@ class DoctorRepositoryImpl(private val httpClient: HttpClient) : DoctorRepositor
                             name = (fields["name"] as? DatabaseValue.StringValue)?.stringValue.orEmpty(),
                             age = (fields["age"] as? DatabaseValue.StringValue)?.stringValue.orEmpty(),
                             profilePic = (fields["profilePic"] as? DatabaseValue.StringValue)?.stringValue.orEmpty(),
+                            qualification = (fields["qualification"] as? DatabaseValue.StringValue)?.stringValue.orEmpty(),
                             consltFee = (fields["consltFee"] as? DatabaseValue.StringValue)?.stringValue.orEmpty(),
                             reviews = (fields["reviews"] as? DatabaseValue.StringValue)?.stringValue.orEmpty(),
                             experience = (fields["experience"] as? DatabaseValue.StringValue)?.stringValue.orEmpty(),
@@ -247,8 +251,18 @@ class DoctorRepositoryImpl(private val httpClient: HttpClient) : DoctorRepositor
             val patchResponse = httpClient.patch(
                 "$BASE_URL/${DatabaseCollection.DOCTORS}/${doctor.id}?${
                     buildUpdateMask(
-                        "name", "experience", "age", "hospital", "services", "slots",
-                        "consltFee", "updatedAt", "focus", "careerPath", "profile"
+                        "name",
+                        "age",
+                        "qualification",
+                        "experience",
+                        "hospital",
+                        "services",
+                        "slots",
+                        "consltFee",
+                        "updatedAt",
+                        "focus",
+                        "careerPath",
+                        "profile"
                     )
                 }"
             ) {
@@ -258,6 +272,7 @@ class DoctorRepositoryImpl(private val httpClient: HttpClient) : DoctorRepositor
                         fields = mapOf(
                             "name" to DatabaseValue.StringValue(doctor.name),
                             "age" to DatabaseValue.StringValue(doctor.age),
+                            "qualification" to DatabaseValue.StringValue(doctor.qualification),
                             "experience" to DatabaseValue.StringValue(doctor.experience),
                             "hospital" to DatabaseValue.ArrayValue(doctor.hospital.map {
                                 DatabaseValue.StringValue(it)

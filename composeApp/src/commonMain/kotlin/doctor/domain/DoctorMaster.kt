@@ -12,6 +12,7 @@ data class DoctorMaster(
     val hospital: List<String> = emptyList(),
     val services: List<String> = emptyList(),
     val slots: List<String> = emptyList(),
+    val qualification: String = "",
     val consltFee: String = "",
     val speciality: String = "",
     val reviews: String = "",

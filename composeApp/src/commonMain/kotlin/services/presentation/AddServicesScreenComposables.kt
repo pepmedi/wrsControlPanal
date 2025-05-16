@@ -10,8 +10,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -40,6 +38,7 @@ import kotlinx.coroutines.launch
 import org.koin.compose.viewmodel.koinViewModel
 import services.domain.ServiceStates
 import services.domain.ServicesMaster
+import services.viewModel.ServicesViewModel
 import util.FileCompressor
 import util.FileUtil.loadAndCompressImage
 import util.ToastEvent
@@ -47,10 +46,15 @@ import util.getCurrentTimeStamp
 import java.io.File
 
 @Composable
-fun AddServicesScreenUI(viewModal: ServicesViewModel = koinViewModel(), onBackClick: () -> Unit) {
+fun AddServicesScreenUI(
+    viewModal: ServicesViewModel = koinViewModel(),
+    onBackClick: () -> Unit,
+    onServiceAdded: (ServicesMaster?) -> Unit
+) {
     val servicesState by viewModal.serviceStates.collectAsStateWithLifecycle()
 
     var serviceName by remember { mutableStateOf("") }
+    var serviceDescription by remember { mutableStateOf("") }
 
     var imageBitmap by remember { mutableStateOf<ImageBitmap?>(null) }
     var imageFile by remember { mutableStateOf<File?>(null) }
@@ -64,7 +68,8 @@ fun AddServicesScreenUI(viewModal: ServicesViewModel = koinViewModel(), onBackCl
     var toasterEvent by remember { mutableStateOf<ToastEvent?>(null) }
 
     LaunchedEffect(servicesState) {
-        if (servicesState is ServiceStates.Success) {
+        val state = servicesState
+        if (state is ServiceStates.Success) {
             viewModal.resetState()
             toaster.show(
                 message = "Service Added Successfully",
@@ -76,6 +81,8 @@ fun AddServicesScreenUI(viewModal: ServicesViewModel = koinViewModel(), onBackCl
                     }
                 )
             )
+            onServiceAdded(state.addedService)
+            viewModal.resetState()
             onBackClick()
         }
     }
@@ -97,6 +104,7 @@ fun AddServicesScreenUI(viewModal: ServicesViewModel = koinViewModel(), onBackCl
         val errors = mutableListOf<String>()
 
         if (serviceName.isBlank()) errors.add("Service Name is required")
+        if (serviceDescription.isBlank()) errors.add("ServiceDescription Name is required")
         if (imageBitmap == null) errors.add("Service Image is required")
         if (iconBitMap == null) errors.add("Service Icon is required")
 
@@ -124,7 +132,12 @@ fun AddServicesScreenUI(viewModal: ServicesViewModel = koinViewModel(), onBackCl
                         value = serviceName,
                         onValueChange = { serviceName = it },
                         label = "Service Name",
-                        icon = Icons.Outlined.Home
+                    )
+
+                    TextInputField(
+                        value = serviceDescription,
+                        onValueChange = { serviceDescription = it },
+                        label = "Service Description",
                     )
 
                     Row(
@@ -165,7 +178,9 @@ fun AddServicesScreenUI(viewModal: ServicesViewModel = koinViewModel(), onBackCl
                     if (servicesState == ServiceStates.Loading) {
                         CircularProgressIndicator()
                     } else {
-                        GradientButton(modifier = Modifier.fillMaxWidth(),
+                        GradientButton(
+                            modifier = Modifier.fillMaxWidth(),
+                            enable = validateForm(),
                             onClick = {
                                 if (validateForm()) {
                                     scope.launch {
@@ -175,6 +190,7 @@ fun AddServicesScreenUI(viewModal: ServicesViewModel = koinViewModel(), onBackCl
                                                     service = ServicesMaster(
                                                         id = "",
                                                         name = serviceName,
+                                                        description = serviceDescription,
                                                         createdAt = getCurrentTimeStamp(),
                                                         updatedAt = getCurrentTimeStamp()
                                                     ),
@@ -188,7 +204,10 @@ fun AddServicesScreenUI(viewModal: ServicesViewModel = koinViewModel(), onBackCl
                             })
                     }
 
-                    CancelButton(onBackClick)
+                    CancelButton(onBackClick = {
+                        viewModal.resetState()
+                        onBackClick()
+                    })
 
                 }
 
