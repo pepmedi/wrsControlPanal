@@ -62,14 +62,11 @@ import util.ToastEvent
 @Composable
 fun DoctorListScreenRoot(
     viewModal: DoctorListViewModel = koinViewModel(),
-    onDoctorClick: (DoctorMaster) -> Unit
 ) {
     val uiState by viewModal.state.collectAsStateWithLifecycle()
 
     DoctorListScreen(
-        uiState, onDoctorClick = {
-            onDoctorClick(it)
-        },
+        uiState,
         onAction = { action ->
             viewModal.onAction(action)
         })
@@ -78,7 +75,6 @@ fun DoctorListScreenRoot(
 @Composable
 fun DoctorListScreen(
     uiState: DoctorListUiState,
-    onDoctorClick: (DoctorMaster) -> Unit,
     toasterEvent: (ToastEvent) -> Unit = {},
     onAction: (DoctorListActions) -> Unit
 ) {
@@ -134,7 +130,7 @@ fun DoctorListScreen(
                     items(displayedDoctors) { doctor ->
                         DoctorItem(
                             doctor,
-                            onDoctorClick,
+                            onDoctorClick = {},
                             isExpanded = expandedCardId == doctor.id,
                             onExpand = { expandedCardId = doctor.id },
                             onCollapse = { expandedCardId = null },

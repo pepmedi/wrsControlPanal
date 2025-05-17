@@ -83,9 +83,7 @@ fun DashboardApp(userSession: UserSession, userRole: UserRole, onLogout: () -> U
                     SidebarItem.UPDATE_INFO -> UpdateInfoScreen()
                     SidebarItem.APPOINTMENTS -> AppointmentsScreenRoot()
                     SidebarItem.CPANEL_USERS -> PanelUserScreenRoot()
-                    SidebarItem.DOCTORS -> DoctorListScreenRoot(onDoctorClick = {
-
-                    })
+                    SidebarItem.DOCTORS -> DoctorListScreenRoot()
 
                     SidebarItem.BLOGS -> AllBLogListScreenRoot()
                     SidebarItem.SERVICES -> AllServicesListScreenRoot()
