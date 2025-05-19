@@ -1,5 +1,6 @@
 package controlPanalUser.presentation
 
+import Java20
 import PrimaryAppColor
 import SecondaryAppColor
 import androidx.compose.animation.animateContentSize
@@ -43,6 +44,9 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import component.SlideInScreen
 import controlPanalUser.domain.UserMasterControlPanel
 import controlPanalUser.domain.UserRole
+import controlPanalUser.viewModel.PanelUserScreenViewModel
+import controlPanalUser.viewModel.PanelUserUiEvent
+import controlPanalUser.viewModel.PanelUserUiState
 import org.koin.compose.viewmodel.koinViewModel
 import util.Util.toNameFormat
 
@@ -51,18 +55,25 @@ fun PanelUserScreenRoot(viewModal: PanelUserScreenViewModel = koinViewModel()) {
 
     val uiState by viewModal.state.collectAsStateWithLifecycle()
 
-    PanelUserScreen(uiState = uiState)
+    PanelUserScreen(
+        uiState = uiState,
+        onAction = { action ->
+            viewModal.onAction(action)
+        })
 }
 
 @Composable
 fun PanelUserScreen(
-    uiState: PanelUserUiState
+    uiState: PanelUserUiState,
+    onAction: (PanelUserUiEvent) -> Unit
 ) {
     var expandedCardId by remember { mutableStateOf<String?>(null) }
     var showCreateUserUI by remember { mutableStateOf(false) }
+    var showUpdateUserUI by remember { mutableStateOf(false) }
+    var currentUserForUpdate by remember { mutableStateOf(UserMasterControlPanel()) }
 
     MaterialTheme {
-        Scaffold(containerColor = Color.White) {
+        Scaffold(containerColor = Java20) {
             Box(modifier = Modifier.fillMaxSize()) {
                 Column(modifier = Modifier.fillMaxSize()) {
                     if (uiState.isLoading) {
@@ -85,12 +96,21 @@ fun PanelUserScreen(
                                     isExpanded = expandedCardId == users.id,
                                     onExpand = { expandedCardId = users.id },
                                     onCollapse = { expandedCardId = null },
-                                    onUpdateUserClick = { },
+                                    onUpdateUserClick = {
+                                        currentUserForUpdate = users
+                                        showUpdateUserUI = it
+                                        expandedCardId = null
+                                    },
                                     onErrorMessage = { },
                                     onSnackBarMessage = {},
                                     currentUser = { },
-                                    onDeleteUserClick = { status, userId ->
-
+                                    onDeleteUserClick = {
+                                        onAction(PanelUserUiEvent.DeleteUser(users))
+                                        expandedCardId = null
+                                    },
+                                    onUserBlockedClick = {
+                                        onAction(PanelUserUiEvent.ChangeUserStatus(users))
+                                        expandedCardId = null
                                     }
                                 )
                             }
@@ -115,8 +135,18 @@ fun PanelUserScreen(
                     PanelUserCreationScreenRoot(onBackClick = {
                         showCreateUserUI = false
                     }, onSuccessful = {
-
+                        onAction(PanelUserUiEvent.UserCreated(it))
                     })
+                }
+
+                SlideInScreen(showUpdateUserUI) {
+                    UpdatePanelUserScreenRoot(
+                        onBackClick = {
+                            showUpdateUserUI = false
+                        }, onUpdate = {
+                            onAction(PanelUserUiEvent.UpdateUser(it))
+                        }, currentUser = currentUserForUpdate
+                    )
                 }
             }
         }
@@ -134,10 +164,11 @@ fun UsersItemCard(
     onErrorMessage: (String) -> Unit,
     onSnackBarMessage: (String) -> Unit,
     currentUser: (String) -> Unit,
-    onDeleteUserClick: (Boolean, String) -> Unit
+    onDeleteUserClick: () -> Unit,
+    onUserBlockedClick: () -> Unit
 ) {
-    val isUserBlocked = remember { mutableStateOf(userMaster.isActive == "1") }
-    val backgroundColor = if (isUserBlocked.value) Color.LightGray else Color.White
+    val isUserBlocked = userMaster.isActive == "1"
+    val backgroundColor = if (isUserBlocked) Color.LightGray else Color.White
     val userRole = when (userMaster.empType) {
         "0" -> UserRole.ADMIN
         "1" -> UserRole.DOCTOR
@@ -187,16 +218,12 @@ fun UsersItemCard(
 
                     Button(
                         onClick = {
-                            if (isUserBlocked.value) {
-
-                            } else {
-
-                            }
+                            onUserBlockedClick()
                         },
-                        colors = ButtonDefaults.buttonColors(backgroundColor = if (isUserBlocked.value) Color.Gray else Color.Red)
+                        colors = ButtonDefaults.buttonColors(backgroundColor = if (isUserBlocked) Color.Gray else Color.Red)
                     ) {
                         Text(
-                            text = if (isUserBlocked.value) "UnBlock" else "Block",
+                            text = if (isUserBlocked) "UnBlock" else "Block",
                             color = Color.White
                         )
                     }
@@ -213,7 +240,7 @@ fun UsersItemCard(
 
                     Button(
                         onClick = {
-
+                            onDeleteUserClick()
                         },
                         colors = ButtonDefaults.buttonColors(backgroundColor = Color.Gray)
                     ) {

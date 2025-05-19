@@ -6,6 +6,7 @@ import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -25,6 +26,7 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material.Icon
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.ripple
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -62,14 +64,11 @@ import util.ToastEvent
 @Composable
 fun DoctorListScreenRoot(
     viewModal: DoctorListViewModel = koinViewModel(),
-    onDoctorClick: (DoctorMaster) -> Unit
 ) {
     val uiState by viewModal.state.collectAsStateWithLifecycle()
 
     DoctorListScreen(
-        uiState, onDoctorClick = {
-            onDoctorClick(it)
-        },
+        uiState,
         onAction = { action ->
             viewModal.onAction(action)
         })
@@ -78,7 +77,6 @@ fun DoctorListScreenRoot(
 @Composable
 fun DoctorListScreen(
     uiState: DoctorListUiState,
-    onDoctorClick: (DoctorMaster) -> Unit,
     toasterEvent: (ToastEvent) -> Unit = {},
     onAction: (DoctorListActions) -> Unit
 ) {
@@ -125,16 +123,20 @@ fun DoctorListScreen(
                         .fillMaxWidth()
                         .padding(horizontal = 8.dp, vertical = 2.dp)
                 )
+
                 LazyVerticalGrid(
                     columns = GridCells.Adaptive(minSize = 300.dp),
                     modifier = Modifier.fillMaxSize().padding(8.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    items(displayedDoctors) { doctor ->
+                    items(
+                        items = displayedDoctors,
+                        key = { it.id }) { doctor ->
                         DoctorItem(
-                            doctor,
-                            onDoctorClick,
+                            doctor = doctor,
+                            modifier = Modifier.animateItem(),
+                            onDoctorClick = {},
                             isExpanded = expandedCardId == doctor.id,
                             onExpand = { expandedCardId = doctor.id },
                             onCollapse = { expandedCardId = null },
@@ -185,6 +187,7 @@ fun DoctorListScreen(
 @Composable
 fun DoctorItem(
     doctor: DoctorMaster,
+    modifier: Modifier,
     onDoctorClick: (DoctorMaster) -> Unit,
     isExpanded: Boolean,
     onExpand: () -> Unit,
@@ -192,15 +195,15 @@ fun DoctorItem(
     onUpdateClick: (String) -> Unit
 ) {
     Card(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .padding(vertical = 5.dp)
-            .shadow(8.dp, RoundedCornerShape(16.dp))
-            .then(
-                if (isExpanded) Modifier.clickable(onClick = { onCollapse() }) else Modifier.clickable(
-                    onClick = { onExpand() })
-            ),
-        elevation = CardDefaults.cardElevation(8.dp),
+            .clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = ripple(color = Color.LightGray)
+            ) { if (isExpanded) onCollapse() else onExpand() },
+
+        elevation = CardDefaults.cardElevation(4.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White)
     ) {
         Column(

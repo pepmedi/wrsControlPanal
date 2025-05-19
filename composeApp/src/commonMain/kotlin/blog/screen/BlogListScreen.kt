@@ -2,11 +2,10 @@ package blog.screen
 
 import PrimaryAppColor
 import androidx.compose.animation.animateContentSize
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -24,6 +23,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Icon
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.ripple
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -38,9 +38,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
@@ -61,10 +59,10 @@ import kotlinx.coroutines.withContext
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
-fun AllBLogListScreenRoot(viewModel: AllBLogListViewModel = koinViewModel()) {
+fun BlogListScreenRoot(viewModel: AllBLogListViewModel = koinViewModel()) {
     val uiState by viewModel.state.collectAsStateWithLifecycle()
 
-    AllBLogListScreen(
+    BlogListScreen(
         uiState = uiState,
         onAction = { action ->
             viewModel.onAction(action)
@@ -72,7 +70,7 @@ fun AllBLogListScreenRoot(viewModel: AllBLogListViewModel = koinViewModel()) {
 }
 
 @Composable
-fun AllBLogListScreen(
+fun BlogListScreen(
     uiState: BLogListUiState,
     onAction: (BlogListActions) -> Unit
 ) {
@@ -127,7 +125,7 @@ fun AllBLogListScreen(
                     items(displayedBlogs) { blog ->
                         BlogCardItem(
                             blog = blog,
-                            modifier = Modifier,
+                            modifier = Modifier.animateItem(),
                             onUpdateClick = {
                                 currentBlogId = blog.id
                                 showUpdateBlogScreen = true
@@ -189,30 +187,24 @@ fun BlogCardItem(
     onExpand: () -> Unit,
     onCollapse: () -> Unit,
 ) {
-    val alpha by animateFloatAsState(
-        targetValue = 1f,
-        animationSpec = tween(durationMillis = 1000),
-        label = "fadeIn"
-    )
 
     Card(
         modifier = modifier
             .fillMaxWidth()
-            .animateContentSize()
-            .alpha(alpha)
             .padding(5.dp)
-            .shadow(8.dp, RoundedCornerShape(16.dp))
-            .then(
-                if (isExpanded) Modifier.clickable(onClick = { onCollapse() }) else Modifier.clickable(
-                    onClick = { onExpand() })
-            ),
-        elevation = CardDefaults.cardElevation(8.dp),
+            .clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = ripple(color = Color.LightGray)
+            ) { if (isExpanded) onCollapse() else onExpand() },
+
+        elevation = CardDefaults.cardElevation(4.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White)
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp, vertical = 8.dp)
+                .animateContentSize()
         ) {
             // Blog image
             AsyncImage(

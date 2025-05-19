@@ -1,4 +1,4 @@
-package controlPanalUser.presentation
+package controlPanalUser.viewModel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -123,7 +123,26 @@ class PanelUserCreationViewModel(
                 .onStart { _state.update { it.copy(isLoading = true) } }
                 .onCompletion { _state.update { it.copy(isLoading = false) } }
                 .collect { result ->
-                    if (result) _state.update { it.copy(isLoading = false, isSuccess = true) }
+                    when (result) {
+                        is AppResult.Success -> {
+                            _state.update {
+                                it.copy(
+                                    isSuccess = true,
+                                    addedUser = result.data,
+                                    isLoading = false
+                                )
+                            }
+                        }
+
+                        is AppResult.Error -> {
+                            _state.update {
+                                it.copy(
+                                    isError = result.error.name,
+                                    isLoading = false
+                                )
+                            }
+                        }
+                    }
                 }
         }
     }

@@ -3,9 +3,11 @@ package services.presentation
 import BackgroundColors
 import PrimaryAppColor
 import SecondaryAppColor
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -25,6 +27,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Icon
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.ripple
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -150,16 +153,19 @@ fun AllServicesListScreen(
                         .fillMaxWidth()
                         .padding(horizontal = 8.dp, vertical = 2.dp)
                 )
+
                 LazyVerticalGrid(
                     columns = GridCells.Adaptive(minSize = 400.dp),
                     modifier = Modifier.fillMaxSize().padding(8.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    items(displayedServices) { service ->
+                    items(
+                        items = displayedServices,
+                        key = { it.id }) { service ->
                         ServicesCard(
                             service = service,
-                            modifier = Modifier,
+                            modifier = Modifier.animateItem(),
                             onUpdateClick = {
                                 currentServiceId = service.id
                                 showUpdateServiceScreen = true
@@ -233,14 +239,15 @@ fun ServicesCard(
             .fillMaxWidth()
             .padding(horizontal = 15.dp, vertical = 5.dp)
             .shadow(6.dp, RoundedCornerShape(16.dp))
-            .then(
-                if (isExpanded) Modifier.clickable(onClick = { onCollapse() }) else Modifier.clickable(
-                    onClick = { onExpand() })
-            ),
+            .clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = ripple(color = Color.LightGray)
+            ) { if (isExpanded) onCollapse() else onExpand() },
+
         colors = CardDefaults.cardColors(containerColor = Color.White),
-        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
-        Column(modifier = Modifier.padding(12.dp)) {
+        Column(modifier = Modifier.padding(12.dp).animateContentSize()) {
             Row(modifier = Modifier.fillMaxWidth()) {
                 val backgroundColor =
                     remember { BackgroundColors.random() }

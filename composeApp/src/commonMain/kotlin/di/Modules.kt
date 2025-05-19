@@ -13,9 +13,10 @@ import blog.viewModel.AddBlogViewModel
 import blog.viewModel.AllBLogListViewModel
 import blog.viewModel.UpdateBlogViewModel
 import controlPanalUser.domain.PanelUserRepository
-import controlPanalUser.presentation.PanelUserCreationViewModel
-import controlPanalUser.presentation.PanelUserScreenViewModel
+import controlPanalUser.viewModel.PanelUserCreationViewModel
+import controlPanalUser.viewModel.PanelUserScreenViewModel
 import controlPanalUser.repository.PanelUserRepositoryImpl
+import controlPanalUser.viewModel.UpdatePanelUserViewModel
 import core.data.HttpClientFactory
 import doctor.domain.DoctorRepository
 import doctor.viewModal.AddDoctorViewModel
@@ -28,7 +29,7 @@ import documents.viewModal.AllRecordsViewModal
 import documents.viewModal.UploadAppointmentRecordsViewModal
 import hospital.domain.HospitalRepository
 import hospital.presentation.HospitalViewModel
-import hospital.repository.DefaultHospitalRepository
+import hospital.repository.HospitalRepositoryImpl
 import login.domain.LoginRepository
 import login.domain.LoginRepositoryImpl
 import login.presentation.LoginViewModel
@@ -51,7 +52,7 @@ expect val platformModule: Module
 val sharedModule = module {
     single { HttpClientFactory.create(get()) }
     singleOf(::DoctorRepositoryImpl).bind<DoctorRepository>()
-    singleOf(::DefaultHospitalRepository).bind<HospitalRepository>()
+    singleOf(::HospitalRepositoryImpl).bind<HospitalRepository>()
     singleOf(::ServicesRepositoryImpl).bind<ServicesRepository>()
     singleOf(::PanelUserRepositoryImpl).bind<PanelUserRepository>()
     singleOf(::LoginRepositoryImpl).bind<LoginRepository>()
@@ -80,4 +81,6 @@ val sharedModule = module {
     viewModel { UpdateBlogViewModel(get(), get()) }
     viewModel { AllServicesListViewModel(get()) }
     viewModel { UpdateServicesViewModel(get()) }
+
+    viewModel { UpdatePanelUserViewModel(get(), get()) }
 }
