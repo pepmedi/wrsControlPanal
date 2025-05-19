@@ -3,6 +3,7 @@ package appointment.presentation
 import BackgroundColors
 import PrimaryAppColor
 import SecondaryAppColor
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
@@ -27,6 +28,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.sharp.Person
+import androidx.compose.material.ripple
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -141,10 +143,7 @@ fun AppointmentsScreen(
                                 val doctor = appointment.doctor
                                 BookingCard(
                                     doctor = doctor,
-                                    modifier = Modifier.animateItem(
-                                        fadeInSpec = null,
-                                        fadeOutSpec = null
-                                    ),
+                                    modifier = Modifier.animateItem(),
                                     appointment = appointment.appointment,
                                     onCancel = {
                                         onAction(
@@ -197,7 +196,8 @@ fun AppointmentsScreen(
 
                 SlideInScreen(showAddRecords) {
                     expandedCardId?.let { it1 ->
-                        AllAppointmentRecordsRoot(appointmentId = it1,
+                        AllAppointmentRecordsRoot(
+                            appointmentId = it1,
                             onBackClick = {
                                 showAddRecords = false
                             })
@@ -227,15 +227,15 @@ fun BookingCard(
         modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 15.dp, vertical = 5.dp)
-            .shadow(6.dp, RoundedCornerShape(16.dp))
-            .then(
-                if (isExpanded) Modifier.clickable(onClick = { onCollapse() }) else Modifier.clickable(
-                    onClick = { onExpand() })
-            ),
+            .clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = ripple(color = Color.LightGray)
+            ) { if (isExpanded) onCollapse() else onExpand() },
+
         colors = CardDefaults.cardColors(containerColor = Color.White),
-        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
-        Column(modifier = Modifier.padding(12.dp)) {
+        Column(modifier = Modifier.padding(12.dp).animateContentSize()) {
             Row(modifier = Modifier.fillMaxWidth()) {
                 val backgroundColor =
                     remember { BackgroundColors.random() }

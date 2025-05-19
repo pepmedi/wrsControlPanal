@@ -65,32 +65,6 @@ fun UpdateInfoScreen() {
                         verticalArrangement = Arrangement.spacedBy(8.dp),
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        item {
-                            ClickableCard(
-                                text = "Add Doctor",
-                                icon = Res.drawable.compose_multiplatform,
-                                onClick = {
-                                    addDoctorUiScreen = true
-                                })
-                        }
-
-                        item {
-                            ClickableCard(
-                                text = "Add Hospital",
-                                icon = Res.drawable.compose_multiplatform,
-                                onClick = {
-                                    addHospitalUiScreen = true
-                                })
-                        }
-
-                        item {
-                            ClickableCard(
-                                text = "Add Services",
-                                icon = Res.drawable.medical_services,
-                                onClick = {
-                                    addServicesUiScreen = true
-                                })
-                        }
 
                         item {
                             ClickableCard(
@@ -101,14 +75,14 @@ fun UpdateInfoScreen() {
                                 })
                         }
 
-                        item {
-                            ClickableCard(
-                                text = "Add Blogs",
-                                icon = Res.drawable.medical_services,
-                                onClick = {
-                                    addBlogUiScreen = true
-                                })
-                        }
+//                        item {
+//                            ClickableCard(
+//                                text = "Add Blogs",
+//                                icon = Res.drawable.medical_services,
+//                                onClick = {
+//                                    addBlogUiScreen = true
+//                                })
+//                        }
                     }
                 }
             }

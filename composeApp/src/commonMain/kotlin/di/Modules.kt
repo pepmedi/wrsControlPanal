@@ -28,7 +28,7 @@ import documents.viewModal.AllRecordsViewModal
 import documents.viewModal.UploadAppointmentRecordsViewModal
 import hospital.domain.HospitalRepository
 import hospital.presentation.HospitalViewModel
-import hospital.repository.DefaultHospitalRepository
+import hospital.repository.HospitalRepositoryImpl
 import login.domain.LoginRepository
 import login.domain.LoginRepositoryImpl
 import login.presentation.LoginViewModel
@@ -51,7 +51,7 @@ expect val platformModule: Module
 val sharedModule = module {
     single { HttpClientFactory.create(get()) }
     singleOf(::DoctorRepositoryImpl).bind<DoctorRepository>()
-    singleOf(::DefaultHospitalRepository).bind<HospitalRepository>()
+    singleOf(::HospitalRepositoryImpl).bind<HospitalRepository>()
     singleOf(::ServicesRepositoryImpl).bind<ServicesRepository>()
     singleOf(::PanelUserRepositoryImpl).bind<PanelUserRepository>()
     singleOf(::LoginRepositoryImpl).bind<LoginRepository>()

@@ -1,4 +1,4 @@
-package hospital.presentation
+package hospital.presentation.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -33,29 +33,35 @@ import component.GradientButton
 import core.CancelButton
 import doctor.screen.components.TextInputField
 import hospital.domain.HospitalMaster
+import hospital.presentation.HospitalActions
+import hospital.presentation.HospitalViewModel
 import kotlinx.coroutines.launch
 import org.koin.compose.viewmodel.koinViewModel
 import util.ToastEvent
 import util.getCurrentTimeStamp
 
 @Composable
-fun AddHospitalScreen(viewModal: HospitalViewModel = koinViewModel(), onBackClick: () -> Unit) {
+fun UpdateHospitalScreen(
+    viewModal: HospitalViewModel = koinViewModel(),
+    hospitalMaster: HospitalMaster,
+    onBackClick: () -> Unit
+) {
 
     val uiState by viewModal.uiState.collectAsStateWithLifecycle()
 
-    var hospitalName by remember { mutableStateOf("") }
-    var address by remember { mutableStateOf("") }
+    var hospitalName by remember { mutableStateOf(hospitalMaster.name) }
+    var address by remember { mutableStateOf(hospitalMaster.address) }
 
     val scope = rememberCoroutineScope()
 
     val toaster = rememberToasterState()
     var toasterEvent by remember { mutableStateOf<ToastEvent?>(null) }
 
-    LaunchedEffect(uiState.hospitalAddedSuccessfully) {
-        if (uiState.hospitalAddedSuccessfully) {
-            viewModal.onAction(HospitalActions.OnHospitalAddedSuccessfully)
+    LaunchedEffect(uiState.updatedSuccessFully) {
+        if (uiState.updatedSuccessFully) {
+            viewModal.onAction(HospitalActions.OnUpdatedSuccessfully)
             toaster.show(
-                message = "Hospital Added Successfully",
+                message = "Hospital Updated Successfully",
                 type = ToastType.Success,
                 action = TextToastAction(
                     text = "Done",
@@ -124,16 +130,17 @@ fun AddHospitalScreen(viewModal: HospitalViewModel = koinViewModel(), onBackClic
                     CircularProgressIndicator()
                 } else {
                     GradientButton(
+                        text = "Update",
                         modifier = Modifier.fillMaxWidth(),
                         onClick = {
                             if (validateForm()) {
                                 viewModal.onAction(
-                                    HospitalActions.OnAddHospital(
+                                    HospitalActions.OnUpdateHospital(
                                         hospitalMaster = HospitalMaster(
-                                            id = "",
+                                            id = hospitalMaster.id,
                                             name = hospitalName,
                                             address = address,
-                                            createdAt = getCurrentTimeStamp(),
+                                            createdAt = hospitalMaster.createdAt,
                                             updatedAt = getCurrentTimeStamp()
                                         )
                                     )

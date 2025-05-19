@@ -4,6 +4,7 @@ enum class SidebarItem(val title: String) {
     APPOINTMENTS("Appointments"),
     BLOGS("Blogs"),
     SERVICES("Services"),
+    HOSPITALS("Hospitals"),
     DOCTORS("Doctors"),
     CPANEL_USERS("C-Panel Users"),
     LOGOUT("Log out");

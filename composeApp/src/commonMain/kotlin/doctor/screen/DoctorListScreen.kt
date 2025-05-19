@@ -121,15 +121,19 @@ fun DoctorListScreen(
                         .fillMaxWidth()
                         .padding(horizontal = 8.dp, vertical = 2.dp)
                 )
+
                 LazyVerticalGrid(
                     columns = GridCells.Adaptive(minSize = 300.dp),
                     modifier = Modifier.fillMaxSize().padding(8.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    items(displayedDoctors) { doctor ->
+                    items(
+                        displayedDoctors,
+                        key = { it.id }) { doctor ->
                         DoctorItem(
-                            doctor,
+                            doctor = doctor,
+                            modifier = Modifier.animateItem(),
                             onDoctorClick = {},
                             isExpanded = expandedCardId == doctor.id,
                             onExpand = { expandedCardId = doctor.id },
@@ -181,6 +185,7 @@ fun DoctorListScreen(
 @Composable
 fun DoctorItem(
     doctor: DoctorMaster,
+    modifier: Modifier,
     onDoctorClick: (DoctorMaster) -> Unit,
     isExpanded: Boolean,
     onExpand: () -> Unit,
@@ -188,7 +193,7 @@ fun DoctorItem(
     onUpdateClick: (String) -> Unit
 ) {
     Card(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .padding(vertical = 5.dp)
             .shadow(8.dp, RoundedCornerShape(16.dp))
