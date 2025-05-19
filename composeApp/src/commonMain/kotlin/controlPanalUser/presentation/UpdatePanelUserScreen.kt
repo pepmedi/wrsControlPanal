@@ -1,18 +1,10 @@
 package controlPanalUser.presentation
 
 import PrimaryAppColor
-import SecondaryAppColor
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
@@ -24,11 +16,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.RadioButton
-import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Switch
-import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -39,21 +27,19 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.dokar.sonner.TextToastAction
 import com.dokar.sonner.ToastType
 import com.dokar.sonner.Toaster
 import com.dokar.sonner.rememberToasterState
 import component.GradientButton
-import controlPanalUser.domain.PanelUserCreationAction
-import controlPanalUser.domain.PanelUserCreationUiState
 import controlPanalUser.domain.UserMasterControlPanel
 import controlPanalUser.domain.UserRole
 import controlPanalUser.presentation.component.DoctorListDialog
-import controlPanalUser.viewModel.PanelUserCreationViewModel
+import controlPanalUser.viewModel.PanelUserUpdateScreenAction
+import controlPanalUser.viewModel.UpdatePanelUserUiState
+import controlPanalUser.viewModel.UpdatePanelUserViewModel
 import core.CancelButton
 import doctor.screen.components.TextInputField
 import org.koin.compose.viewmodel.koinViewModel
@@ -61,16 +47,20 @@ import util.ToastEvent
 import util.Util.toNameFormat
 
 @Composable
-fun PanelUserCreationScreenRoot(
-    viewModel: PanelUserCreationViewModel = koinViewModel(),
-    onSuccessful: (UserMasterControlPanel?) -> Unit,
-    onBackClick: () -> Unit
+fun UpdatePanelUserScreenRoot(
+    viewModel: UpdatePanelUserViewModel = koinViewModel(),
+    currentUser: UserMasterControlPanel,
+    onBackClick: () -> Unit,
+    onUpdate: (UserMasterControlPanel?) -> Unit
 ) {
-
     val uiState by viewModel.state.collectAsStateWithLifecycle()
 
     val toaster = rememberToasterState { }
     var toasterEvent by remember { mutableStateOf<ToastEvent?>(null) }
+
+    LaunchedEffect(currentUser) {
+        viewModel.onAction(PanelUserUpdateScreenAction.OnCurrentUserReceived(currentUser))
+    }
 
     LaunchedEffect(toasterEvent?.id) {
         toasterEvent?.let {
@@ -91,7 +81,7 @@ fun PanelUserCreationScreenRoot(
                 message = "Doctor Data updated successfully",
                 type = ToastType.Success
             )
-            onSuccessful(uiState.addedUser)
+            onUpdate(uiState.updatedUser)
             viewModel.resetData()
             onBackClick()
         } else if (uiState.isError.isNotEmpty()) {
@@ -99,12 +89,12 @@ fun PanelUserCreationScreenRoot(
         }
     }
 
-    PanelUserCreationScreen(
+    UpdatePanelUserScreen(
         uiState = uiState,
         onAction = { action ->
             when (action) {
-                is PanelUserCreationAction.OnBackButtonClicked -> onBackClick()
-                is PanelUserCreationAction.OnCreateUserButtonClicked -> {
+                is PanelUserUpdateScreenAction.OnBackButtonClicked -> onBackClick()
+                is PanelUserUpdateScreenAction.OnUpdateUserButtonClicked -> {
                     if (!uiState.isFormValid) {
                         toasterEvent = ToastEvent(uiState.getErrorMessage())
                     }
@@ -120,15 +110,13 @@ fun PanelUserCreationScreenRoot(
         richColors = true,
         alignment = Alignment.TopEnd
     )
-
 }
 
 @Composable
-fun PanelUserCreationScreen(
-    uiState: PanelUserCreationUiState,
-    onAction: (PanelUserCreationAction) -> Unit,
+fun UpdatePanelUserScreen(
+    uiState: UpdatePanelUserUiState,
+    onAction: (PanelUserUpdateScreenAction) -> Unit
 ) {
-
     MaterialTheme {
         Scaffold(containerColor = Color.White) { paddingValue ->
             Box(
@@ -155,7 +143,7 @@ fun PanelUserCreationScreen(
                                 value = uiState.userName,
                                 onValueChange = {
                                     onAction(
-                                        PanelUserCreationAction.OnUserNameChanged(
+                                        PanelUserUpdateScreenAction.OnUserNameChanged(
                                             it
                                         )
                                     )
@@ -170,7 +158,7 @@ fun PanelUserCreationScreen(
                                 value = uiState.userPass,
                                 onValueChange = {
                                     onAction(
-                                        PanelUserCreationAction.OnUserPassChanged(
+                                        PanelUserUpdateScreenAction.OnUserPassChanged(
                                             it
                                         )
                                     )
@@ -186,7 +174,7 @@ fun PanelUserCreationScreen(
                             // Employee Switch Section
                             CreateActiveSwitch(uiState.isActive) {
                                 onAction(
-                                    PanelUserCreationAction.OnIsActiveChanged(
+                                    PanelUserUpdateScreenAction.OnIsActiveChanged(
                                         it
                                     )
                                 )
@@ -203,7 +191,7 @@ fun PanelUserCreationScreen(
                                         UserRole.DOCTOR -> "1"
                                         UserRole.EMPLOYEE -> "2"
                                     }
-                                    onAction(PanelUserCreationAction.OnUserRoleChanged(empType))
+                                    onAction(PanelUserUpdateScreenAction.OnUserRoleChanged(empType))
                                 })
                         }
 
@@ -215,7 +203,7 @@ fun PanelUserCreationScreen(
                                     value = uiState.selectedDoctor.name.toNameFormat(),
                                     onValueChange = {
                                         onAction(
-                                            PanelUserCreationAction.OnUserPassChanged(
+                                            PanelUserUpdateScreenAction.OnUserPassChanged(
                                                 it
                                             )
                                         )
@@ -225,7 +213,7 @@ fun PanelUserCreationScreen(
                                     enabled = false,
                                     onClick = {
                                         onAction(
-                                            PanelUserCreationAction.OnShowDoctorListClicked(
+                                            PanelUserUpdateScreenAction.OnShowDoctorListClicked(
                                                 true
                                             )
                                         )
@@ -248,7 +236,7 @@ fun PanelUserCreationScreen(
                                     isChecked
                                 ) {
                                     onAction(
-                                        PanelUserCreationAction.OnUserPermissionsChanged(
+                                        PanelUserUpdateScreenAction.OnUserPermissionsChanged(
                                             permission
                                         )
                                     )
@@ -262,16 +250,16 @@ fun PanelUserCreationScreen(
                             } else {
 
                                 GradientButton(
-                                    text = "Submit",
+                                    text = "Update",
                                     modifier = Modifier.fillMaxWidth(),
                                     onClick = {
-                                        onAction(PanelUserCreationAction.OnCreateUserButtonClicked)
+                                        onAction(PanelUserUpdateScreenAction.OnUpdateUserButtonClicked)
                                     })
                             }
                         }
 
                         item {
-                            CancelButton(onBackClick = { onAction(PanelUserCreationAction.OnBackButtonClicked) })
+                            CancelButton(onBackClick = { onAction(PanelUserUpdateScreenAction.OnBackButtonClicked) })
                         }
                     }
                 }
@@ -279,128 +267,16 @@ fun PanelUserCreationScreen(
                 if (uiState.showDoctorList) {
                     DoctorListDialog(
                         doctorList = uiState.doctorList,
-                        onDismiss = { onAction(PanelUserCreationAction.OnShowDoctorListClicked(false)) },
-                        onSubmit = { onAction(PanelUserCreationAction.OnSelectedDoctorChanged(it)) })
+                        onDismiss = {
+                            onAction(
+                                PanelUserUpdateScreenAction.OnShowDoctorListClicked(
+                                    false
+                                )
+                            )
+                        },
+                        onSubmit = { onAction(PanelUserUpdateScreenAction.OnSelectedDoctorChanged(it)) })
                 }
             }
         }
-    }
-}
-
-
-@Composable
-fun CreateActiveSwitch(iaActive: Boolean, onSwitchChange: (Boolean) -> Unit) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 16.dp)
-            .border(0.5.dp, Color.Black, RoundedCornerShape(2.dp)),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Text(
-            text = "Is Active",
-            modifier = Modifier.weight(1f).padding(start = 5.dp),
-            color = Color.Black,
-            style = MaterialTheme.typography.bodyLarge
-        )
-        Switch(
-            checked = iaActive,
-            onCheckedChange = onSwitchChange,
-            colors = SwitchDefaults.colors(
-                checkedThumbColor = Color.Yellow,
-                checkedTrackColor = Color.DarkGray
-            ),
-            modifier = Modifier.padding(end = 5.dp)
-        )
-    }
-    Spacer(modifier = Modifier.height(10.dp))
-}
-
-@Composable
-fun CreateTitle() {
-    Text(
-        text = "Create new User",
-        fontSize = 24.sp,
-        fontWeight = FontWeight.Bold,
-        color = SecondaryAppColor
-    )
-    Spacer(modifier = Modifier.height(16.dp))
-}
-
-@Composable
-fun UserRoleSelector(
-    selectedRole: String,
-    onRoleSelected: (UserRole) -> Unit
-) {
-    val userRole = when (selectedRole) {
-        "0" -> UserRole.ADMIN
-        "1" -> UserRole.DOCTOR
-        "2" -> UserRole.EMPLOYEE
-        else -> null
-    }
-
-    Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
-        Text(
-            text = "Select Role",
-            style = MaterialTheme.typography.titleMedium,
-            color = Color.Black,
-            modifier = Modifier.padding(bottom = 8.dp)
-        )
-
-        UserRole.entries.forEach { role ->
-            Row(
-                horizontalArrangement = Arrangement.Start,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 4.dp)
-                    .clickable { onRoleSelected(role) }
-            ) {
-                RadioButton(
-                    selected = role == userRole,
-                    onClick = { onRoleSelected(role) },
-                    colors = RadioButtonDefaults.colors(
-                        selectedColor = Color.Yellow,
-                        unselectedColor = Color.DarkGray
-                    )
-                )
-                Text(
-                    text = role.name.lowercase().replaceFirstChar { it.uppercase() },
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = Color.Black
-                )
-            }
-        }
-    }
-}
-
-
-@Composable
-fun CreatePermissionRow(
-    permission: String,
-    isChecked: Boolean,
-    onCheckedChange: (Boolean) -> Unit
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 16.dp)
-            .border(0.5.dp, Color.Black, RoundedCornerShape(2.dp)),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Text(
-            text = permission,
-            modifier = Modifier.weight(1f).padding(start = 5.dp),
-            color = Color.Black,
-            style = MaterialTheme.typography.bodyLarge
-        )
-        Switch(
-            checked = isChecked,
-            onCheckedChange = onCheckedChange,
-            colors = SwitchDefaults.colors(
-                checkedThumbColor = Color.Yellow,
-                checkedTrackColor = Color.DarkGray
-            ),
-            modifier = Modifier.padding(end = 5.dp)
-        )
     }
 }

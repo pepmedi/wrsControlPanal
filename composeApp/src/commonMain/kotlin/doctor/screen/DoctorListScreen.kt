@@ -6,6 +6,7 @@ import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -25,6 +26,7 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material.Icon
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.ripple
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -129,7 +131,7 @@ fun DoctorListScreen(
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     items(
-                        displayedDoctors,
+                        items = displayedDoctors,
                         key = { it.id }) { doctor ->
                         DoctorItem(
                             doctor = doctor,
@@ -196,12 +198,12 @@ fun DoctorItem(
         modifier = modifier
             .fillMaxWidth()
             .padding(vertical = 5.dp)
-            .shadow(8.dp, RoundedCornerShape(16.dp))
-            .then(
-                if (isExpanded) Modifier.clickable(onClick = { onCollapse() }) else Modifier.clickable(
-                    onClick = { onExpand() })
-            ),
-        elevation = CardDefaults.cardElevation(8.dp),
+            .clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = ripple(color = Color.LightGray)
+            ) { if (isExpanded) onCollapse() else onExpand() },
+
+        elevation = CardDefaults.cardElevation(4.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White)
     ) {
         Column(

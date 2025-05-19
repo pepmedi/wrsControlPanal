@@ -7,6 +7,7 @@ import controlPanalUser.domain.UserRole
 import controlPanalUser.domain.UserSession
 import controlPanalUser.repository.SessionManager
 import core.domain.AppResult
+import core.domain.onSuccess
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
@@ -28,13 +29,15 @@ class LoginViewModel(
     fun onPasswordChange(value: String) {
         _uiState.update { it.copy(password = value) }
     }
-    fun onErrorMessageChange(){
+
+    fun onErrorMessageChange() {
         _uiState.update { it.copy(errorMessage = ToastEvent()) }
     }
 
     fun resetLoginUiState() {
         _uiState.value = LoginUiState()
     }
+
     fun login() {
         viewModelScope.launch {
             _uiState.update {
