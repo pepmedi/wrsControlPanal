@@ -221,7 +221,7 @@ fun UpdateBlogScreen(
                 } else {
                     GradientButton(
                         modifier = Modifier.fillMaxWidth(),
-                        text = "Submit",
+                        text = "Update",
                         onClick = { onAction(UpdateBlogAction.OnSubmit) },
                         enable = uiState.isFormValid
                     )

@@ -36,7 +36,7 @@ class PatientDocumentRepositoryImpl(private val httpClient: HttpClient) :
         mimeType: String
     ): Result<Unit> {
         return try {
-            val url = "$BASE_URL/${DatabaseCollection.PATIENTs_MEDICAL_RECORDS}"
+            val url = "$BASE_URL/${DatabaseCollection.PATIENT_MEDICAL_RECORDS}"
 
             val documentDetails = uploadDocumentToFirebaseStorage(
                 httpClient = httpClient,
@@ -100,7 +100,7 @@ class PatientDocumentRepositoryImpl(private val httpClient: HttpClient) :
     }
 
     override suspend fun getAllPatientDocument(): AppResult<List<PatientMedicalRecordsMaster>, DataError.Remote> {
-        val url = "$BASE_URL/${DatabaseCollection.PATIENTs_MEDICAL_RECORDS}"
+        val url = "$BASE_URL/${DatabaseCollection.PATIENT_MEDICAL_RECORDS}"
         return try {
             val result: AppResult<DatabaseDocumentsResponse, DataError.Remote> = safeCall {
                 httpClient.get(url) {

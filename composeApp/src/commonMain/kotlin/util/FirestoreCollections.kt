@@ -10,14 +10,16 @@ object DatabaseCollection {
     const val PANEL_USER = "panelUser"
     const val SLOTS = "slots"
     const val BLOGS = "blogs"
-    const val PATIENTs_MEDICAL_RECORDS = "patientMedicalRecords"
+    const val PATIENT_MEDICAL_RECORDS = "patientMedicalRecords"
 }
 
 object AuthKey {
     const val AUTH_KEY = "auth"
 }
+
 object StorageCollection {
     const val DOCTOR_IMAGES = "doctorImages"
+    const val DOCTOR_INFO_IMAGES = "doctorInfoImages"
     const val SERVICE_IMAGES = "serviceImages"
     const val SERVICE_ICON = "serviceIcon"
     const val BLOG_IMAGES = "blogImages"

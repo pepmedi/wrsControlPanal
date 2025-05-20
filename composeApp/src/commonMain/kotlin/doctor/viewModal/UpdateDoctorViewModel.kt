@@ -90,6 +90,10 @@ class UpdateDoctorViewModel(
             is UpdateDoctorActions.OnCareerPathChange -> {
                 _state.update { it.copy(doctorDetails = it.doctorDetails.copy(careerPath = action.path)) }
             }
+
+            is UpdateDoctorActions.OnDoctorInfoPicChange -> {
+                _state.update { it.copy(infoPicChange = action.pic) }
+            }
         }
     }
 
@@ -115,22 +119,26 @@ class UpdateDoctorViewModel(
                         qualification = doctorState.qualification,
                         updatedAt = getCurrentTimeStamp()
                     ),
-                    imageFile = _state.value.profilePicChange
+                    profileImageFile = _state.value.profilePicChange,
+                    infoImageFile = _state.value.infoPicChange
                 )
                 .collect { result ->
                     when (result) {
                         is AppResult.Success -> {
-                            if (result.data == null) {
-                                _state.update { it.copy(isUpdating = false, isSuccessful = true) }
-                            } else {
-                                _state.update {
-                                    it.copy(
-                                        doctorDetails = doctorState.copy(profilePic = result.data),
-                                        isUpdating = false,
-                                        isSuccessful = false
-                                    )
-                                }
+                            val (profilePic, doctorInfoPic) = result.data
+
+                            _state.update {
+                                it.copy(
+                                    doctorDetails = doctorState.copy(
+                                        profilePic = profilePic ?: doctorState.profilePic,
+                                        doctorInfoPic = doctorInfoPic
+                                            ?: doctorState.doctorInfoPic
+                                    ),
+                                    isUpdating = false,
+                                    isSuccessful = true
+                                )
                             }
+                            _state.update { it.copy(isSuccessful = true) }
                         }
 
                         is AppResult.Error -> {
@@ -248,13 +256,15 @@ data class UpdateDoctorUiState(
 
     val slotsList: List<SlotsMaster> = emptyList(),
     val selectedSlots: List<SlotsMaster> = emptyList(),
-    val profilePicChange: File? = null
+    val profilePicChange: File? = null,
+    val infoPicChange: File? = null
 ) {
     val isFormValid: Boolean
         get() = selectedHospitals.isNotEmpty() && selectedServices.isNotEmpty()
                 && selectedSlots.isNotEmpty() && doctorDetails.name.isNotEmpty()
                 && doctorDetails.age.isNotEmpty() && doctorDetails.qualification.isNotEmpty()
                 && doctorDetails.experience.isNotEmpty() && doctorDetails.profilePic.isNotEmpty()
+                && (doctorDetails.doctorInfoPic.isNotEmpty() || infoPicChange != null)
 
     fun getErrorMessage(): String {
         return when {
@@ -266,6 +276,7 @@ data class UpdateDoctorUiState(
             doctorDetails.qualification.isEmpty() -> "Qualification fee cannot be empty."
             doctorDetails.experience.isEmpty() -> "Doctor experience cannot be empty."
             doctorDetails.profilePic.isEmpty() -> "Profile picture cannot be empty."
+            (doctorDetails.doctorInfoPic.isEmpty() || infoPicChange != null) -> "Doctor info picture cannot be empty."
             else -> ""
         }
     }
@@ -282,6 +293,7 @@ sealed interface UpdateDoctorActions {
     data class OnServicesChange(val services: List<ServicesMaster>) : UpdateDoctorActions
     data class OnSlotsChange(val slots: List<SlotsMaster>) : UpdateDoctorActions
     data class OnProfilePicChange(val pic: File?) : UpdateDoctorActions
+    data class OnDoctorInfoPicChange(val pic: File?) : UpdateDoctorActions
     data class OnCareerPathChange(val path: String) : UpdateDoctorActions
     data class OnFocusChange(val focus: String) : UpdateDoctorActions
     data class OnProfileTextChange(val text: String) : UpdateDoctorActions
