@@ -1,8 +1,10 @@
 package doctor.screen.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -127,8 +129,11 @@ fun UpdateDoctorDetailsScreen(
     var showServiceList by remember { mutableStateOf(false) }
     var showSlotsList by remember { mutableStateOf(false) }
 
-    var imageBitmap1 by remember { mutableStateOf<ImageBitmap?>(null) }
-    var imageFile1 by remember { mutableStateOf<File?>(null) }
+    var doctorProfileImageBitmap by remember { mutableStateOf<ImageBitmap?>(null) }
+    var doctorProfileImageFile by remember { mutableStateOf<File?>(null) }
+
+    var doctorInfoImageBitmap by remember { mutableStateOf<ImageBitmap?>(null) }
+    var doctorInfoImageFile by remember { mutableStateOf<File?>(null) }
 
     val scope = rememberCoroutineScope()
 
@@ -232,21 +237,51 @@ fun UpdateDoctorDetailsScreen(
                         onClick = { showSlotsList = true }
                     )
 
-                    //first image
-                    ImageSelector(
-                        imageBitmap = imageBitmap1,
-                        onImageSelected = { file ->
-                            scope.launch {
-                                imageFile1 = FileCompressor.loadAndCompressImage(file)
-                                imageBitmap1 = loadAndCompressImage(file)
-                                onAction(UpdateDoctorActions.OnProfilePicChange(imageFile1))
-                            }
-                        },
-                        errorMessage = { message ->
-                            toasterEvent(ToastEvent(message))
-                        },
-                        imageUrl = uiState.doctorDetails.profilePic
-                    )
+                    Row(modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceAround) {
+                        //first image
+                        ImageSelector(
+                            text = "Doctor Profile Picture",
+                            imageBitmap = doctorProfileImageBitmap,
+                            onImageSelected = { file ->
+                                scope.launch {
+                                    doctorProfileImageFile =
+                                        FileCompressor.loadAndCompressImage(file)
+                                    doctorProfileImageBitmap = loadAndCompressImage(file)
+                                    onAction(
+                                        UpdateDoctorActions.OnProfilePicChange(
+                                            doctorProfileImageFile
+                                        )
+                                    )
+                                }
+                            },
+                            errorMessage = { message ->
+                                toasterEvent(ToastEvent(message))
+                            },
+                            imageUrl = uiState.doctorDetails.profilePic
+                        )
+
+                        //first image
+                        ImageSelector(
+                            text = "Doctor Information Image",
+                            imageBitmap = doctorInfoImageBitmap,
+                            onImageSelected = { file ->
+                                scope.launch {
+                                    doctorInfoImageFile = FileCompressor.loadAndCompressImage(file)
+                                    doctorInfoImageBitmap = loadAndCompressImage(file)
+                                    onAction(
+                                        UpdateDoctorActions.OnDoctorInfoPicChange(
+                                            doctorInfoImageFile
+                                        )
+                                    )
+                                }
+                            },
+                            errorMessage = { message ->
+                                toasterEvent(ToastEvent(message))
+                            },
+                            imageUrl = uiState.doctorDetails.doctorInfoPic
+                        )
+                    }
 
                     if (uiState.isUpdating) {
                         AppCircularProgressIndicator()

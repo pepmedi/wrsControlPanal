@@ -44,7 +44,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -57,7 +56,6 @@ import core.components.SearchBar
 import hospital.domain.HospitalMaster
 import hospital.presentation.components.UpdateHospitalScreen
 import org.koin.compose.viewmodel.koinViewModel
-import util.Util.toNameFormat
 import util.toTitleCase
 
 @Composable
@@ -219,8 +217,6 @@ fun HospitalCard(
             }
 
             if (isExpanded) {
-
-                Spacer(modifier = Modifier.height(8.dp))
 
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(12.dp),

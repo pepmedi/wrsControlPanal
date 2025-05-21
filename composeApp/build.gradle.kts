@@ -49,6 +49,7 @@ kotlin {
             api(libs.datastore)
 
             implementation(libs.sonner)
+            implementation(compose.animation)
         }
 
         desktopMain.dependencies {

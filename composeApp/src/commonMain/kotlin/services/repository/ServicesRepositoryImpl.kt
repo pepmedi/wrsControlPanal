@@ -229,7 +229,7 @@ class ServicesRepositoryImpl(private val httpClient: HttpClient) : ServicesRepos
                                 updatedFields.keys.joinToString("&updateMask.fieldPaths=")
 
                             val patchImageResponse = httpClient.patch(
-                                "$BASE_URL/${DatabaseCollection.SERVICES}/${service.id}?updateMask.fieldPaths=$fieldPaths"
+                                "$BASE_URL/${service.id}?updateMask.fieldPaths=$fieldPaths"
                             ) {
                                 contentType(ContentType.Application.Json)
                                 setBody(DatabaseRequest(fields = updatedFields))

@@ -55,6 +55,7 @@ class DoctorRepositoryImpl(private val httpClient: HttpClient) : DoctorRepositor
                             age = (fields["age"] as? DatabaseValue.StringValue)?.stringValue.orEmpty(),
                             qualification = (fields["qualification"] as? DatabaseValue.StringValue)?.stringValue.orEmpty(),
                             profilePic = (fields["profilePic"] as? DatabaseValue.StringValue)?.stringValue.orEmpty(),
+                            doctorInfoPic = (fields["doctorInfoPic"] as? DatabaseValue.StringValue)?.stringValue.orEmpty(),
                             consltFee = (fields["consltFee"] as? DatabaseValue.StringValue)?.stringValue.orEmpty(),
                             reviews = (fields["reviews"] as? DatabaseValue.StringValue)?.stringValue.orEmpty(),
 
@@ -82,7 +83,8 @@ class DoctorRepositoryImpl(private val httpClient: HttpClient) : DoctorRepositor
 
     override suspend fun addDoctorToDatabase(
         doctor: DoctorMaster,
-        imageFile: File
+        profileImageFile: File,
+        infoImageFile: File
     ): Flow<AppResult<DoctorMaster, DataError.Remote>> =
         flow {
             val url = "$BASE_URL/${DatabaseCollection.DOCTORS}"
@@ -150,21 +152,38 @@ class DoctorRepositoryImpl(private val httpClient: HttpClient) : DoctorRepositor
 
                 if (patchResponse.status == HttpStatusCode.OK) {
 
-                    val downloadUrl = uploadImageToFirebaseStorage(
+                    val profileImageUrl = uploadImageToFirebaseStorage(
                         httpClient = httpClient,
-                        file = imageFile,
+                        file = profileImageFile,
                         folderName = StorageCollection.DOCTOR_IMAGES,
                         fileName = generatedId
                     )
 
+                    val infoImageUrl = uploadImageToFirebaseStorage(
+                        httpClient = httpClient,
+                        file = profileImageFile,
+                        folderName = StorageCollection.DOCTOR_INFO_IMAGES,
+                        fileName = generatedId
+                    )
+
                     val patchImageResponse =
-                        httpClient.patch("$url/$generatedId?updateMask.fieldPaths=profilePic") {
+                        httpClient.patch(
+                            "$url/$generatedId?${
+                                buildUpdateMask(
+                                    "profilePic",
+                                    "doctorInfoPic"
+                                )
+                            }"
+                        ) {
                             contentType(ContentType.Application.Json)
                             setBody(
                                 DatabaseRequest(
                                     fields = mapOf(
                                         "profilePic" to DatabaseValue.StringValue(
-                                            downloadUrl
+                                            profileImageUrl
+                                        ),
+                                        "doctorInfoPic" to DatabaseValue.StringValue(
+                                            infoImageUrl
                                         )
                                     )
                                 )
@@ -174,7 +193,8 @@ class DoctorRepositoryImpl(private val httpClient: HttpClient) : DoctorRepositor
                     if (patchImageResponse.status == HttpStatusCode.OK) {
                         val updatedDoctor = doctor.copy(
                             id = generatedId,
-                            profilePic = downloadUrl
+                            profilePic = profileImageUrl,
+                            doctorInfoPic = infoImageUrl
                         )
                         emit(AppResult.Success(updatedDoctor))
                     } else {
@@ -212,6 +232,7 @@ class DoctorRepositoryImpl(private val httpClient: HttpClient) : DoctorRepositor
                             name = (fields["name"] as? DatabaseValue.StringValue)?.stringValue.orEmpty(),
                             age = (fields["age"] as? DatabaseValue.StringValue)?.stringValue.orEmpty(),
                             profilePic = (fields["profilePic"] as? DatabaseValue.StringValue)?.stringValue.orEmpty(),
+                            doctorInfoPic = (fields["doctorInfoPic"] as? DatabaseValue.StringValue)?.stringValue.orEmpty(),
                             qualification = (fields["qualification"] as? DatabaseValue.StringValue)?.stringValue.orEmpty(),
                             consltFee = (fields["consltFee"] as? DatabaseValue.StringValue)?.stringValue.orEmpty(),
                             reviews = (fields["reviews"] as? DatabaseValue.StringValue)?.stringValue.orEmpty(),
@@ -244,8 +265,9 @@ class DoctorRepositoryImpl(private val httpClient: HttpClient) : DoctorRepositor
 
     override suspend fun updateDoctor(
         doctor: DoctorMaster,
-        imageFile: File?
-    ): Flow<AppResult<String?, DataError.Remote>> = flow {
+        profileImageFile: File?,
+        infoImageFile: File?
+    ): Flow<AppResult<Pair<String?, String?>, DataError.Remote>> = flow {
         try {
             // Step 1: Update doctor details first
             val patchResponse = httpClient.patch(
@@ -295,40 +317,75 @@ class DoctorRepositoryImpl(private val httpClient: HttpClient) : DoctorRepositor
 
             if (patchResponse.status == HttpStatusCode.OK) {
                 // Step 2: Upload image if available
-                if (imageFile != null) {
-                    val downloadUrl = uploadImageToFirebaseStorage(
-                        httpClient = httpClient,
-                        file = imageFile,
-                        folderName = StorageCollection.DOCTOR_IMAGES,
-                        fileName = doctor.id
-                    )
+                if (profileImageFile != null || infoImageFile != null) {
 
-                    val patchImageResponse = httpClient.patch(
-                        "$BASE_URL/${DatabaseCollection.DOCTORS}/${doctor.id}?updateMask.fieldPaths=profilePic"
-                    ) {
-                        contentType(ContentType.Application.Json)
-                        setBody(
-                            DatabaseRequest(
-                                fields = mapOf(
-                                    "profilePic" to DatabaseValue.StringValue(downloadUrl)
+                    val updatedFields = mutableMapOf<String, DatabaseValue>()
+                    var updatedProfileImageUrl: String? = null
+                    var updatedInfoImageUrl: String? = null
+
+                    if (profileImageFile != null) {
+                        updatedProfileImageUrl = uploadImageToFirebaseStorage(
+                            httpClient = httpClient,
+                            file = profileImageFile,
+                            folderName = StorageCollection.DOCTOR_IMAGES,
+                            fileName = doctor.id
+                        )
+                        updatedFields["profilePic"] =
+                            DatabaseValue.StringValue(updatedProfileImageUrl)
+                    }
+
+                    if (infoImageFile != null) {
+                        updatedInfoImageUrl = uploadImageToFirebaseStorage(
+                            httpClient = httpClient,
+                            file = infoImageFile,
+                            folderName = StorageCollection.DOCTOR_INFO_IMAGES,
+                            fileName = doctor.id
+                        )
+                        updatedFields["doctorInfoPic"] =
+                            DatabaseValue.StringValue(updatedInfoImageUrl)
+                    }
+
+                    if (updatedFields.isNotEmpty()) {
+                        val fieldPaths =
+                            updatedFields.keys.joinToString("&updateMask.fieldPaths=")
+
+                        val patchImageResponse = httpClient.patch(
+                            "$BASE_URL/${DatabaseCollection.DOCTORS}/${doctor.id}?updateMask.fieldPaths=$fieldPaths"
+                        ) {
+                            contentType(ContentType.Application.Json)
+                            setBody(DatabaseRequest(fields = updatedFields))
+                        }
+
+                        if (patchImageResponse.status == HttpStatusCode.OK) {
+                            emit(
+                                AppResult.Success(
+                                    Pair(
+                                        updatedProfileImageUrl,
+                                        updatedInfoImageUrl
+                                    )
                                 )
                             )
-                        )
+                        } else {
+                            emit(AppResult.Error(DataError.Remote.SERVER))
+                        }
                     }
 
-                    if (patchImageResponse.status == HttpStatusCode.OK) {
-                        emit(AppResult.Success(downloadUrl)) // ✅ emit URL if uploaded
-                    } else {
-                        emit(AppResult.Error(DataError.Remote.SERVER))
-                    }
                 } else {
-                    emit(AppResult.Success(null)) // ✅ emit success but no image uploaded
+                    emit(
+                        AppResult.Success(
+                            Pair(
+                                null,
+                                null
+                            )
+                        )
+                    ) // ✅ emit success but no image uploaded
                 }
             } else {
                 emit(AppResult.Error(DataError.Remote.SERVER))
             }
         } catch (e: Exception) {
             e.printStackTrace()
+            println(e.localizedMessage)
             emit(AppResult.Error(DataError.Remote.SERVER))
         }
     }.flowOn(Dispatchers.IO)

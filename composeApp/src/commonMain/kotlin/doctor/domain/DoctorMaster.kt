@@ -9,6 +9,7 @@ data class DoctorMaster(
     val experience: String = "",
     val age: String = "",
     val profilePic: String = "",
+    val doctorInfoPic :String = "",
     val hospital: List<String> = emptyList(),
     val services: List<String> = emptyList(),
     val slots: List<String> = emptyList(),

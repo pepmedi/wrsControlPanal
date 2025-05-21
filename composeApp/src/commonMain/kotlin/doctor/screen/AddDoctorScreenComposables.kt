@@ -3,6 +3,7 @@ package doctor.screen
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -11,7 +12,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -72,8 +72,12 @@ fun AddDoctorScreen(
     var qualification by remember { mutableStateOf("") }
 
     var speciality by remember { mutableStateOf("") }
-    var imageBitmap1 by remember { mutableStateOf<ImageBitmap?>(null) }
-    var imageFile1 by remember { mutableStateOf<File?>(null) }
+
+    var doctorProfileImageBitmap by remember { mutableStateOf<ImageBitmap?>(null) }
+    var doctorProfileImageFile by remember { mutableStateOf<File?>(null) }
+
+    var doctorInfoImageBitmap by remember { mutableStateOf<ImageBitmap?>(null) }
+    var doctorInfoImageFile by remember { mutableStateOf<File?>(null) }
 
     val scope = rememberCoroutineScope()
 
@@ -141,6 +145,8 @@ fun AddDoctorScreen(
         if (qualification.isBlank()) errors.add("Qualification Fee is required.")
         if (speciality.isBlank()) errors.add("Speciality is required.")
         if (selectedSlots.isEmpty()) errors.add("Slots Are required")
+        if (doctorProfileImageFile == null) errors.add("Profile Image is required")
+        if (doctorInfoImageFile == null) errors.add("Info Image is required")
 
         if (errors.isNotEmpty()) {
             toasterEvent = ToastEvent(errors.first())
@@ -244,18 +250,38 @@ fun AddDoctorScreen(
                         onClick = { showSlotsList = true }
                     )
 
-                    //first image
-                    ImageSelector(
-                        imageBitmap = imageBitmap1,
-                        onImageSelected = { file ->
-                            scope.launch {
-                                imageFile1 = FileCompressor.loadAndCompressImage(file)
-                                imageBitmap1 = loadAndCompressImage(file)
-                            }
-                        },
-                        errorMessage = { message ->
-                            toasterEvent = ToastEvent(message)
-                        })
+                    Row {
+
+                        ImageSelector(
+                            text = "Doctor Profile Picture",
+                            imageBitmap = doctorProfileImageBitmap,
+                            onImageSelected = { file ->
+                                scope.launch {
+                                    doctorProfileImageFile =
+                                        FileCompressor.loadAndCompressImage(file)
+                                    doctorProfileImageBitmap = loadAndCompressImage(file)
+                                }
+                            },
+                            errorMessage = { message ->
+                                toasterEvent = ToastEvent(message)
+                            })
+
+                        ImageSelector(
+                            text = "Doctor Information Image",
+                            imageBitmap = doctorInfoImageBitmap,
+                            onImageSelected = { file ->
+                                scope.launch {
+                                    doctorInfoImageFile = FileCompressor.loadAndCompressImage(
+                                        file,
+                                        compressionThreshold = 250
+                                    )
+                                    doctorInfoImageBitmap = loadAndCompressImage(file)
+                                }
+                            },
+                            errorMessage = { message ->
+                                toasterEvent = ToastEvent(message)
+                            })
+                    }
 
                     if (doctorSubmissionState == DoctorSubmissionState.Loading) {
                         CircularProgressIndicator()
@@ -265,7 +291,7 @@ fun AddDoctorScreen(
                             onClick = {
                                 if (validateForm()) {
                                     scope.launch {
-                                        imageFile1?.let { doctorImage ->
+                                        doctorInfoImageFile?.let { doctorImage ->
                                             viewModal.addDoctor(
                                                 doctorsMaster = DoctorMaster(
                                                     id = "",
@@ -284,7 +310,8 @@ fun AddDoctorScreen(
                                                     updatedAt = getCurrentTimeStamp(),
                                                     createdAt = getCurrentTimeStamp()
                                                 ),
-                                                file = doctorImage
+                                                doctorProfileImage = doctorImage,
+                                                doctorInfoImage = doctorInfoImageFile!!
                                             )
                                         }
                                     }
