@@ -36,7 +36,7 @@ import com.dokar.sonner.rememberToasterState
 import component.GradientButton
 import controlPanalUser.domain.UserMasterControlPanel
 import controlPanalUser.domain.UserRole
-import controlPanalUser.presentation.component.DoctorListDialog
+import controlPanalUser.presentation.component.DoctorListMultiDialog
 import controlPanalUser.viewModel.PanelUserUpdateScreenAction
 import controlPanalUser.viewModel.UpdatePanelUserUiState
 import controlPanalUser.viewModel.UpdatePanelUserViewModel
@@ -44,7 +44,7 @@ import core.CancelButton
 import doctor.screen.components.TextInputField
 import org.koin.compose.viewmodel.koinViewModel
 import util.ToastEvent
-import util.Util.toNameFormat
+import util.toTitleCase
 
 @Composable
 fun UpdatePanelUserScreenRoot(
@@ -200,7 +200,7 @@ fun UpdatePanelUserScreen(
                                 Text(text = "Add Doctor")
 
                                 TextInputField(
-                                    value = uiState.selectedDoctor.name.toNameFormat(),
+                                    value = uiState.selectedDoctors.joinToString(", ") { it.name.toTitleCase() },
                                     onValueChange = {
                                         onAction(
                                             PanelUserUpdateScreenAction.OnUserPassChanged(
@@ -265,7 +265,7 @@ fun UpdatePanelUserScreen(
                 }
 
                 if (uiState.showDoctorList) {
-                    DoctorListDialog(
+                    DoctorListMultiDialog(
                         doctorList = uiState.doctorList,
                         onDismiss = {
                             onAction(
@@ -274,7 +274,9 @@ fun UpdatePanelUserScreen(
                                 )
                             )
                         },
-                        onSubmit = { onAction(PanelUserUpdateScreenAction.OnSelectedDoctorChanged(it)) })
+                        onSubmit = { onAction(PanelUserUpdateScreenAction.OnSelectedDoctorChanged(it)) },
+                        selectedDoctors = uiState.selectedDoctors
+                    )
                 }
             }
         }

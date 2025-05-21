@@ -78,7 +78,8 @@ class LoginRepositoryImpl(private val httpClient: HttpClient) : LoginRepository 
                                 password = (fields["password"] as? DatabaseValue.StringValue)?.stringValue.orEmpty(),
                                 empType = (fields["empType"] as? DatabaseValue.StringValue)?.stringValue.orEmpty(),
                                 isActive = (fields["isActive"] as? DatabaseValue.StringValue)?.stringValue.orEmpty(),
-                                doctorId = (fields["doctorId"] as? DatabaseValue.StringValue)?.stringValue.orEmpty(),
+                                doctorId = (fields["doctorId"] as? DatabaseValue.ArrayValue)?.values?.mapNotNull { (it as? DatabaseValue.StringValue)?.stringValue }
+                                    .orEmpty(),
                                 createdAt = (fields["createdAt"] as? DatabaseValue.StringValue)?.stringValue.orEmpty(),
                                 updatedAt = (fields["updatedAt"] as? DatabaseValue.StringValue)?.stringValue.orEmpty(),
                                 permissions = (fields["permissions"] as? DatabaseValue.ArrayValue)

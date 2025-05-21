@@ -2,7 +2,6 @@ package controlPanalUser.viewModel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import appUsers.User
 import controlPanalUser.domain.PanelUserPermissions
 import controlPanalUser.domain.PanelUserRepository
 import controlPanalUser.domain.UserMasterControlPanel
@@ -49,7 +48,7 @@ class UpdatePanelUserViewModel(
 
             is PanelUserUpdateScreenAction.OnSelectedDoctorChanged -> _state.value =
                 _state.value.copy(
-                    selectedDoctor = action.doctorsMaster
+                    selectedDoctors = action.doctorsMaster
                 )
 
             is PanelUserUpdateScreenAction.OnUserPermissionsChanged -> {
@@ -76,7 +75,7 @@ class UpdatePanelUserViewModel(
                             password = _state.value.userPass,
                             isActive = if (_state.value.isActive) "0" else "1",
                             empType = _state.value.empType,
-                            doctorId = _state.value.selectedDoctor.id,
+                            doctorId = _state.value.selectedDoctors.map { it.id },
                             permissions = _state.value.permissions.filter { it.value }.keys
                                 .ifEmpty { setOf("none") },
                             createdAt = currentUser.createdAt,
@@ -107,9 +106,9 @@ class UpdatePanelUserViewModel(
                         isActive = action.userMasterControlPanel.isActive == "0",
                         empType = action.userMasterControlPanel.empType,
                         userPass = action.userMasterControlPanel.password,
-                        selectedDoctor = it.doctorList.firstOrNull { doctor ->
-                            doctor.id == action.userMasterControlPanel.doctorId
-                        } ?: DoctorMaster(),
+                        selectedDoctors = it.doctorList.filter { doctor ->
+                            action.userMasterControlPanel.doctorId.contains(doctor.id)
+                        },
                         permissions = action.userMasterControlPanel.permissions.associateWith { true }
 
                     )
@@ -149,14 +148,17 @@ class UpdatePanelUserViewModel(
                 when (result) {
                     is AppResult.Success -> {
                         val doctorList = result.data
-                        val selectedDoctor = doctorList.firstOrNull { doctor ->
-                            doctor.id == _state.value.currentUser.doctorId
-                        } ?: DoctorMaster() // fallback if not found
+
+                        val doctorIds = _state.value.currentUser.doctorId
+
+                        val selectedDoctors: List<DoctorMaster> = doctorList.filter { doctor ->
+                            doctorIds.contains(doctor.id)
+                        }
 
                         _state.update {
                             it.copy(
                                 doctorList = doctorList,
-                                selectedDoctor = selectedDoctor
+                                selectedDoctors = selectedDoctors
                             )
                         }
                     }
@@ -174,7 +176,7 @@ data class UpdatePanelUserUiState(
     val empType: String = "",
     val userPass: String = "",
     val userName: String = "",
-    val selectedDoctor: DoctorMaster = DoctorMaster(),
+    val selectedDoctors: List<DoctorMaster> = emptyList(),
     val doctorList: List<DoctorMaster> = emptyList(),
     val permissions: Map<String, Boolean> = PanelUserPermissions.defaultPermissions,
     val showDoctorList: Boolean = false,
@@ -189,8 +191,8 @@ data class UpdatePanelUserUiState(
                 && userPass.isNotBlank()
                 && empType.isNotBlank()
                 && when (empType) {
-            "1" -> selectedDoctor.id.isNotBlank() // Doctor needs doctor ID
-            "2" -> selectedDoctor.id.isNotBlank() && permissions.any { it.value } // Employee needs doctor ID and permissions
+            "1" -> selectedDoctors.isNotEmpty() // Doctor needs doctor ID
+            "2" -> selectedDoctors.isNotEmpty() && permissions.any { it.value } // Employee needs doctor ID and permissions
             else -> true // Admin
         }
 
@@ -199,8 +201,8 @@ data class UpdatePanelUserUiState(
             userName.isBlank() -> "Username cannot be empty"
             userPass.isBlank() -> "Password cannot be empty"
             empType.isBlank() -> "Employee type is required"
-            empType == "1" && selectedDoctor.id.isBlank() -> "Doctor must be linked to a valid doctor ID"
-            empType == "2" && selectedDoctor.id.isBlank() -> "Employee must be linked to a doctor"
+            empType == "1" && selectedDoctors.isEmpty() -> "Doctor must be linked to a valid doctor ID"
+            empType == "2" && selectedDoctors.isEmpty() -> "Employee must be linked to a doctor"
             empType == "2" && permissions.none { it.value } -> "At least one permission must be selected for an employee"
             else -> ""
         }
@@ -212,7 +214,7 @@ sealed interface PanelUserUpdateScreenAction {
     data class OnUserPassChanged(val userPass: String) : PanelUserUpdateScreenAction
     data class OnUserRoleChanged(val role: String) : PanelUserUpdateScreenAction
     data class OnUserPermissionsChanged(val permission: String) : PanelUserUpdateScreenAction
-    data class OnSelectedDoctorChanged(val doctorsMaster: DoctorMaster) :
+    data class OnSelectedDoctorChanged(val doctorsMaster: List<DoctorMaster>) :
         PanelUserUpdateScreenAction
 
     data object OnUpdateUserButtonClicked : PanelUserUpdateScreenAction

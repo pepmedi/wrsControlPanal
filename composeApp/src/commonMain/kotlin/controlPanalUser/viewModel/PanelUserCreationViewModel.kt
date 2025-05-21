@@ -53,7 +53,7 @@ class PanelUserCreationViewModel(
 
             is PanelUserCreationAction.OnSelectedDoctorChanged -> _state.update {
                 it.copy(
-                    selectedDoctor = action.doctorsMaster
+                    selectedDoctors = action.doctorsMaster
                 )
             }
 
@@ -113,7 +113,7 @@ class PanelUserCreationViewModel(
                     password = _state.value.userPass,
                     isActive = if (_state.value.isActive) "0" else "1",
                     empType = _state.value.empType,
-                    doctorId = _state.value.selectedDoctor.id,
+                    doctorId = _state.value.selectedDoctors.map { it.id },
                     permissions = _state.value.permissions.filter { it.value }.keys.toSet()
                         .ifEmpty { setOf("none") },
                     createdAt = getCurrentTimeStamp(),
