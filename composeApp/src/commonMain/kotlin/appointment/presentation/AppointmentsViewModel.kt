@@ -127,6 +127,19 @@ class AppointmentsViewModel(
                                                 appointment
                                             }
                                         }
+                                            .toMutableList()
+
+//                                    // If the appointment ID doesn't already exist, add it
+//                                    val exists = updatedAppointments.any { it.id == action.appointmentId }
+//                                    if (!exists) {
+//                                        updatedAppointments.add(
+//                                            Appointment(
+//                                                id = action.appointmentId,
+//                                                status = action.status,
+//                                                // Fill other required fields here or fetch them if needed
+//                                            )
+//                                        )
+//                                    }
 
                                     val updatedAllAppointments =
                                         updatedAppointments.map { appointment ->
@@ -156,6 +169,12 @@ class AppointmentsViewModel(
                     }
                 }
             }
+
+            is AppointmentScreenAction.OnRefreshClick -> {
+                viewModelScope.launch {
+                    getAllAppointment()
+                }
+            }
         }
     }
 
@@ -182,4 +201,6 @@ data class AppointmentDetails(
 sealed interface AppointmentScreenAction {
     data class OnStatusChange(val appointmentId: String, val status: String) :
         AppointmentScreenAction
+
+    data object OnRefreshClick : AppointmentScreenAction
 }

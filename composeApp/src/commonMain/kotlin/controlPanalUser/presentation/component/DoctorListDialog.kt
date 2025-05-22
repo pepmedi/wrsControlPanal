@@ -13,8 +13,11 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -120,6 +123,9 @@ fun DoctorNameItem(
 }
 
 
+
+
+
 @Composable
 fun DoctorListMultiDialog(
     doctorList: List<DoctorMaster>,
@@ -170,8 +176,9 @@ fun DoctorListMultiDialog(
                         .padding(8.dp)
                 ) {
                     items(doctorList) { doctor ->
-                        DoctorNameItem(
+                        DoctorNameMultiDialogItem(
                             doctor = doctor,
+                            isSelected = doctor in selectedDoctorList,
                             onSelect = { selectedDoctor ->
                                 if (selectedDoctor in selectedDoctorList) {
                                     selectedDoctorList.remove(selectedDoctor)
@@ -201,6 +208,44 @@ fun DoctorListMultiDialog(
                     modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
                     buttonType = ButtonType.LARGE_OUTLINE,
                     viewState = ButtonViewState.ERROR
+                )
+
+                Gap(height = keylineDimen8)
+            }
+        }
+    }
+}
+
+@Composable
+fun DoctorNameMultiDialogItem(
+    doctor: DoctorMaster,
+    isSelected: Boolean,
+    onSelect: (DoctorMaster) -> Unit
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 12.dp, vertical = 3.dp)
+            .clickable { onSelect(doctor) },
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        border = BorderStroke(1.dp, Color.Black),
+        elevation = CardDefaults.cardElevation(4.dp),
+        shape = RoundedCornerShape(2.dp)
+    ) {
+        Row(modifier = Modifier.fillMaxWidth()) {
+            Text(
+                text = doctor.name.toNameFormat(),
+                style = TextStyle(fontSize = 16.sp),
+                modifier = Modifier.padding(1.dp)
+            )
+
+            // Show checkmark if selected
+            if (isSelected) {
+                Spacer(modifier = Modifier.weight(1f))
+                Icon(
+                    imageVector = Icons.Filled.CheckCircle,
+                    contentDescription = "Selected",
+                    tint = Color.Green
                 )
             }
         }
