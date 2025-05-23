@@ -48,13 +48,11 @@ import theme.AppColor.Java20
 import theme.AppColor.Java500
 import theme.AppColor.Vam800
 import theme.ButtonTextSmall
-import java.time.ZoneId
 
 @Composable
 fun CalenderCard(
     adjacentMonths: Int = 24,
     selectedYearMonth: YearMonth = YearMonth.now(),
-    onMonthClick: (YearMonth) -> Unit,
     selectedDates: Set<Long>,
     onAction: (CalendarDay) -> Unit
 ) {
@@ -87,7 +85,6 @@ fun CalenderCard(
                 currentMonth = visibleMonth.yearMonth,
                 isYearPickerVisible = isYearPickerVisible,
                 onMonthClick = {
-                    onMonthClick(visibleMonth.yearMonth)
                     isYearPickerVisible = !isYearPickerVisible
                 },
                 goToPrevious = {
@@ -130,6 +127,7 @@ fun CalenderCard(
                         if (day.position == DayPosition.MonthDate) {
                             val millis = day.date.atStartOfDayIn(TimeZone.currentSystemDefault())
                                 .toEpochMilliseconds()
+
                             Day(
                                 day = day,
                                 today = today,
@@ -171,7 +169,7 @@ private fun MonthHeader(daysOfWeek: List<DayOfWeek>) {
                 modifier = Modifier
                     .padding(keylineDimen8),
                 style = ButtonTextSmall(color = Vam800).copy(textAlign = TextAlign.Center),
-                text = dayOfWeek.displayText().dropLast(1),
+                text = dayOfWeek.displayText(),
             )
         }
     }
@@ -188,7 +186,8 @@ private fun Day(
     val isToday = day.date == today
     val isSunday =
         day.date.dayOfWeek == DayOfWeek.SUNDAY
-    val shouldDisable = isSunday //isDisabled
+    val isPast = day.date < today
+    val shouldDisable = isSunday || isPast
     Box(
         modifier = Modifier
             .aspectRatio(1f)
@@ -212,7 +211,7 @@ private fun Day(
             isSelected && isToday -> Java20
             isToday -> Java500
             isSelected -> Java20
-//            isDisabled -> Color.Gray
+            shouldDisable -> Color.Gray
             day.position == DayPosition.InDate || day.position == DayPosition.OutDate -> Color.Gray
             else -> Color.Unspecified
         }

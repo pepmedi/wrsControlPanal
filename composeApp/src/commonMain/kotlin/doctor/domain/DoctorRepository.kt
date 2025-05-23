@@ -19,4 +19,9 @@ interface DoctorRepository {
         profileImageFile: File?,
         infoImageFile: File?
     ): Flow<AppResult<Pair<String?, String?>, DataError.Remote>>
+
+    suspend fun blockDoctorDates(
+        doctorId: String,
+        blockedDates: List<String>
+    ): Flow<AppResult<Unit, DataError.Remote>>
 }
