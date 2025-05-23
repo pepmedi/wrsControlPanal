@@ -51,14 +51,14 @@ import org.koin.compose.viewmodel.koinViewModel
 import util.Util.toNameFormat
 
 @Composable
-fun PanelUserScreenRoot(viewModal: PanelUserScreenViewModel = koinViewModel()) {
+fun PanelUserScreenRoot(viewModel: PanelUserScreenViewModel = koinViewModel()) {
 
-    val uiState by viewModal.state.collectAsStateWithLifecycle()
+    val uiState by viewModel.state.collectAsStateWithLifecycle()
 
     PanelUserScreen(
         uiState = uiState,
         onAction = { action ->
-            viewModal.onAction(action)
+            viewModel.onAction(action)
         })
 }
 

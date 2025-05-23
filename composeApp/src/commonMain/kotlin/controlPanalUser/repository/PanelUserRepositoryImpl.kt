@@ -48,7 +48,9 @@ class PanelUserRepositoryImpl(private val httpClient: HttpClient) : PanelUserRep
                                 "password" to DatabaseValue.StringValue(userMasterControlPanel.password),
                                 "empType" to DatabaseValue.StringValue(userMasterControlPanel.empType),
                                 "isActive" to DatabaseValue.StringValue(userMasterControlPanel.isActive),
-                                "doctorId" to DatabaseValue.StringValue(userMasterControlPanel.doctorId),
+                                "doctorId" to DatabaseValue.ArrayValue(userMasterControlPanel.doctorId.map {
+                                    DatabaseValue.StringValue(it)
+                                }),
                                 "createdAt" to DatabaseValue.StringValue(userMasterControlPanel.createdAt),
                                 "updatedAt" to DatabaseValue.StringValue(userMasterControlPanel.updatedAt),
                                 "permissions" to DatabaseValue.ArrayValue(
@@ -155,7 +157,8 @@ class PanelUserRepositoryImpl(private val httpClient: HttpClient) : PanelUserRep
                             password = (field["password"] as? DatabaseValue.StringValue)?.stringValue.orEmpty(),
                             empType = (field["empType"] as? DatabaseValue.StringValue)?.stringValue.orEmpty(),
                             isActive = (field["isActive"] as? DatabaseValue.StringValue)?.stringValue.orEmpty(),
-                            doctorId = (field["doctorId"] as? DatabaseValue.StringValue)?.stringValue.orEmpty(),
+                            doctorId = (field["doctorId"] as? DatabaseValue.ArrayValue)?.values?.mapNotNull { (it as? DatabaseValue.StringValue)?.stringValue }
+                                .orEmpty(),
                             createdAt = (field["createdAt"] as? DatabaseValue.StringValue)?.stringValue.orEmpty(),
                             updatedAt = (field["updatedAt"] as? DatabaseValue.StringValue)?.stringValue.orEmpty(),
                             permissions = (field["permissions"] as? DatabaseValue.ArrayValue)

@@ -5,7 +5,6 @@ import PrimaryAppColor
 import SecondaryAppColor
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
@@ -28,6 +27,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.sharp.Person
+import androidx.compose.material.icons.sharp.Refresh
 import androidx.compose.material.ripple
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -36,6 +36,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
@@ -48,13 +49,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import appointment.domain.AppointmentBookingMaster
+import appointment.helpers.AppointmentStatus
+import appointment.helpers.AppointmentTab
 import component.SlideInScreen
 import controlPanalUser.domain.UserRole
 import controlPanalUser.repository.SessionManager
@@ -76,13 +78,14 @@ fun AppointmentsScreenRoot(viewModal: AppointmentsViewModel = koinViewModel()) {
     )
 }
 
+
 @Composable
 fun AppointmentsScreen(
     uiState: AppointmentsUiState,
     onAction: (AppointmentScreenAction) -> Unit
 ) {
-    val tabs = listOf("All", "Waiting", "Completed", "Upcoming", "Cancelled")
-    var selectedTab by remember { mutableStateOf(0) }
+
+    var selectedTab by remember { mutableStateOf(AppointmentTab.ALL) }
     var expandedCardId by remember { mutableStateOf<String?>(null) }
 
     val currentUser = SessionManager.currentUser
@@ -93,9 +96,14 @@ fun AppointmentsScreen(
     var showAddRecords by mutableStateOf(false)
     var currentAppointment by mutableStateOf(AppointmentDetails())
 
-    fun filterAppointments(appointment: List<AppointmentDetails>): List<AppointmentDetails> {
-        return if (isAdmin) appointment.sortedByDescending { it.appointment.createdAt }
-        else appointment.filter { it.appointment.doctorId == linkedDoctorId }
+    fun filterAppointments(appointments: List<AppointmentDetails>): List<AppointmentDetails> {
+        return if (isAdmin) {
+            appointments.sortedByDescending { it.appointment.createdAt }
+        } else {
+            appointments.filter {
+                linkedDoctorId?.contains(it.appointment.doctorId) == true
+            }.sortedByDescending { it.appointment.createdAt }
+        }
     }
 
     MaterialTheme {
@@ -105,9 +113,25 @@ fun AppointmentsScreen(
                 Column(
                     modifier = Modifier.fillMaxSize()
                 ) {
-                    CustomTabRow(tabs = tabs, selectedTab = selectedTab) { newTab ->
-                        selectedTab = newTab
+                    Row {
+                        IconButton(
+                            onClick = {
+                                onAction(AppointmentScreenAction.OnRefreshClick)
+                            }
+                        ) {
+                            Icon(
+                                imageVector = Icons.Sharp.Refresh,
+                                contentDescription = ""
+                            )
+                        }
                     }
+                    CustomTabRow(
+                        tabs = AppointmentTab.entries.toList(),
+                        selectedTab = selectedTab,
+                        onTabSelected = {
+                            selectedTab = it
+                        }
+                    )
 
                     HorizontalDivider(
                         color = PrimaryAppColor.copy(alpha = 0.8f),
@@ -123,14 +147,14 @@ fun AppointmentsScreen(
                             )
                         }
                     } else {
-                        val appointmentsToShow = when (selectedTab) {
-                            0 -> filterAppointments(uiState.allAppointment)
-                            1 -> filterAppointments(uiState.waitingAppointments)
-                            2 -> filterAppointments(uiState.completedAppointment)
-                            3 -> filterAppointments(uiState.upcomingAppointment)
-                            4 -> filterAppointments(uiState.canceledAppointments)
-                            else -> filterAppointments(uiState.allAppointment)
+                        val appointmentsToShow = when (selectedTab.type) {
+                            AppointmentStatus.ALL -> filterAppointments(uiState.allAppointment)
+                            AppointmentStatus.WAITING -> filterAppointments(uiState.waitingAppointments)
+                            AppointmentStatus.UPCOMING -> filterAppointments(uiState.upcomingAppointment)
+                            AppointmentStatus.COMPLETED -> filterAppointments(uiState.completedAppointment)
+                            AppointmentStatus.CANCELLED -> filterAppointments(uiState.canceledAppointments)
                         }
+
                         LazyVerticalGrid(
                             columns = GridCells.Adaptive(minSize = 400.dp),
                             modifier = Modifier.fillMaxSize().padding(8.dp),
@@ -420,7 +444,10 @@ fun BookingCard(
 }
 
 @Composable
-fun CustomTabRow(tabs: List<String>, selectedTab: Int, onTabSelected: (Int) -> Unit) {
+fun CustomTabRow(
+    tabs: List<AppointmentTab>, selectedTab: AppointmentTab,
+    onTabSelected: (AppointmentTab) -> Unit
+) {
 
     Row(
         modifier = Modifier
@@ -428,17 +455,17 @@ fun CustomTabRow(tabs: List<String>, selectedTab: Int, onTabSelected: (Int) -> U
             .padding(5.dp),
         horizontalArrangement = Arrangement.spacedBy(5.dp)
     ) {
-        tabs.forEachIndexed { index, title ->
+        tabs.forEachIndexed { _, tab ->
             Button(
-                onClick = { onTabSelected(index) },
+                onClick = { onTabSelected(tab) },
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = if (selectedTab == index) Color(0xFF4A90E2) else Color.White,
-                    contentColor = if (selectedTab == index) Color.White else Color.Black
+                    containerColor = if (selectedTab == tab) Color(0xFF4A90E2) else Color.White,
+                    contentColor = if (selectedTab == tab) Color.White else Color.Black
                 ),
                 border = BorderStroke(2.dp, Color(0xFF4A90E2)),
                 shape = RoundedCornerShape(20.dp)
             ) {
-                Text(title, fontWeight = FontWeight.SemiBold)
+                Text(tab.label, fontWeight = FontWeight.SemiBold)
             }
         }
     }

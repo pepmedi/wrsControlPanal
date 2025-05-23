@@ -52,13 +52,14 @@ import controlPanalUser.domain.PanelUserCreationAction
 import controlPanalUser.domain.PanelUserCreationUiState
 import controlPanalUser.domain.UserMasterControlPanel
 import controlPanalUser.domain.UserRole
-import controlPanalUser.presentation.component.DoctorListDialog
+import controlPanalUser.presentation.component.DoctorListMultiDialog
 import controlPanalUser.viewModel.PanelUserCreationViewModel
 import core.CancelButton
 import doctor.screen.components.TextInputField
 import org.koin.compose.viewmodel.koinViewModel
 import util.ToastEvent
 import util.Util.toNameFormat
+import util.toTitleCase
 
 @Composable
 fun PanelUserCreationScreenRoot(
@@ -212,7 +213,7 @@ fun PanelUserCreationScreen(
                                 Text(text = "Add Doctor")
 
                                 TextInputField(
-                                    value = uiState.selectedDoctor.name.toNameFormat(),
+                                    value = uiState.selectedDoctors.joinToString(", ") { it.name.toTitleCase() },
                                     onValueChange = {
                                         onAction(
                                             PanelUserCreationAction.OnUserPassChanged(
@@ -277,10 +278,12 @@ fun PanelUserCreationScreen(
                 }
 
                 if (uiState.showDoctorList) {
-                    DoctorListDialog(
+                    DoctorListMultiDialog(
                         doctorList = uiState.doctorList,
                         onDismiss = { onAction(PanelUserCreationAction.OnShowDoctorListClicked(false)) },
-                        onSubmit = { onAction(PanelUserCreationAction.OnSelectedDoctorChanged(it)) })
+                        onSubmit = { onAction(PanelUserCreationAction.OnSelectedDoctorChanged(it)) },
+                        selectedDoctors = uiState.selectedDoctors
+                    )
                 }
             }
         }
