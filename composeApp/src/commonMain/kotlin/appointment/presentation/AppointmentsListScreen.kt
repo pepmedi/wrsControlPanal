@@ -106,6 +106,8 @@ fun AppointmentsScreen(
         }
     }
 
+    var showDialog by remember { mutableStateOf(false) }
+
     MaterialTheme {
         Scaffold(containerColor = Color.White) {
 
@@ -116,7 +118,8 @@ fun AppointmentsScreen(
                     Row {
                         IconButton(
                             onClick = {
-                                onAction(AppointmentScreenAction.OnRefreshClick)
+//                                onAction(AppointmentScreenAction.OnRefreshClick)
+                                showDialog = true
                             }
                         ) {
                             Icon(
@@ -124,14 +127,15 @@ fun AppointmentsScreen(
                                 contentDescription = ""
                             )
                         }
+
+                        CustomTabRow(
+                            tabs = AppointmentTab.entries.toList(),
+                            selectedTab = selectedTab,
+                            onTabSelected = {
+                                selectedTab = it
+                            }
+                        )
                     }
-                    CustomTabRow(
-                        tabs = AppointmentTab.entries.toList(),
-                        selectedTab = selectedTab,
-                        onTabSelected = {
-                            selectedTab = it
-                        }
-                    )
 
                     HorizontalDivider(
                         color = PrimaryAppColor.copy(alpha = 0.8f),

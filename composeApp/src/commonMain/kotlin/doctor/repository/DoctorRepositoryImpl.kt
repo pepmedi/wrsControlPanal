@@ -64,6 +64,8 @@ class DoctorRepositoryImpl(private val httpClient: HttpClient) : DoctorRepositor
                                 .orEmpty(),
                             services = (fields["services"] as? DatabaseValue.ArrayValue)?.values?.mapNotNull { (it as? DatabaseValue.StringValue)?.stringValue }
                                 .orEmpty(),
+                            blockedDates = (fields["blockedDates"] as? DatabaseValue.ArrayValue)?.values?.mapNotNull { (it as? DatabaseValue.StringValue)?.stringValue }
+                                .orEmpty(),
                             createdAt = (fields["createdAt"] as? DatabaseValue.StringValue)?.stringValue.orEmpty(),
                             updatedAt = (fields["updatedAt"] as? DatabaseValue.StringValue)?.stringValue.orEmpty(),
                             speciality = (fields["speciality"] as? DatabaseValue.StringValue)?.stringValue.orEmpty(),
@@ -389,4 +391,41 @@ class DoctorRepositoryImpl(private val httpClient: HttpClient) : DoctorRepositor
             emit(AppResult.Error(DataError.Remote.SERVER))
         }
     }.flowOn(Dispatchers.IO)
+
+    override suspend fun blockDoctorDates(
+        doctorId: String,
+        blockedDates: List<String>
+    ): Flow<AppResult<Unit, DataError.Remote>> = flow {
+        try {
+            // Step 1: Update doctor details first
+            val patchResponse = httpClient.patch(
+                "$BASE_URL/${DatabaseCollection.DOCTORS}/${doctorId}?${
+                    buildUpdateMask(
+                        "blockedDates",
+                    )
+                }"
+            ) {
+                contentType(ContentType.Application.Json)
+                setBody(
+                    DatabaseRequest(
+                        fields = mapOf(
+                            "blockedDates" to DatabaseValue.ArrayValue(blockedDates.map {
+                                DatabaseValue.StringValue(it)
+                            }),
+                        )
+                    )
+                )
+            }
+
+            if (patchResponse.status == HttpStatusCode.OK) {
+                emit(AppResult.Success(Unit))
+            } else {
+                emit(AppResult.Error(DataError.Remote.SERVER))
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            println(e.localizedMessage)
+            emit(AppResult.Error(DataError.Remote.SERVER))
+        }
+    }
 }

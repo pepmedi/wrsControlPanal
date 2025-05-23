@@ -50,6 +50,8 @@ kotlin {
 
             implementation(libs.sonner)
             implementation(compose.animation)
+
+            implementation("com.kizitonwose.calendar:compose-multiplatform:2.6.2")
         }
 
         desktopMain.dependencies {

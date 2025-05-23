@@ -5,8 +5,13 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.ParagraphStyle
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.sp
+import core.components.calender.getDisplayName
+import kotlinx.datetime.Instant
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 
 sealed class BlogElement {
     data class Text(val content: AnnotatedString) : BlogElement()
@@ -138,3 +143,19 @@ fun String.toTitleCase(): String {
         }
 }
 
+fun String.toFormattedDate(): String {
+    return try {
+        val millis = this.toLong()
+        val instant = Instant.fromEpochMilliseconds(millis)
+        val timeZone = TimeZone.currentSystemDefault()
+        val localDate = instant.toLocalDateTime(timeZone).date
+
+        val day = localDate.dayOfMonth
+        val month = localDate.month.getDisplayName(short = false, locale = Locale.current)
+        val year = localDate.year
+
+        "$day $month $year"
+    } catch (e: Exception) {
+        "" // or return "Invalid date"
+    }
+}
