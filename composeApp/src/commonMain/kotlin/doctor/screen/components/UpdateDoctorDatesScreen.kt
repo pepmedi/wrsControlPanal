@@ -1,5 +1,6 @@
 package doctor.screen.components
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -26,6 +27,7 @@ import doctor.viewModal.DoctorListActions
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.atStartOfDayIn
 import theme.AppButton
+import theme.AppColor.Java20
 import theme.AppColor.Vam800
 import theme.ButtonType
 import theme.ButtonViewState
@@ -33,7 +35,7 @@ import theme.CaptionText
 import theme.Gap
 
 @Composable
-fun UpdateDoctorDates(
+fun UpdateDoctorDatesScreen(
     doctorId: String,
     preBlockedDates: List<String>,
     onActions: (DoctorListActions) -> Unit,
@@ -45,7 +47,12 @@ fun UpdateDoctorDates(
         mutableStateOf(preBlockedDates.mapNotNull { it.toLongOrNull() }.toMutableSet())
     }
 
-    Box(modifier = Modifier.fillMaxSize().padding(keylineDimen16)) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(color = Java20)
+            .padding(keylineDimen16)
+    ) {
         Column {
 
             Text(
