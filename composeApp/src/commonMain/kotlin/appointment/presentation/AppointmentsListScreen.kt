@@ -86,7 +86,7 @@ fun AppointmentsScreen(
 ) {
 
     var selectedTab by remember { mutableStateOf(AppointmentTab.ALL) }
-    var expandedCardId by remember { mutableStateOf<String?>(null) }
+    var expandedCard by remember { mutableStateOf<AppointmentBookingMaster?>(null) }
 
     val currentUser = SessionManager.currentUser
     val isAdmin = currentUser?.role == UserRole.ADMIN
@@ -118,8 +118,7 @@ fun AppointmentsScreen(
                     Row {
                         IconButton(
                             onClick = {
-//                                onAction(AppointmentScreenAction.OnRefreshClick)
-                                showDialog = true
+                                onAction(AppointmentScreenAction.OnRefreshClick)
                             }
                         ) {
                             Icon(
@@ -201,9 +200,9 @@ fun AppointmentsScreen(
                                         currentAppointment = appointment
                                         showDetails = true
                                     },
-                                    isExpanded = expandedCardId == appointment.appointment.id,
-                                    onExpand = { expandedCardId = appointment.appointment.id },
-                                    onCollapse = { expandedCardId = null },
+                                    isExpanded = expandedCard == appointment.appointment,
+                                    onExpand = { expandedCard = appointment.appointment },
+                                    onCollapse = { expandedCard = null },
                                     onUploadRecords = {
                                         showAddRecords = true
                                     }
@@ -223,9 +222,9 @@ fun AppointmentsScreen(
                 }
 
                 SlideInScreen(showAddRecords) {
-                    expandedCardId?.let { it1 ->
+                    expandedCard?.let { it1 ->
                         AllAppointmentRecordsRoot(
-                            appointmentId = it1,
+                            appointment = it1,
                             onBackClick = {
                                 showAddRecords = false
                             })

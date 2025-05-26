@@ -57,6 +57,8 @@ class AppointmentBookingRepositoryImpl(private val httpClient: HttpClient) :
                                 .orEmpty(),
                             hospitalsId = (field["hospitalsId"] as? DatabaseValue.ArrayValue)?.values?.mapNotNull { (it as? DatabaseValue.StringValue)?.stringValue }
                                 .orEmpty(),
+                            medicalRecordsId = (field["medicalRecordsId"] as? DatabaseValue.ArrayValue)?.values?.mapNotNull { (it as? DatabaseValue.StringValue)?.stringValue }
+                                .orEmpty(),
                             dates = (field["dates"] as? DatabaseValue.ArrayValue)?.values?.mapNotNull { (it as? DatabaseValue.StringValue)?.stringValue }
                                 .orEmpty(),
                         )

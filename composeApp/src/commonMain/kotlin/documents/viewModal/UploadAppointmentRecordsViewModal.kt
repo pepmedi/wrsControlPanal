@@ -15,7 +15,7 @@ class UploadAppointmentRecordsViewModal(private val patientDocumentRepository: P
         patientMedicalRecordsMaster: PatientMedicalRecordsMaster,
         document: File,
         mimeType: String
-    ): Deferred<Result<Unit>> {
+    ): Deferred<Result<PatientMedicalRecordsMaster>> {
         return viewModelScope.async {
             patientDocumentRepository.addPatientDocument(
                 patientMedicalRecordsMaster = patientMedicalRecordsMaster,

@@ -11,6 +11,7 @@ object DatabaseCollection {
     const val SLOTS = "slots"
     const val BLOGS = "blogs"
     const val PATIENT_MEDICAL_RECORDS = "patientMedicalRecords"
+    const val USER_MEDICAL_RECORDS = "userMedicalRecords"
 }
 
 object AuthKey {
@@ -24,4 +25,5 @@ object StorageCollection {
     const val SERVICE_ICON = "serviceIcon"
     const val BLOG_IMAGES = "blogImages"
     const val PATIENT_MEDICAL_RECORD = "patientMedicalRecord"
+    const val USER_MEDICAL_RECORDS = "userMedicalRecords"
 }

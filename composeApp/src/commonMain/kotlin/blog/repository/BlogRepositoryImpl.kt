@@ -49,6 +49,7 @@ class BlogRepositoryImpl(private val httpClient: HttpClient) : BlogRepository {
                             "createdAt" to DatabaseValue.StringValue(blog.createdAt),
                             "updatedAt" to DatabaseValue.StringValue(blog.updatedAt),
                             "doctorId" to DatabaseValue.StringValue(blog.doctorId),
+                            "blogActive" to DatabaseValue.StringValue(blog.blogActive)
                         )
                     )
                 )
@@ -133,6 +134,7 @@ class BlogRepositoryImpl(private val httpClient: HttpClient) : BlogRepository {
                             imageUrl = (fields["imageUrl"] as? DatabaseValue.StringValue)?.stringValue.orEmpty(),
                             updatedAt = (fields["updatedAt"] as? DatabaseValue.StringValue)?.stringValue.orEmpty(),
                             doctorId = (fields["doctorId"] as? DatabaseValue.StringValue)?.stringValue.orEmpty(),
+                            blogActive = (fields["blogActive"] as? DatabaseValue.StringValue)?.stringValue.orEmpty(),
                             createdAt = (fields["createdAt"] as? DatabaseValue.StringValue)?.stringValue.orEmpty()
                         )
                     }
@@ -163,7 +165,8 @@ class BlogRepositoryImpl(private val httpClient: HttpClient) : BlogRepository {
                             "title",
                             "description",
                             "updatedAt",
-                            "doctorId"
+                            "doctorId",
+                            "blogActive"
                         )
                     }"
                 ) {
@@ -174,7 +177,8 @@ class BlogRepositoryImpl(private val httpClient: HttpClient) : BlogRepository {
                                 "title" to DatabaseValue.StringValue(blog.title),
                                 "description" to DatabaseValue.StringValue(blog.description),
                                 "updatedAt" to DatabaseValue.StringValue(blog.updatedAt),
-                                "doctorId" to DatabaseValue.StringValue(blog.doctorId)
+                                "doctorId" to DatabaseValue.StringValue(blog.doctorId),
+                                "blogActive" to DatabaseValue.StringValue(blog.blogActive)
                             )
                         )
                     )

@@ -130,6 +130,7 @@ fun BlogListScreen(
                                 currentBlogId = blog.id
                                 showUpdateBlogScreen = true
                             },
+                            onBlockClick = { onAction(BlogListActions.ChangeBlogStatus(it)) },
                             isExpanded = expandedCardId == blog.id,
                             onExpand = { expandedCardId = blog.id },
                             onCollapse = { expandedCardId = null }
@@ -183,11 +184,13 @@ fun BlogCardItem(
     blog: BlogMaster,
     modifier: Modifier,
     onUpdateClick: (BlogMaster) -> Unit,
+    onBlockClick: (BlogMaster) -> Unit,
     isExpanded: Boolean,
     onExpand: () -> Unit,
     onCollapse: () -> Unit,
 ) {
-
+    val isBlogBlocked = blog.blogActive == "1"
+    val backgroundColor = if (isBlogBlocked) Color.LightGray else Color.White
     Card(
         modifier = modifier
             .fillMaxWidth()
@@ -198,7 +201,7 @@ fun BlogCardItem(
             ) { if (isExpanded) onCollapse() else onExpand() },
 
         elevation = CardDefaults.cardElevation(4.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White)
+        colors = CardDefaults.cardColors(containerColor = backgroundColor)
     ) {
         Column(
             modifier = Modifier
@@ -255,6 +258,16 @@ fun BlogCardItem(
                         onClick = { onUpdateClick(blog) }
                     ) {
                         Text("Update")
+                    }
+
+                    TextButton(
+                        modifier = Modifier.padding(end = 10.dp),
+                        shape = RoundedCornerShape(20.dp),
+                        colors = ButtonDefaults.textButtonColors(containerColor = Color.White),
+                        border = BorderStroke(1.dp, PrimaryAppColor),
+                        onClick = { onBlockClick(blog) }
+                    ) {
+                        Text(text = if (isBlogBlocked) "UnBlock" else "Block")
                     }
                 }
             }

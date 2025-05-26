@@ -14,6 +14,7 @@ data class AppointmentBookingMaster(
     val hospitalsId: List<String> = emptyList(),
     val bookingFor: String = "", // 0-> yourSelf , 1 -> Other Person
     val mobileNo: String = "",
+    val medicalRecordsId: List<String> = emptyList(),
     val createdAt: String = "",
     val updatedAt: String = ""
 )

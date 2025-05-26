@@ -24,8 +24,9 @@ import doctor.repository.DoctorRepositoryImpl
 import doctor.viewModal.DoctorListViewModel
 import doctor.viewModal.UpdateDoctorViewModel
 import documents.PatientDocumentRepositoryImpl
+import documents.modal.MedicalRecordsRepository
 import documents.modal.PatientDocumentRepository
-import documents.viewModal.AllRecordsViewModal
+import documents.viewModal.AllRecordsViewModel
 import documents.viewModal.UploadAppointmentRecordsViewModal
 import hospital.domain.HospitalRepository
 import hospital.presentation.HospitalViewModel
@@ -46,6 +47,7 @@ import services.viewModel.UpdateServicesViewModel
 import slots.domain.SlotsRepository
 import slots.repository.SlotsRepositoryImpl
 import slots.viewModel.AddSlotsViewModel
+import documents.repository.MedicalRecordsRepositoryImpl
 
 expect val platformModule: Module
 
@@ -62,6 +64,7 @@ val sharedModule = module {
     singleOf(::SlotsRepositoryImpl).bind<SlotsRepository>()
     singleOf(::BlogRepositoryImpl).bind<BlogRepository>()
     singleOf(::PatientDocumentRepositoryImpl).bind<PatientDocumentRepository>()
+    singleOf(::MedicalRecordsRepositoryImpl).bind<MedicalRecordsRepository>()
 
     viewModel { AddDoctorViewModel(get(), get(), get(), get()) }
     viewModel { HospitalViewModel(get()) }
@@ -76,7 +79,7 @@ val sharedModule = module {
     viewModel { DoctorListViewModel(get()) }
     viewModel { UpdateDoctorViewModel(get(), get(), get(), get()) }
     viewModel { UploadAppointmentRecordsViewModal(get()) }
-    viewModel { AllRecordsViewModal(get()) }
+    viewModel { AllRecordsViewModel(get(), get()) }
     viewModel { AllBLogListViewModel(get()) }
     viewModel { UpdateBlogViewModel(get(), get()) }
     viewModel { AllServicesListViewModel(get()) }

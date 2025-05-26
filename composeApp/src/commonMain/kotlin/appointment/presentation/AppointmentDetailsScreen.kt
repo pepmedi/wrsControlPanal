@@ -20,6 +20,7 @@ import appointment.presentation.components.PatientDetailsForm
 import core.CancelButton
 import org.koin.compose.viewmodel.koinViewModel
 import util.Util.toNameFormat
+import util.toFormattedDate
 
 @Composable
 fun AppointmentDetailsScreenRoot(
@@ -31,7 +32,8 @@ fun AppointmentDetailsScreenRoot(
     val uiState by viewModal.state.collectAsStateWithLifecycle()
     viewModal.updateAppointment(appointmentDetails)
 
-    AppointmentDetailsScreen(uiState,
+    AppointmentDetailsScreen(
+        uiState,
         onBackClick = {
             onBackClick()
         })
@@ -52,6 +54,14 @@ fun AppointmentDetailsScreen(
                         text = state.appointmentDetails.doctor.name.toNameFormat(),
                         modifier = Modifier.padding(16.dp)
                     )
+
+                    Text(
+                        text = "Appointment Date: ${
+                            state.appointmentDetails.appointment.dates.joinToString(" ") { it.toFormattedDate() }
+                        }",
+                        modifier = Modifier.padding(16.dp)
+                    )
+
                     HospitalSection(state.hospitalList)
                     PatientDetailsForm(state.appointmentDetails)
                     CancelButton(

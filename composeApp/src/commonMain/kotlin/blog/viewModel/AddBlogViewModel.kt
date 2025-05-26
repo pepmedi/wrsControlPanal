@@ -94,7 +94,8 @@ class AddBlogViewModel(
                         description = state.blogDescription,
                         createdAt = getCurrentTimeStamp(),
                         updatedAt = getCurrentTimeStamp(),
-                        doctorId = state.doctor.id
+                        doctorId = state.doctor.id,
+                        blogActive = "0"
                     )
                 )
                     .onSuccess { addedBlog ->

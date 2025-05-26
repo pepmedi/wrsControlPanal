@@ -10,6 +10,7 @@ data class BlogMaster(
     val imageUrl: String = "",
     val createdAt: String = "",
     val updatedAt: String = "",
-    val doctorId: String = ""
+    val doctorId: String = "",
+    val blogActive: String = ""
 )
 
