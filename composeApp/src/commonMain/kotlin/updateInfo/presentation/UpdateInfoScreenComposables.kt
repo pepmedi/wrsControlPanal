@@ -66,14 +66,14 @@ fun UpdateInfoScreen() {
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
 
-                        item {
-                            ClickableCard(
-                                text = "Add Slots",
-                                icon = Res.drawable.medical_services,
-                                onClick = {
-                                    addSlotsUiScreen = true
-                                })
-                        }
+//                        item {
+//                            ClickableCard(
+//                                text = "Add Slots",
+//                                icon = Res.drawable.medical_services,
+//                                onClick = {
+//                                    addSlotsUiScreen = true
+//                                })
+//                        }
 
 //                        item {
 //                            ClickableCard(
@@ -87,46 +87,46 @@ fun UpdateInfoScreen() {
                 }
             }
 
-            SlideInScreen(addDoctorUiScreen) {
-                AddDoctorScreen(
-                    onBackClick = {
-                        addDoctorUiScreen = false
-                    },
-                    onDoctorAdded = {})
-            }
-
-            SlideInScreen(addHospitalUiScreen) {
-                AddHospitalScreen(onBackClick = {
-                    addHospitalUiScreen = false
-                })
-            }
-
-            SlideInScreen(addServicesUiScreen) {
-                AddServicesScreenUI(
-                    onBackClick = {
-                        addServicesUiScreen = false
-                    },
-                    onServiceAdded = {
-
-                    })
-            }
-
-            SlideInScreen(visible = addSlotsUiScreen) {
-                AddSlotsUiScreen(onBackClick = {
-                    addSlotsUiScreen = false
-                })
-            }
-
-            SlideInScreen(visible = addBlogUiScreen) {
-                AddBlogScreenRoot(
-                    onBackClick = {
-                        addBlogUiScreen = false
-                    },
-                    onBlogAdded = {
-
-                    }
-                )
-            }
+//            SlideInScreen(addDoctorUiScreen) {
+//                AddDoctorScreen(
+//                    onBackClick = {
+//                        addDoctorUiScreen = false
+//                    },
+//                    onDoctorAdded = {})
+//            }
+//
+//            SlideInScreen(addHospitalUiScreen) {
+//                AddHospitalScreen(onBackClick = {
+//                    addHospitalUiScreen = false
+//                })
+//            }
+//
+//            SlideInScreen(addServicesUiScreen) {
+//                AddServicesScreenUI(
+//                    onBackClick = {
+//                        addServicesUiScreen = false
+//                    },
+//                    onServiceAdded = {
+//
+//                    })
+//            }
+//
+//            SlideInScreen(visible = addSlotsUiScreen) {
+//                AddSlotsUiScreen(onBackClick = {
+//                    addSlotsUiScreen = false
+//                })
+//            }
+//
+//            SlideInScreen(visible = addBlogUiScreen) {
+//                AddBlogScreenRoot(
+//                    onBackClick = {
+//                        addBlogUiScreen = false
+//                    },
+//                    onBlogAdded = {
+//
+//                    }
+//                )
+//            }
         }
     }
 }

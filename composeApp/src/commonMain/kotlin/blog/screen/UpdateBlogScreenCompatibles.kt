@@ -246,25 +246,25 @@ fun UpdateBlogScreen(
     }
 }
 
-@Composable
-fun RenderBlog(elements: List<BlogElement>) {
-    LazyColumn(modifier = Modifier.fillMaxSize().padding(16.dp)) {
-        items(elements) { element ->
-            when (element) {
-                is BlogElement.Text -> Text(
-                    text = element.content,
-                    style = LocalTextStyle.current.copy(lineHeight = 20.sp),
-                    modifier = Modifier.padding(vertical = 4.dp)
-                )
-
-                BlogElement.Divider -> HorizontalDivider(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 8.dp),
-                    thickness = 1.dp,
-                    color = Color.Gray
-                )
-            }
-        }
-    }
-}
+//@Composable
+//fun RenderBlog(elements: List<BlogElement>) {
+//    LazyColumn(modifier = Modifier.fillMaxSize().padding(16.dp)) {
+//        items(elements) { element ->
+//            when (element) {
+//                is BlogElement.Text -> Text(
+//                    text = element.content,
+//                    style = LocalTextStyle.current.copy(lineHeight = 20.sp),
+//                    modifier = Modifier.padding(vertical = 4.dp)
+//                )
+//
+//                BlogElement.Divider -> HorizontalDivider(
+//                    modifier = Modifier
+//                        .fillMaxWidth()
+//                        .padding(vertical = 8.dp),
+//                    thickness = 1.dp,
+//                    color = Color.Gray
+//                )
+//            }
+//        }
+//    }
+//}
