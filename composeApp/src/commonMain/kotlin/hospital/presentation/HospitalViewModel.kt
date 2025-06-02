@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.io.File
 
 class HospitalViewModel(private val hospitalRepository: HospitalRepository) : ViewModel() {
 
@@ -30,11 +31,11 @@ class HospitalViewModel(private val hospitalRepository: HospitalRepository) : Vi
     fun onAction(action: HospitalActions) {
         when (action) {
             is HospitalActions.OnAddHospital -> {
-                addHospital(action.hospitalMaster)
+                addHospital(action.hospitalMaster, action.file)
             }
 
             is HospitalActions.OnUpdateHospital -> {
-                updateHospital(action.hospitalMaster)
+                updateHospital(action.hospitalMaster, action.file)
             }
 
             is HospitalActions.OnHospitalAddedSuccessfully -> {
@@ -53,10 +54,10 @@ class HospitalViewModel(private val hospitalRepository: HospitalRepository) : Vi
         }
     }
 
-    private fun addHospital(hospitalMaster: HospitalMaster) {
+    private fun addHospital(hospitalMaster: HospitalMaster, logoFile: File) {
         viewModelScope.launch {
             _uiStates.update { it.copy(isUploading = true) }
-            hospitalRepository.addHospitalToDatabase(hospitalMaster)
+            hospitalRepository.addHospitalToDatabase(hospitalMaster, logoFile = logoFile)
                 .collect { result ->
                     when (result) {
                         is AppResult.Success -> {
@@ -111,11 +112,11 @@ class HospitalViewModel(private val hospitalRepository: HospitalRepository) : Vi
         }
     }
 
-    private fun updateHospital(hospitalMaster: HospitalMaster) {
+    private fun updateHospital(hospitalMaster: HospitalMaster, logoFile: File?) {
         viewModelScope.launch {
             _uiStates.update { it.copy(isUploading = true) }
             hospitalRepository
-                .updateHospital(hospitalMaster)
+                .updateHospital(hospitalMaster, logoFile = logoFile)
                 .collect { result ->
                     when (result) {
                         is AppResult.Success -> {
@@ -179,8 +180,10 @@ data class HospitalUiState(
 )
 
 sealed interface HospitalActions {
-    data class OnAddHospital(val hospitalMaster: HospitalMaster) : HospitalActions
-    data class OnUpdateHospital(val hospitalMaster: HospitalMaster) : HospitalActions
+    data class OnAddHospital(val hospitalMaster: HospitalMaster, val file: File) : HospitalActions
+    data class OnUpdateHospital(val hospitalMaster: HospitalMaster, val file: File?) :
+        HospitalActions
+
     data object OnHospitalAddedSuccessfully : HospitalActions
     data object OnUpdatedSuccessfully : HospitalActions
     data class OnDeleteHospital(val hospitalMaster: HospitalMaster) : HospitalActions

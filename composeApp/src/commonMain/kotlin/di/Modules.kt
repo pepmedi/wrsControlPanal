@@ -1,6 +1,9 @@
 package di
 
 
+import achievements.data.AchievementsRepository
+import achievements.repository.AchievementsRepositoryImpl
+import achievements.viewmodel.AchievementsViewModel
 import appUsers.UserRepository
 import appUsers.UserRepositoryImpl
 import appointment.domain.AppointmentBookingRepository
@@ -65,6 +68,7 @@ val sharedModule = module {
     singleOf(::BlogRepositoryImpl).bind<BlogRepository>()
     singleOf(::PatientDocumentRepositoryImpl).bind<PatientDocumentRepository>()
     singleOf(::MedicalRecordsRepositoryImpl).bind<MedicalRecordsRepository>()
+    singleOf(::AchievementsRepositoryImpl).bind<AchievementsRepository>()
 
     viewModel { AddDoctorViewModel(get(), get(), get(), get()) }
     viewModel { HospitalViewModel(get()) }
@@ -86,4 +90,5 @@ val sharedModule = module {
     viewModel { UpdateServicesViewModel(get()) }
 
     viewModel { UpdatePanelUserViewModel(get(), get()) }
+    viewModel { AchievementsViewModel(get()) }
 }

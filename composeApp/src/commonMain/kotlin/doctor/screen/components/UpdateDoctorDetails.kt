@@ -3,15 +3,12 @@ package doctor.screen.components
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.HorizontalDivider
@@ -48,13 +45,11 @@ import hospital.presentation.components.ServicesListDialog
 import hospital.presentation.components.SlotsListDialog
 import kotlinx.coroutines.launch
 import org.koin.compose.viewmodel.koinViewModel
-import util.BlogElement
 import util.DoctorEducationElement
 import util.FileCompressor
 import util.FileUtil.loadAndCompressImage
 import util.ToastEvent
 import util.buildDoctorEducationFormatted
-import util.buildFormattedBlog
 import java.io.File
 
 @Composable
@@ -143,6 +138,9 @@ fun UpdateDoctorDetailsScreen(
     var doctorInfoImageBitmap by remember { mutableStateOf<ImageBitmap?>(null) }
     var doctorInfoImageFile by remember { mutableStateOf<File?>(null) }
 
+    var doctorHomePageImageBitmap by remember { mutableStateOf<ImageBitmap?>(null) }
+    var doctorHomePageImageFile by remember { mutableStateOf<File?>(null) }
+
     val scope = rememberCoroutineScope()
 
     MaterialTheme {
@@ -203,6 +201,14 @@ fun UpdateDoctorDetailsScreen(
 
                     item {
                         TextInputField(
+                            value = uiState.doctorDetails.city,
+                            onValueChange = { onAction(UpdateDoctorActions.OnCityChange(it)) },
+                            label = "Doctor City",
+                        )
+                    }
+
+                    item {
+                        TextInputField(
                             value = uiState.doctorDetails.speciality,
                             onValueChange = { onAction(UpdateDoctorActions.OnSpecialityChange(it)) },
                             label = "Doctor Speciality",
@@ -231,7 +237,7 @@ fun UpdateDoctorDetailsScreen(
                         TextInputField(
                             value = uiState.doctorDetails.focus,
                             onValueChange = { onAction(UpdateDoctorActions.OnFocusChange(it)) },
-                            label = "Doctor Focus",
+                            label = "Doctor Education",
                             minLines = 3,
                         )
                     }
@@ -289,7 +295,7 @@ fun UpdateDoctorDetailsScreen(
                     item {
                         Row(
                             modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceAround
+                            horizontalArrangement = Arrangement.SpaceEvenly
                         ) {
                             //first image
                             ImageSelector(
@@ -313,7 +319,6 @@ fun UpdateDoctorDetailsScreen(
                                 imageUrl = uiState.doctorDetails.profilePic
                             )
 
-                            //first image
                             ImageSelector(
                                 text = "Doctor Information Image",
                                 imageBitmap = doctorInfoImageBitmap,
@@ -333,6 +338,30 @@ fun UpdateDoctorDetailsScreen(
                                     toasterEvent(ToastEvent(message))
                                 },
                                 imageUrl = uiState.doctorDetails.doctorInfoPic
+                            )
+
+                            ImageSelector(
+                                text = "Doctor Home Page Image",
+                                imageUrl = uiState.doctorDetails.doctorHomePageUrl,
+                                imageBitmap = doctorHomePageImageBitmap,
+                                onImageSelected = { file ->
+                                    scope.launch {
+                                        doctorHomePageImageFile =
+                                            FileCompressor.loadAndCompressImage(
+                                                file,
+                                                compressionThreshold = 250
+                                            )
+                                        doctorHomePageImageBitmap = loadAndCompressImage(file)
+                                        onAction(
+                                            UpdateDoctorActions.OnDoctorHomePagePicChange(
+                                                doctorHomePageImageFile
+                                            )
+                                        )
+                                    }
+                                },
+                                errorMessage = { message ->
+                                    toasterEvent(ToastEvent(message))
+                                }
                             )
                         }
                     }

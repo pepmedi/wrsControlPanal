@@ -9,7 +9,7 @@ plugins {
     alias(libs.plugins.jetbrains.kotlin.serialization)
 }
 
-version = "1.0.1"
+version = "1.0.2"
 
 val localProps = Properties().apply {
     file("local.properties").takeIf { it.exists() }?.inputStream()?.use { load(it) }
@@ -93,6 +93,12 @@ compose.desktop {
                     password.set(System.getenv("APPLE_APP_SPECIFIC_PASSWORD"))
                     teamID.set("FBU9XLJ353")
                 }
+            }
+        }
+        buildTypes {
+            release {
+                // ✅ Correct: disables ProGuard by not using a config
+                proguard.isEnabled = false
             }
         }
     }

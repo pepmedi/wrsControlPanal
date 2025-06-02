@@ -2,6 +2,7 @@ package dashboard
 
 import PrimaryAppColor
 import SidebarItem
+import achievements.screen.AllAchievementsScreenRoot
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -60,7 +61,7 @@ fun DashboardApp(userSession: UserSession, userRole: UserRole, onLogout: () -> U
                 val sidebarItems = buildList {
                     userSession.permissions?.let {
                         if (it.contains("Access Dashboard")) add(SidebarItem.DASHBOARD)
-                        if (it.contains("Update Info")) add(SidebarItem.UPDATE_INFO)
+//                        if (it.contains("Update Info")) add(SidebarItem.UPDATE_INFO)
                         if (it.contains("C-Panel Users")) add(SidebarItem.CPANEL_USERS)
                     }
                     add(SidebarItem.APPOINTMENTS)
@@ -81,7 +82,7 @@ fun DashboardApp(userSession: UserSession, userRole: UserRole, onLogout: () -> U
                 TopBar(title = selectedItem.title)
                 when (selectedItem) {
                     SidebarItem.DASHBOARD -> DashboardScreenUi()
-                    SidebarItem.UPDATE_INFO -> UpdateInfoScreen()
+//                    SidebarItem.UPDATE_INFO -> UpdateInfoScreen()
                     SidebarItem.APPOINTMENTS -> AppointmentsScreenRoot()
                     SidebarItem.CPANEL_USERS -> PanelUserScreenRoot()
                     SidebarItem.DOCTORS -> DoctorListScreenRoot()
@@ -89,6 +90,8 @@ fun DashboardApp(userSession: UserSession, userRole: UserRole, onLogout: () -> U
                     SidebarItem.BLOGS -> BlogListScreenRoot()
                     SidebarItem.SERVICES -> AllServicesListScreenRoot()
                     SidebarItem.HOSPITALS -> AllHospitalListScreenRoot()
+
+                    SidebarItem.ACHIEVEMENTS -> AllAchievementsScreenRoot()
 
                     SidebarItem.LOGOUT -> {
                         onLogout()

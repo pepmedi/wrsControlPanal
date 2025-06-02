@@ -38,7 +38,6 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -62,8 +61,12 @@ import controlPanalUser.domain.UserRole
 import controlPanalUser.repository.SessionManager
 import doctor.domain.DoctorMaster
 import documents.screen.AllAppointmentRecordsRoot
-import hexToComposeColor
 import org.koin.compose.viewmodel.koinViewModel
+import theme.AppButton
+import theme.AppColor.Java20
+import theme.AppColor.SuccessGreen
+import theme.ButtonType
+import theme.ErrorRed
 import util.Util.toNameFormat
 
 @Composable
@@ -105,8 +108,6 @@ fun AppointmentsScreen(
             }.sortedByDescending { it.appointment.createdAt }
         }
     }
-
-    var showDialog by remember { mutableStateOf(false) }
 
     MaterialTheme {
         Scaffold(containerColor = Color.White) {
@@ -362,26 +363,23 @@ fun BookingCard(
                                 Alignment.CenterHorizontally
                             )
                         ) {
-                            OutlinedButton(
+                            AppButton(
                                 onClick = { onCancel() },
-                                colors = ButtonDefaults.outlinedButtonColors(
-                                    contentColor = Color.Black,
-                                    containerColor = hexToComposeColor("#E5E7EB")
-                                ),
-                                border = BorderStroke(1.dp, SecondaryAppColor),
-                                modifier = Modifier.weight(1f)
-                            ) {
-                                Text(text = "Cancel", color = Color.Black, fontSize = 15.sp)
-                            }
+                                modifier = Modifier.weight(1f),
+                                text = "Cancel",
+                                buttonType = ButtonType.SMALL_OUTLINE,
+                                buttonBackgroundColor = ErrorRed.copy(alpha = 0.8f),
+                                textColor = Java20
+                            )
 
-                            OutlinedButton(
+                            AppButton(
                                 onClick = { onConfirm() },
-                                colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Blue),
-                                border = BorderStroke(1.dp, SecondaryAppColor),
-                                modifier = Modifier.weight(1f)
-                            ) {
-                                Text(text = "Confirm", color = Color.Black, fontSize = 15.sp)
-                            }
+                                modifier = Modifier.weight(1f),
+                                text = "Confirm",
+                                buttonType = ButtonType.SMALL,
+                                buttonBackgroundColor = SuccessGreen,
+                                textColor = Java20
+                            )
                         }
                     }
 
@@ -393,26 +391,19 @@ fun BookingCard(
                                 Alignment.CenterHorizontally
                             )
                         ) {
-                            OutlinedButton(
+                            AppButton(
                                 onClick = { onCancel() },
-                                colors = ButtonDefaults.outlinedButtonColors(
-                                    contentColor = Color.Black,
-                                    containerColor = hexToComposeColor("#E5E7EB")
-                                ),
-                                border = BorderStroke(1.dp, SecondaryAppColor),
-                                modifier = Modifier.weight(1f)
-                            ) {
-                                Text(text = "Cancel", color = Color.Black, fontSize = 15.sp)
-                            }
+                                modifier = Modifier.weight(1f),
+                                text = "Cancel",
+                                buttonType = ButtonType.SMALL_OUTLINE,
+                            )
 
-                            OutlinedButton(
+                            AppButton(
                                 onClick = { onCompleted() },
-                                colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Blue),
-                                border = BorderStroke(1.dp, SecondaryAppColor),
-                                modifier = Modifier.weight(1f)
-                            ) {
-                                Text(text = "Completed", color = Color.Black, fontSize = 15.sp)
-                            }
+                                modifier = Modifier.weight(1f),
+                                text = "Completed",
+                                buttonType = ButtonType.SMALL
+                            )
                         }
                     }
                 }
@@ -423,23 +414,19 @@ fun BookingCard(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.fillMaxWidth(),
                 ) {
-                    OutlinedButton(
+                    AppButton(
                         onClick = { onDetailsClick() },
-                        colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Black),
-                        border = BorderStroke(1.dp, SecondaryAppColor),
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Text(text = "Details", fontSize = 15.sp)
-                    }
+                        modifier = Modifier.weight(1f),
+                        text = "Details",
+                        buttonType = ButtonType.SMALL_OUTLINE
+                    )
 
-                    OutlinedButton(
+                    AppButton(
                         onClick = { onUploadRecords() },
-                        colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Black),
-                        border = BorderStroke(1.dp, SecondaryAppColor),
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Text(text = "Upload Records", fontSize = 15.sp)
-                    }
+                        modifier = Modifier.weight(1f),
+                        text = "Upload Records",
+                        buttonType = ButtonType.SMALL_OUTLINE
+                    )
                 }
             }
         }
@@ -466,7 +453,7 @@ fun CustomTabRow(
                     contentColor = if (selectedTab == tab) Color.White else Color.Black
                 ),
                 border = BorderStroke(2.dp, Color(0xFF4A90E2)),
-                shape = RoundedCornerShape(20.dp)
+                shape = RoundedCornerShape(8.dp)
             ) {
                 Text(tab.label, fontWeight = FontWeight.SemiBold)
             }

@@ -50,6 +50,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.wearespine.`in`.theme.keylineDimen8
 import component.AppCircularProgressIndicator
 import component.SlideInScreen
 import core.components.SearchBar
@@ -228,7 +229,8 @@ fun HospitalCard(
                         onClick = { onUpdateClick() },
                         colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Black),
                         border = BorderStroke(1.dp, SecondaryAppColor),
-                        modifier = Modifier.weight(1f)
+                        modifier = Modifier.weight(1f),
+                        shape = RoundedCornerShape(keylineDimen8)
                     ) {
                         Text(text = "Update", fontSize = 15.sp)
                     }
@@ -241,6 +243,7 @@ fun HospitalCard(
                         ),
                         border = BorderStroke(1.dp, SecondaryAppColor),
                         modifier = Modifier.weight(1f),
+                        shape = RoundedCornerShape(keylineDimen8)
                     ) {
                         Text(text = "Delete", fontSize = 15.sp)
                     }

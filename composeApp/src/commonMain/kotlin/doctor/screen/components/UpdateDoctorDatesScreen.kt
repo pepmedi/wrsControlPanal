@@ -135,10 +135,9 @@ fun UpdateDoctorDatesScreen(
                                 )
                             )
                         },
-                        text = "Block",
+                        text = "Update Dates",
                         buttonType = ButtonType.EXTRA_SMALL,
                         viewState = if (isUpdating) ButtonViewState.LOADING else ButtonViewState.DEFAULT,
-                        enabled = selectedDate.isNotEmpty()
                     )
                 }
             }

@@ -1,8 +1,8 @@
 package doctor.screen
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -10,8 +10,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
@@ -55,13 +53,11 @@ import kotlinx.coroutines.launch
 import org.koin.compose.viewmodel.koinViewModel
 import services.domain.ServicesMaster
 import slots.domain.SlotsMaster
-import util.BlogElement
 import util.DoctorEducationElement
 import util.FileCompressor
 import util.FileUtil.loadAndCompressImage
 import util.ToastEvent
 import util.buildDoctorEducationFormatted
-import util.buildFormattedBlog
 import util.getCurrentTimeStamp
 import java.io.File
 
@@ -76,9 +72,9 @@ fun AddDoctorScreen(
     val hospitalListState = viewModal.hospitalList.collectAsStateWithLifecycle()
     val servicesListState = viewModal.servicesList.collectAsStateWithLifecycle()
     val slotsMaster = viewModal.slotsList.collectAsStateWithLifecycle()
-
     var doctorName by remember { mutableStateOf("") }
     var doctorExperience by remember { mutableStateOf("") }
+    var doctorCity by remember { mutableStateOf("") }
     var age by remember { mutableStateOf("") }
 
     var qualification by remember { mutableStateOf("") }
@@ -90,6 +86,9 @@ fun AddDoctorScreen(
 
     var doctorInfoImageBitmap by remember { mutableStateOf<ImageBitmap?>(null) }
     var doctorInfoImageFile by remember { mutableStateOf<File?>(null) }
+
+    var doctorHomePageImageBitmap by remember { mutableStateOf<ImageBitmap?>(null) }
+    var doctorHomePageImageFile by remember { mutableStateOf<File?>(null) }
 
     val scope = rememberCoroutineScope()
 
@@ -148,6 +147,7 @@ fun AddDoctorScreen(
 
         if (doctorName.isBlank()) errors.add("Doctor Name is required.")
         if (doctorExperience.isBlank()) errors.add("Experience is required.")
+        if (doctorCity.isBlank()) errors.add("City is required.")
         if (age.isBlank()) errors.add("Age is required.")
         if (doctorProfileText.isBlank()) errors.add("Profile is required.")
         if (doctorCareerPath.isBlank()) errors.add("Career Path is required.")
@@ -159,6 +159,7 @@ fun AddDoctorScreen(
         if (selectedSlots.isEmpty()) errors.add("Slots Are required")
         if (doctorProfileImageFile == null) errors.add("Profile Image is required")
         if (doctorInfoImageFile == null) errors.add("Info Image is required")
+        if (doctorHomePageImageFile == null) errors.add("Home Page Image is required")
 
         if (errors.isNotEmpty()) {
             toasterEvent = ToastEvent(errors.first())
@@ -217,6 +218,14 @@ fun AddDoctorScreen(
                             value = doctorExperience,
                             onValueChange = { doctorExperience = it },
                             label = "Doctor Experience",
+                        )
+                    }
+
+                    item {
+                        TextInputField(
+                            value = doctorCity,
+                            onValueChange = { doctorCity = it },
+                            label = "Doctor City",
                         )
                     }
 
@@ -311,7 +320,10 @@ fun AddDoctorScreen(
                     }
 
                     item {
-                        Row {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceEvenly
+                        ) {
 
                             ImageSelector(
                                 text = "Doctor Profile Picture",
@@ -342,6 +354,23 @@ fun AddDoctorScreen(
                                 errorMessage = { message ->
                                     toasterEvent = ToastEvent(message)
                                 })
+
+                            ImageSelector(
+                                text = "Doctor Home Page Image",
+                                imageBitmap = doctorHomePageImageBitmap,
+                                onImageSelected = { file ->
+                                    scope.launch {
+                                        doctorHomePageImageFile =
+                                            FileCompressor.loadAndCompressImage(
+                                                file,
+                                                compressionThreshold = 250
+                                            )
+                                        doctorHomePageImageBitmap = loadAndCompressImage(file)
+                                    }
+                                },
+                                errorMessage = { message ->
+                                    toasterEvent = ToastEvent(message)
+                                })
                         }
                     }
 
@@ -366,6 +395,7 @@ fun AddDoctorScreen(
                                                         hospital = selectedHospitals.map { it.id },
                                                         qualification = qualification,
                                                         reviews = "",
+                                                        city = doctorCity,
                                                         careerPath = doctorCareerPath,
                                                         focus = doctorFocus,
                                                         profile = doctorProfileText,
@@ -374,7 +404,8 @@ fun AddDoctorScreen(
                                                         createdAt = getCurrentTimeStamp()
                                                     ),
                                                     doctorProfileImage = doctorImage,
-                                                    doctorInfoImage = doctorInfoImageFile!!
+                                                    doctorInfoImage = doctorInfoImageFile!!,
+                                                    doctorHomePageImage = doctorHomePageImageFile!!
                                                 )
                                             }
                                         }

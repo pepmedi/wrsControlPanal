@@ -1,8 +1,10 @@
 package hospital.presentation.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -23,6 +25,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.dokar.sonner.TextToastAction
@@ -31,14 +34,18 @@ import com.dokar.sonner.Toaster
 import com.dokar.sonner.rememberToasterState
 import component.GradientButton
 import core.CancelButton
+import core.ImageSelector
 import doctor.screen.components.TextInputField
 import hospital.domain.HospitalMaster
 import hospital.presentation.HospitalActions
 import hospital.presentation.HospitalViewModel
 import kotlinx.coroutines.launch
 import org.koin.compose.viewmodel.koinViewModel
+import util.FileCompressor
+import util.FileUtil.loadAndCompressImage
 import util.ToastEvent
 import util.getCurrentTimeStamp
+import java.io.File
 
 @Composable
 fun UpdateHospitalScreen(
@@ -56,6 +63,9 @@ fun UpdateHospitalScreen(
 
     val toaster = rememberToasterState()
     var toasterEvent by remember { mutableStateOf<ToastEvent?>(null) }
+
+    var imageBitmap by remember { mutableStateOf<ImageBitmap?>(null) }
+    var imageFile by remember { mutableStateOf<File?>(null) }
 
     LaunchedEffect(uiState.updatedSuccessFully) {
         if (uiState.updatedSuccessFully) {
@@ -126,7 +136,29 @@ fun UpdateHospitalScreen(
                     icon = Icons.Outlined.LocationOn
                 )
 
-                if (uiState.isLoading) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceEvenly
+                ) {
+                    //Service image
+                    ImageSelector(
+                        imageBitmap = imageBitmap,
+                        imageUrl = hospitalMaster.hospitalLogoUrl,
+                        onImageSelected = { file ->
+                            scope.launch {
+                                imageFile = FileCompressor.loadAndCompressImage(file)
+                                imageBitmap = loadAndCompressImage(file)
+                            }
+                        },
+                        errorMessage = { message ->
+                            toasterEvent = ToastEvent(message)
+                        },
+                        text = "Select Hospital Logo Image"
+                    )
+                }
+
+
+                if (uiState.isUploading) {
                     CircularProgressIndicator()
                 } else {
                     GradientButton(
@@ -142,7 +174,8 @@ fun UpdateHospitalScreen(
                                             address = address,
                                             createdAt = hospitalMaster.createdAt,
                                             updatedAt = getCurrentTimeStamp()
-                                        )
+                                        ),
+                                        imageFile
                                     )
                                 )
                             }

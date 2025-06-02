@@ -381,16 +381,6 @@ fun MedicalRecordsCard(
                     ) {
                         Text("Show")
                     }
-
-//                    TextButton(
-//                        modifier = Modifier.padding(end = 10.dp),
-//                        shape = RoundedCornerShape(20.dp),
-//                        colors = ButtonDefaults.textButtonColors(containerColor = Color.White),
-//                        border = BorderStroke(1.dp, PrimaryAppColor),
-//                        onClick = { }
-//                    ) {
-//                        Text("Update")
-//                    }
                 }
             }
         }

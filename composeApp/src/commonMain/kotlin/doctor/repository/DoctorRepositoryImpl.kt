@@ -56,10 +56,12 @@ class DoctorRepositoryImpl(private val httpClient: HttpClient) : DoctorRepositor
                             qualification = (fields["qualification"] as? DatabaseValue.StringValue)?.stringValue.orEmpty(),
                             profilePic = (fields["profilePic"] as? DatabaseValue.StringValue)?.stringValue.orEmpty(),
                             doctorInfoPic = (fields["doctorInfoPic"] as? DatabaseValue.StringValue)?.stringValue.orEmpty(),
+                            doctorHomePageUrl = (fields["doctorHomePageUrl"] as? DatabaseValue.StringValue)?.stringValue.orEmpty(),
                             consltFee = (fields["consltFee"] as? DatabaseValue.StringValue)?.stringValue.orEmpty(),
                             reviews = (fields["reviews"] as? DatabaseValue.StringValue)?.stringValue.orEmpty(),
 
                             experience = (fields["experience"] as? DatabaseValue.StringValue)?.stringValue.orEmpty(),
+                            city = (fields["city"] as? DatabaseValue.StringValue)?.stringValue.orEmpty(),
                             hospital = (fields["hospital"] as? DatabaseValue.ArrayValue)?.values?.mapNotNull { (it as? DatabaseValue.StringValue)?.stringValue }
                                 .orEmpty(),
                             services = (fields["services"] as? DatabaseValue.ArrayValue)?.values?.mapNotNull { (it as? DatabaseValue.StringValue)?.stringValue }
@@ -86,7 +88,8 @@ class DoctorRepositoryImpl(private val httpClient: HttpClient) : DoctorRepositor
     override suspend fun addDoctorToDatabase(
         doctor: DoctorMaster,
         profileImageFile: File,
-        infoImageFile: File
+        infoImageFile: File,
+        doctorHomePageImage: File
     ): Flow<AppResult<DoctorMaster, DataError.Remote>> =
         flow {
             val url = "$BASE_URL/${DatabaseCollection.DOCTORS}"
@@ -100,7 +103,9 @@ class DoctorRepositoryImpl(private val httpClient: HttpClient) : DoctorRepositor
                                 "age" to DatabaseValue.StringValue(doctor.age),
                                 "qualification" to DatabaseValue.StringValue(doctor.qualification),
                                 "experience" to DatabaseValue.StringValue(doctor.experience),
+                                "city" to DatabaseValue.StringValue(doctor.city),
                                 "profilePic" to DatabaseValue.StringValue(doctor.profilePic),
+                                "doctorHomePageUrl" to DatabaseValue.StringValue(doctor.doctorHomePageUrl),
                                 "hospital" to DatabaseValue.ArrayValue(doctor.hospital.map {
                                     DatabaseValue.StringValue(
                                         it
@@ -168,12 +173,20 @@ class DoctorRepositoryImpl(private val httpClient: HttpClient) : DoctorRepositor
                         fileName = generatedId
                     )
 
+                    val doctorHomePageImageUrl = uploadImageToFirebaseStorage(
+                        httpClient = httpClient,
+                        file = doctorHomePageImage,
+                        folderName = StorageCollection.DOCTOR_HOME_PAGE_IMAGES,
+                        fileName = generatedId
+                    )
+
                     val patchImageResponse =
                         httpClient.patch(
                             "$url/$generatedId?${
                                 buildUpdateMask(
                                     "profilePic",
-                                    "doctorInfoPic"
+                                    "doctorInfoPic",
+                                    "doctorHomePageUrl"
                                 )
                             }"
                         ) {
@@ -186,6 +199,9 @@ class DoctorRepositoryImpl(private val httpClient: HttpClient) : DoctorRepositor
                                         ),
                                         "doctorInfoPic" to DatabaseValue.StringValue(
                                             infoImageUrl
+                                        ),
+                                        "doctorHomePageUrl" to DatabaseValue.StringValue(
+                                            doctorHomePageImageUrl
                                         )
                                     )
                                 )
@@ -196,7 +212,8 @@ class DoctorRepositoryImpl(private val httpClient: HttpClient) : DoctorRepositor
                         val updatedDoctor = doctor.copy(
                             id = generatedId,
                             profilePic = profileImageUrl,
-                            doctorInfoPic = infoImageUrl
+                            doctorInfoPic = infoImageUrl,
+                            doctorHomePageUrl = doctorHomePageImageUrl
                         )
                         emit(AppResult.Success(updatedDoctor))
                     } else {
@@ -235,10 +252,12 @@ class DoctorRepositoryImpl(private val httpClient: HttpClient) : DoctorRepositor
                             age = (fields["age"] as? DatabaseValue.StringValue)?.stringValue.orEmpty(),
                             profilePic = (fields["profilePic"] as? DatabaseValue.StringValue)?.stringValue.orEmpty(),
                             doctorInfoPic = (fields["doctorInfoPic"] as? DatabaseValue.StringValue)?.stringValue.orEmpty(),
+                            doctorHomePageUrl = (fields["doctorHomePageUrl"] as? DatabaseValue.StringValue)?.stringValue.orEmpty(),
                             qualification = (fields["qualification"] as? DatabaseValue.StringValue)?.stringValue.orEmpty(),
                             consltFee = (fields["consltFee"] as? DatabaseValue.StringValue)?.stringValue.orEmpty(),
                             reviews = (fields["reviews"] as? DatabaseValue.StringValue)?.stringValue.orEmpty(),
                             experience = (fields["experience"] as? DatabaseValue.StringValue)?.stringValue.orEmpty(),
+                            city = (fields["city"] as? DatabaseValue.StringValue)?.stringValue.orEmpty(),
                             speciality = (fields["speciality"] as? DatabaseValue.StringValue)?.stringValue.orEmpty(),
                             hospital = (fields["hospital"] as? DatabaseValue.ArrayValue)?.values?.mapNotNull { (it as? DatabaseValue.StringValue)?.stringValue }
                                 .orEmpty(),
@@ -268,8 +287,9 @@ class DoctorRepositoryImpl(private val httpClient: HttpClient) : DoctorRepositor
     override suspend fun updateDoctor(
         doctor: DoctorMaster,
         profileImageFile: File?,
-        infoImageFile: File?
-    ): Flow<AppResult<Pair<String?, String?>, DataError.Remote>> = flow {
+        infoImageFile: File?,
+        doctorHomePageImage: File?
+    ): Flow<AppResult<Triple<String?, String?, String?>, DataError.Remote>> = flow {
         try {
             // Step 1: Update doctor details first
             val patchResponse = httpClient.patch(
@@ -286,7 +306,8 @@ class DoctorRepositoryImpl(private val httpClient: HttpClient) : DoctorRepositor
                         "updatedAt",
                         "focus",
                         "careerPath",
-                        "profile"
+                        "profile",
+                        "city"
                     )
                 }"
             ) {
@@ -298,6 +319,7 @@ class DoctorRepositoryImpl(private val httpClient: HttpClient) : DoctorRepositor
                             "age" to DatabaseValue.StringValue(doctor.age),
                             "qualification" to DatabaseValue.StringValue(doctor.qualification),
                             "experience" to DatabaseValue.StringValue(doctor.experience),
+                            "city" to DatabaseValue.StringValue(doctor.city),
                             "hospital" to DatabaseValue.ArrayValue(doctor.hospital.map {
                                 DatabaseValue.StringValue(it)
                             }),
@@ -319,11 +341,12 @@ class DoctorRepositoryImpl(private val httpClient: HttpClient) : DoctorRepositor
 
             if (patchResponse.status == HttpStatusCode.OK) {
                 // Step 2: Upload image if available
-                if (profileImageFile != null || infoImageFile != null) {
+                if (profileImageFile != null || infoImageFile != null || doctorHomePageImage != null) {
 
                     val updatedFields = mutableMapOf<String, DatabaseValue>()
                     var updatedProfileImageUrl: String? = null
                     var updatedInfoImageUrl: String? = null
+                    var updatedHomePageImageUrl: String? = null
 
                     if (profileImageFile != null) {
                         updatedProfileImageUrl = uploadImageToFirebaseStorage(
@@ -347,6 +370,17 @@ class DoctorRepositoryImpl(private val httpClient: HttpClient) : DoctorRepositor
                             DatabaseValue.StringValue(updatedInfoImageUrl)
                     }
 
+                    if (doctorHomePageImage != null) {
+                        updatedHomePageImageUrl = uploadImageToFirebaseStorage(
+                            httpClient = httpClient,
+                            file = doctorHomePageImage,
+                            folderName = StorageCollection.DOCTOR_HOME_PAGE_IMAGES,
+                            fileName = doctor.id
+                        )
+                        updatedFields["doctorHomePageUrl"] =
+                            DatabaseValue.StringValue(updatedHomePageImageUrl)
+                    }
+
                     if (updatedFields.isNotEmpty()) {
                         val fieldPaths =
                             updatedFields.keys.joinToString("&updateMask.fieldPaths=")
@@ -361,9 +395,10 @@ class DoctorRepositoryImpl(private val httpClient: HttpClient) : DoctorRepositor
                         if (patchImageResponse.status == HttpStatusCode.OK) {
                             emit(
                                 AppResult.Success(
-                                    Pair(
+                                    Triple(
                                         updatedProfileImageUrl,
-                                        updatedInfoImageUrl
+                                        updatedInfoImageUrl,
+                                        updatedHomePageImageUrl
                                     )
                                 )
                             )
@@ -375,7 +410,8 @@ class DoctorRepositoryImpl(private val httpClient: HttpClient) : DoctorRepositor
                 } else {
                     emit(
                         AppResult.Success(
-                            Pair(
+                            Triple(
+                                null,
                                 null,
                                 null
                             )
