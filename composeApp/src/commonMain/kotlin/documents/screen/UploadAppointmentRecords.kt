@@ -47,7 +47,7 @@ fun UploadAppointmentRecords(
     viewModal: UploadAppointmentRecordsViewModal = koinViewModel(),
     appointmentId: String,
     onBackClick: () -> Unit,
-    onSuccessfulUpload: () -> Unit
+    onSuccessfulUpload: (PatientMedicalRecordsMaster) -> Unit
 ) {
 
     var toasterEvent by remember { mutableStateOf<ToastEvent?>(null) }
@@ -162,7 +162,7 @@ fun UploadAppointmentRecords(
                                                 type = ToastType.Success
                                             )
                                             delay(1500)
-                                            onSuccessfulUpload()
+                                            onSuccessfulUpload(it)
                                         }
                                         .onFailure { e ->
                                             toasterEvent =

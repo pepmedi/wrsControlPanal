@@ -8,6 +8,7 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import org.jetbrains.compose.resources.Font
+import theme.AppColor.Java500
 import wrscontrolpanel.composeapp.generated.resources.Manrope_Bold
 import wrscontrolpanel.composeapp.generated.resources.Manrope_Medium
 import wrscontrolpanel.composeapp.generated.resources.Manrope_Regular

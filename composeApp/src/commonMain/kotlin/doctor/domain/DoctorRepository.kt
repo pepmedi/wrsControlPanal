@@ -10,13 +10,21 @@ interface DoctorRepository {
     suspend fun addDoctorToDatabase(
         doctor: DoctorMaster,
         profileImageFile: File,
-        infoImageFile: File
+        infoImageFile: File,
+        doctorHomePageImage: File
     ): Flow<AppResult<DoctorMaster, DataError.Remote>>
 
     suspend fun getDoctor(doctorId: String): Flow<AppResult<DoctorMaster, DataError.Remote>>
+
     suspend fun updateDoctor(
         doctor: DoctorMaster,
         profileImageFile: File?,
-        infoImageFile: File?
-    ): Flow<AppResult<Pair<String?, String?>, DataError.Remote>>
+        infoImageFile: File?,
+        doctorHomePageImage: File?
+    ): Flow<AppResult<Triple<String?, String?, String?>, DataError.Remote>>
+
+    suspend fun blockDoctorDates(
+        doctorId: String,
+        blockedDates: List<String>
+    ): Flow<AppResult<Unit, DataError.Remote>>
 }

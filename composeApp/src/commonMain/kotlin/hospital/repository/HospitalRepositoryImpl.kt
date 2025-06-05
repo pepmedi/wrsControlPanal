@@ -6,6 +6,7 @@ import core.domain.DataError
 import core.domain.AppResult
 import hospital.domain.HospitalMaster
 import hospital.domain.HospitalRepository
+import imageUpload.uploadImageToFirebaseStorage
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.delete
@@ -29,8 +30,10 @@ import util.DatabaseRequest
 import util.DatabaseResponse
 import util.DatabaseUtil
 import util.DatabaseValue
+import util.StorageCollection
 import util.buildCustomDatabaseQuery
 import util.buildUpdateMask
+import java.io.File
 
 private const val BASE_URL = DatabaseUtil.DATABASE_URL
 
@@ -54,6 +57,7 @@ class HospitalRepositoryImpl(private val httpClient: HttpClient) : HospitalRepos
                             id = databaseDocument.name.substringAfterLast("/"),
                             name = (fields["name"] as? DatabaseValue.StringValue)?.stringValue.orEmpty(),
                             address = (fields["address"] as? DatabaseValue.StringValue)?.stringValue.orEmpty(),
+                            hospitalLogoUrl = (fields["hospitalLogoUrl"] as? DatabaseValue.StringValue)?.stringValue.orEmpty(),
                             createdAt = (fields["createdAt"] as? DatabaseValue.StringValue)?.stringValue.orEmpty(),
                             updatedAt = (fields["updatedAt"] as? DatabaseValue.StringValue)?.stringValue.orEmpty()
                         )
@@ -67,7 +71,10 @@ class HospitalRepositoryImpl(private val httpClient: HttpClient) : HospitalRepos
             }
         }.flowOn(Dispatchers.IO)
 
-    override suspend fun addHospitalToDatabase(hospital: HospitalMaster): Flow<AppResult<HospitalMaster, DataError.Remote>> =
+    override suspend fun addHospitalToDatabase(
+        hospital: HospitalMaster,
+        logoFile: File
+    ): Flow<AppResult<HospitalMaster, DataError.Remote>> =
         flow {
             val url = "${BASE_URL}/hospitals"
 
@@ -108,7 +115,38 @@ class HospitalRepositoryImpl(private val httpClient: HttpClient) : HospitalRepos
                 }
 
                 if (patchResponse.status == HttpStatusCode.OK) {
-                    emit(AppResult.Success(hospital.copy(id = generatedId)))
+                    val hospitalImageUrl = uploadImageToFirebaseStorage(
+                        httpClient = httpClient,
+                        file = logoFile,
+                        folderName = StorageCollection.HOSPITAL_LOGO,
+                        fileName = generatedId
+                    )
+                    val patchImagesUrlResponse =
+                        httpClient.patch("$BASE_URL/hospitals/$generatedId?updateMask.fieldPaths=hospitalLogoUrl") {
+                            contentType(ContentType.Application.Json)
+                            setBody(
+                                DatabaseRequest(
+                                    fields = mapOf(
+                                        "hospitalLogoUrl" to DatabaseValue.StringValue(
+                                            hospitalImageUrl
+                                        )
+                                    )
+                                )
+                            )
+                        }
+
+                    if (patchImagesUrlResponse.status == HttpStatusCode.OK) {
+                        emit(
+                            AppResult.Success(
+                                hospital.copy(
+                                    id = generatedId,
+                                    hospitalLogoUrl = hospitalImageUrl
+                                )
+                            )
+                        )
+                    } else {
+                        emit(AppResult.Error(DataError.Remote.SERVER))
+                    }
                 } else {
                     emit(AppResult.Error(DataError.Remote.SERVER))
                 }
@@ -119,7 +157,10 @@ class HospitalRepositoryImpl(private val httpClient: HttpClient) : HospitalRepos
             }
         }.flowOn(Dispatchers.IO)
 
-    override suspend fun updateHospital(hospital: HospitalMaster): Flow<AppResult<HospitalMaster, DataError.Remote>> =
+    override suspend fun updateHospital(
+        hospital: HospitalMaster,
+        logoFile: File?
+    ): Flow<AppResult<HospitalMaster, DataError.Remote>> =
         flow {
             // Step 1: Update doctor details first
             val patchResponse = httpClient.patch(
@@ -144,7 +185,37 @@ class HospitalRepositoryImpl(private val httpClient: HttpClient) : HospitalRepos
             }
 
             if (patchResponse.status == HttpStatusCode.OK) {
-                emit(AppResult.Success(hospital))
+
+                if (logoFile != null) {
+                    val hospitalImageUrl = uploadImageToFirebaseStorage(
+                        httpClient = httpClient,
+                        file = logoFile,
+                        folderName = StorageCollection.HOSPITAL_LOGO,
+                        fileName = hospital.id
+                    )
+                    val patchImagesUrlResponse =
+                        httpClient.patch("$BASE_URL/hospitals/${hospital.id}?updateMask.fieldPaths=hospitalLogoUrl") {
+                            contentType(ContentType.Application.Json)
+                            setBody(
+                                DatabaseRequest(
+                                    fields = mapOf(
+                                        "hospitalLogoUrl" to DatabaseValue.StringValue(
+                                            hospitalImageUrl
+                                        )
+                                    )
+                                )
+                            )
+                        }
+
+                    if (patchImagesUrlResponse.status == HttpStatusCode.OK) {
+                        emit(AppResult.Success(hospital.copy(hospitalLogoUrl = hospitalImageUrl)))
+                    } else {
+                        emit(AppResult.Error(DataError.Remote.SERVER))
+                    }
+
+                } else {
+                    emit(AppResult.Success(hospital))
+                }
             } else {
                 emit(AppResult.Error(DataError.Remote.SERVER))
             }

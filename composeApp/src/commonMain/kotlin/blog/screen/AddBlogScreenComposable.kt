@@ -39,6 +39,9 @@ import core.ImageSelector
 import doctor.screen.components.TextInputField
 import kotlinx.coroutines.launch
 import org.koin.compose.viewmodel.koinViewModel
+import theme.AppButton
+import theme.ButtonType
+import theme.ButtonViewState
 import util.FileCompressor
 import util.FileUtil.loadAndCompressImage
 import util.ToastEvent
@@ -97,9 +100,7 @@ fun AddBlogScreenRoot(
                 }
 
                 is AddBlogAction.OnSubmit -> {
-                    if (state.isFormValid) {
-                        viewModel.onAction(action)
-                    } else {
+                    if (!state.isFormValid) {
                         toasterEvent = ToastEvent(state.getError())
                     }
                 }
@@ -180,16 +181,15 @@ fun AddBlogScreen(
                 }
             )
 
-            if (uiState.isUploading) {
-                AppCircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
-            } else {
-                GradientButton(
-                    modifier = Modifier.fillMaxWidth(),
-                    text = "Submit",
-                    onClick = { onAction(AddBlogAction.OnSubmit) },
-                    enable = uiState.isFormValid
-                )
-            }
+
+            AppButton(
+                modifier = Modifier.fillMaxWidth(),
+                text = "Submit",
+                onClick = { onAction(AddBlogAction.OnSubmit) },
+                buttonType = ButtonType.LARGE,
+                viewState = if (uiState.isUploading) ButtonViewState.LOADING else ButtonViewState.DEFAULT,
+                enabled = uiState.isFormValid
+            )
 
             CancelButton({ onAction(AddBlogAction.OnCancel) })
         }

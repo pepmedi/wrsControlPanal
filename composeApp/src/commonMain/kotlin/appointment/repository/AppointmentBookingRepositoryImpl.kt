@@ -29,44 +29,52 @@ class AppointmentBookingRepositoryImpl(private val httpClient: HttpClient) :
     AppointmentBookingRepository {
     override suspend fun getAllAppointments(): Flow<AppResult<List<AppointmentBookingMaster>, DataError.Remote>> =
         flow {
-            val result: AppResult<DatabaseDocumentsResponse, DataError.Remote> = safeCall {
-                httpClient.get(BASE_URL) {
-                    contentType(ContentType.Application.Json)
-                }
-            }
-
-            when (result) {
-                is AppResult.Success -> {
-                    val databaseResponse = result.data
-                    val appointments = databaseResponse.documents.map { appointments ->
-                        val field = appointments.fields
-                        AppointmentBookingMaster(
-                            id = appointments.name.substringAfterLast("/"),
-                            userId = (field["userId"] as? DatabaseValue.StringValue)?.stringValue.orEmpty(),
-                            doctorId = (field["doctorId"] as? DatabaseValue.StringValue)?.stringValue.orEmpty(),
-                            status = (field["status"] as? DatabaseValue.StringValue)?.stringValue.orEmpty(),
-                            patientName = (field["patientName"] as? DatabaseValue.StringValue)?.stringValue.orEmpty(),
-                            age = (field["age"] as? DatabaseValue.StringValue)?.stringValue.orEmpty(),
-                            gender = (field["gender"] as? DatabaseValue.StringValue)?.stringValue.orEmpty(),
-                            description = (field["description"] as? DatabaseValue.StringValue)?.stringValue.orEmpty(),
-                            createdAt = (field["createdAt"] as? DatabaseValue.StringValue)?.stringValue.orEmpty(),
-                            mobileNo = (field["mobileNo"] as? DatabaseValue.StringValue)?.stringValue.orEmpty(),
-                            bookingFor = (field["bookingFor"] as? DatabaseValue.StringValue)?.stringValue.orEmpty(),
-                            updatedAt = (field["updatedAt"] as? DatabaseValue.StringValue)?.stringValue.orEmpty(),
-                            slotId = (field["slotId"] as? DatabaseValue.ArrayValue)?.values?.mapNotNull { (it as? DatabaseValue.StringValue)?.stringValue }
-                                .orEmpty(),
-                            hospitalsId = (field["hospitalsId"] as? DatabaseValue.ArrayValue)?.values?.mapNotNull { (it as? DatabaseValue.StringValue)?.stringValue }
-                                .orEmpty(),
-                            dates = (field["dates"] as? DatabaseValue.ArrayValue)?.values?.mapNotNull { (it as? DatabaseValue.StringValue)?.stringValue }
-                                .orEmpty(),
-                        )
+            try {
+                val result: AppResult<DatabaseDocumentsResponse, DataError.Remote> = safeCall {
+                    httpClient.get(BASE_URL) {
+                        contentType(ContentType.Application.Json)
                     }
-                    emit(AppResult.Success(appointments))
                 }
 
-                is AppResult.Error -> {
-                    emit(AppResult.Error(DataError.Remote.SERVER))
+                when (result) {
+                    is AppResult.Success -> {
+                        val databaseResponse = result.data
+                        val appointments = databaseResponse.documents.map { appointments ->
+                            val field = appointments.fields
+                            AppointmentBookingMaster(
+                                id = appointments.name.substringAfterLast("/"),
+                                userId = (field["userId"] as? DatabaseValue.StringValue)?.stringValue.orEmpty(),
+                                doctorId = (field["doctorId"] as? DatabaseValue.StringValue)?.stringValue.orEmpty(),
+                                status = (field["status"] as? DatabaseValue.StringValue)?.stringValue.orEmpty(),
+                                patientName = (field["patientName"] as? DatabaseValue.StringValue)?.stringValue.orEmpty(),
+                                age = (field["age"] as? DatabaseValue.StringValue)?.stringValue.orEmpty(),
+                                gender = (field["gender"] as? DatabaseValue.StringValue)?.stringValue.orEmpty(),
+                                description = (field["description"] as? DatabaseValue.StringValue)?.stringValue.orEmpty(),
+                                createdAt = (field["createdAt"] as? DatabaseValue.StringValue)?.stringValue.orEmpty(),
+                                mobileNo = (field["mobileNo"] as? DatabaseValue.StringValue)?.stringValue.orEmpty(),
+                                bookingFor = (field["bookingFor"] as? DatabaseValue.StringValue)?.stringValue.orEmpty(),
+                                updatedAt = (field["updatedAt"] as? DatabaseValue.StringValue)?.stringValue.orEmpty(),
+                                slotId = (field["slotId"] as? DatabaseValue.ArrayValue)?.values?.mapNotNull { (it as? DatabaseValue.StringValue)?.stringValue }
+                                    .orEmpty(),
+                                hospitalsId = (field["hospitalsId"] as? DatabaseValue.ArrayValue)?.values?.mapNotNull { (it as? DatabaseValue.StringValue)?.stringValue }
+                                    .orEmpty(),
+                                medicalRecordsId = (field["medicalRecordsId"] as? DatabaseValue.ArrayValue)?.values?.mapNotNull { (it as? DatabaseValue.StringValue)?.stringValue }
+                                    .orEmpty(),
+                                dates = (field["dates"] as? DatabaseValue.ArrayValue)?.values?.mapNotNull { (it as? DatabaseValue.StringValue)?.stringValue }
+                                    .orEmpty(),
+                            )
+                        }
+                        emit(AppResult.Success(appointments))
+                    }
+
+                    is AppResult.Error -> {
+                        emit(AppResult.Error(DataError.Remote.SERVER))
+                    }
                 }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                println(e.localizedMessage)
+                emit(AppResult.Error(DataError.Remote.SERVER))
             }
         }.flowOn(Dispatchers.IO)
 

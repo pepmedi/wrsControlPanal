@@ -59,6 +59,30 @@ class AllBLogListViewModel(private val blogRepository: BlogRepository) : ViewMod
                     })
                 }
             }
+
+            is BlogListActions.ChangeBlogStatus -> {
+                viewModelScope.launch {
+                    blogRepository.updateBlog(
+                        action.blog.copy(blogActive = if (action.blog.blogActive == "1") "0" else "1"),
+                        imageFile = null
+                    ).collect { result ->
+                        when (result) {
+                            is AppResult.Success -> {
+                                _state.update {
+                                    it.copy(blogList = it.blogList.map { blog ->
+                                        if (blog.id == result.data.id) result.data else blog
+                                    })
+                                }
+                            }
+
+                            is AppResult.Error -> {
+
+                            }
+                        }
+
+                    }
+                }
+            }
         }
     }
 }
@@ -72,5 +96,6 @@ data class BLogListUiState(
 sealed interface BlogListActions {
     data class OnBlogUpdated(val blog: BlogMaster) : BlogListActions
     data class OnBlogAdded(val blog: BlogMaster) : BlogListActions
+    data class ChangeBlogStatus(val blog: BlogMaster) : BlogListActions
 }
 

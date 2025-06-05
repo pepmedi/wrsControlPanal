@@ -6,27 +6,37 @@ import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
+import theme.AppColor.Java100
+import theme.AppColor.Java20
+import theme.AppColor.Java200
+import theme.AppColor.Java300
+import theme.AppColor.Java400
+import theme.AppColor.Java50
+import theme.AppColor.Java500
+import theme.AppColor.Java800
+import theme.AppColor.Outline12
+import theme.AppColor.Vam800
 
 // ---- Brand Colors (JAVA Shades) ----
-val Java800 = Color(0xFF202E40)
-val Java500 = Color(0xFF27374D)
-val Java300 = Color(0xFF526B82)
-val Java200 = Color(0xFF9DB2BF)
-val Java100 = Color(0xFFDDE6ED)
-
-// ---- Base Colors ----
-val Vam800 = Color(0xFF06080C)
-val Java400 = Color(0xFF6282AF)
-val Java50 = Color(0xFFF9FAFB)
-val Java20 = Color(0xFFFEFEFE)
-
-// ---- Outline/Surface Variant ----
-val Outline12 = Color(0x1F000000) // 12% Black
-val Background = Java20
-
-// ---- Feedback Colors ----
-val SuccessGreen = Color(0xFF5CB85C)
-val WarningYellow = Color(0xFFE9D502)
+//val Java800 = Color(0xFF202E40)
+//val Java500 = Color(0xFF27374D)
+//val Java300 = Color(0xFF526B82)
+//val Java200 = Color(0xFF9DB2BF)
+//val Java100 = Color(0xFFDDE6ED)
+//
+//// ---- Base Colors ----
+//val Vam800 = Color(0xFF06080C)
+//val Java400 = Color(0xFF6282AF)
+//val Java50 = Color(0xFFF9FAFB)
+//val Java20 = Color(0xFFFEFEFE)
+//
+//// ---- Outline/Surface Variant ----
+//val Outline12 = Color(0x1F000000) // 12% Black
+//val Background = Java20
+//
+//// ---- Feedback Colors ----
+//val SuccessGreen = Color(0xFF5CB85C)
+//val WarningYellow = Color(0xFFE9D502)
 val ErrorRed = Color(0xFFE23636)
 val Blue = Color(0xFFE007AFF)
 

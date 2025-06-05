@@ -129,7 +129,9 @@ fun BlogListScreen(
                             onUpdateClick = {
                                 currentBlogId = blog.id
                                 showUpdateBlogScreen = true
+                                expandedCardId = null
                             },
+                            onBlockClick = { onAction(BlogListActions.ChangeBlogStatus(it)) },
                             isExpanded = expandedCardId == blog.id,
                             onExpand = { expandedCardId = blog.id },
                             onCollapse = { expandedCardId = null }
@@ -183,11 +185,13 @@ fun BlogCardItem(
     blog: BlogMaster,
     modifier: Modifier,
     onUpdateClick: (BlogMaster) -> Unit,
+    onBlockClick: (BlogMaster) -> Unit,
     isExpanded: Boolean,
     onExpand: () -> Unit,
     onCollapse: () -> Unit,
 ) {
-
+    val isBlogBlocked = blog.blogActive == "1"
+    val backgroundColor = if (isBlogBlocked) Color.LightGray else Color.White
     Card(
         modifier = modifier
             .fillMaxWidth()
@@ -198,63 +202,75 @@ fun BlogCardItem(
             ) { if (isExpanded) onCollapse() else onExpand() },
 
         elevation = CardDefaults.cardElevation(4.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White)
+        colors = CardDefaults.cardColors(containerColor = backgroundColor)
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 8.dp)
-                .animateContentSize()
-        ) {
+        Column(modifier = Modifier.fillMaxSize()) {
             // Blog image
             AsyncImage(
                 model = blog.imageUrl,
                 contentDescription = "Blog Image",
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .height(180.dp)
-                    .clip(RoundedCornerShape(12.dp)),
-                contentScale = ContentScale.Crop
+                    .height(250.dp)
+                    .clip(RoundedCornerShape(topEnd = 12.dp, topStart = 12.dp)),
+                contentScale = ContentScale.FillBounds
             )
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Blog title
-            Text(
-                text = blog.title.trim(),
-                fontWeight = FontWeight.Bold,
-                fontSize = 18.sp,
-                color = Color.Black,
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis
-            )
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 8.dp)
+                    .animateContentSize()
+            ) {
 
-            Spacer(modifier = Modifier.height(4.dp))
+                // Blog title
+                Text(
+                    text = blog.title.trim(),
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 18.sp,
+                    color = Color.Black,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis
+                )
 
-            // Blog description
-            Text(
-                text = blog.description.trim(),
-                fontWeight = FontWeight.Normal,
-                fontSize = 14.sp,
-                color = Color.DarkGray,
-                maxLines = 3,
-                overflow = TextOverflow.Ellipsis
-            )
+                Spacer(modifier = Modifier.height(4.dp))
 
-            if (isExpanded) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    TextButton(
-                        modifier = Modifier.padding(end = 10.dp),
-                        shape = RoundedCornerShape(20.dp),
-                        colors = ButtonDefaults.textButtonColors(containerColor = Color.White),
-                        border = BorderStroke(1.dp, PrimaryAppColor),
-                        onClick = { onUpdateClick(blog) }
+                // Blog description
+                Text(
+                    text = blog.description.trim(),
+                    fontWeight = FontWeight.Normal,
+                    fontSize = 14.sp,
+                    color = Color.DarkGray,
+                    maxLines = 3,
+                    overflow = TextOverflow.Ellipsis
+                )
+
+                if (isExpanded) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text("Update")
+                        TextButton(
+                            modifier = Modifier.padding(end = 10.dp),
+                            shape = RoundedCornerShape(20.dp),
+                            colors = ButtonDefaults.textButtonColors(containerColor = Color.White),
+                            border = BorderStroke(1.dp, PrimaryAppColor),
+                            onClick = { onUpdateClick(blog) }
+                        ) {
+                            Text("Update")
+                        }
+
+                        TextButton(
+                            modifier = Modifier.padding(end = 10.dp),
+                            shape = RoundedCornerShape(20.dp),
+                            colors = ButtonDefaults.textButtonColors(containerColor = Color.White),
+                            border = BorderStroke(1.dp, PrimaryAppColor),
+                            onClick = { onBlockClick(blog) }
+                        ) {
+                            Text(text = if (isBlogBlocked) "UnBlock" else "Block")
+                        }
                     }
                 }
             }

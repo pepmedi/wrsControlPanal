@@ -1,4 +1,4 @@
-package util
+package doctor.helper
 
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.AnnotatedString
@@ -8,13 +8,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.sp
 
-sealed class BlogElement {
-    data class Text(val content: AnnotatedString) : BlogElement()
-    data object Divider : BlogElement()
+sealed class DoctorEducationElement {
+    data class Text(val content: AnnotatedString) : DoctorEducationElement()
+    data object Divider : DoctorEducationElement()
 }
 
-fun buildFormattedBlog(description: String): List<BlogElement> {
-    val elements = mutableListOf<BlogElement>()
+
+fun buildDoctorEducationFormatted(description: String): List<DoctorEducationElement> {
+    val elements = mutableListOf<DoctorEducationElement>()
     val lines = description.lines().map { it.trim() }
 
     val cleanedLines = lines.filterIndexed { index, line ->
@@ -25,35 +26,67 @@ fun buildFormattedBlog(description: String): List<BlogElement> {
 
     fun flushParagraph() {
         if (paragraphBuilder.toAnnotatedString().text.isNotBlank()) {
-            elements.add(BlogElement.Text(paragraphBuilder.toAnnotatedString()))
+            elements.add(DoctorEducationElement.Text(paragraphBuilder.toAnnotatedString()))
             paragraphBuilder = AnnotatedString.Builder()
         }
     }
 
-    for ((index, line) in cleanedLines.withIndex()) {
-        if (line.startsWith("$")) continue
+    var index = 0
+    while (index < cleanedLines.size) {
+        val line = cleanedLines[index]
+
+        if (line.startsWith("$")) {
+            // Skip lines starting with $
+            index++
+            continue
+        }
 
         if (line.startsWith("!")) {
+            // Flush any pending paragraph, then add divider
             flushParagraph()
-            elements.add(BlogElement.Divider)
+            elements.add(DoctorEducationElement.Divider)
+            index++
+            continue
+        }
+
+        if (line.startsWith("#")) {
+            // Flush previous paragraph before heading
+            flushParagraph()
+
+            val heading = line.removePrefix("#").trim()
+            val headingBuilder = AnnotatedString.Builder().apply {
+                withStyle(ParagraphStyle(lineHeight = 20.sp)) {
+                    withStyle(SpanStyle(fontWeight = FontWeight.Bold, color = Color.Black)) {
+                        append(heading)
+                    }
+                }
+            }
+            elements.add(DoctorEducationElement.Text(headingBuilder.toAnnotatedString()))
+
+            // Look ahead to find next content line (skip $ lines)
+            var nextIndex = index + 1
+            while (nextIndex < cleanedLines.size && cleanedLines[nextIndex].startsWith("$")) {
+                nextIndex++
+            }
+
+            if (nextIndex < cleanedLines.size) {
+                val subLine = cleanedLines[nextIndex]
+                if (!subLine.startsWith("!") && subLine.isNotBlank()) {
+                    val subBuilder = AnnotatedString.Builder().apply {
+                        appendFormattedDoctorInfoText(subLine)
+                    }
+                    elements.add(DoctorEducationElement.Text(subBuilder.toAnnotatedString()))
+                    index = nextIndex + 1
+                    continue
+                }
+            }
+            index++
             continue
         }
 
         when {
             line.isBlank() -> {
                 paragraphBuilder.append("\n")
-            }
-
-            line.startsWith("#") -> {
-                val heading = line.removePrefix("#").trim()
-                with(paragraphBuilder) {
-                    withStyle(ParagraphStyle(lineHeight = 20.sp)) {
-                        withStyle(SpanStyle(fontWeight = FontWeight.Bold, color = Color.Black)) {
-                            append(heading)
-                        }
-                        append("\n")
-                    }
-                }
             }
 
             line.startsWith("•") -> {
@@ -73,30 +106,28 @@ fun buildFormattedBlog(description: String): List<BlogElement> {
                         ) {
                             append("$titlePart ")
                         }
-                        appendFormattedText(remainingPart)
+                        appendFormattedDoctorInfoText(remainingPart)
                     }
                 } else {
-                    paragraphBuilder.appendFormattedText(content)
+                    paragraphBuilder.appendFormattedDoctorInfoText(content)
                 }
                 paragraphBuilder.append("\n")
             }
 
             else -> {
-                paragraphBuilder.appendFormattedText(line)
+                paragraphBuilder.appendFormattedDoctorInfoText(line)
                 paragraphBuilder.append("\n")
             }
         }
 
-        if (index < cleanedLines.lastIndex && cleanedLines[index + 1].isBlank()) {
-            paragraphBuilder.append("\n")
-        }
+        index++
     }
 
     flushParagraph()
     return elements
 }
 
-private fun AnnotatedString.Builder.appendFormattedText(text: String) {
+private fun AnnotatedString.Builder.appendFormattedDoctorInfoText(text: String) {
     var remaining = text
     while (remaining.contains("**")) {
         val before = remaining.substringBefore("**")
@@ -128,13 +159,3 @@ private fun AnnotatedString.Builder.appendFormattedText(text: String) {
         }
     }
 }
-
-fun String.toTitleCase(): String {
-    return this
-        .lowercase()
-        .split(" ")
-        .joinToString(" ") { word ->
-            word.replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() }
-        }
-}
-

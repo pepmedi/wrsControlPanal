@@ -34,7 +34,7 @@ class PatientDocumentRepositoryImpl(private val httpClient: HttpClient) :
         patientMedicalRecordsMaster: PatientMedicalRecordsMaster,
         document: File,
         mimeType: String
-    ): Result<Unit> {
+    ): Result<PatientMedicalRecordsMaster> {
         return try {
             val url = "$BASE_URL/${DatabaseCollection.PATIENT_MEDICAL_RECORDS}"
 
@@ -84,7 +84,14 @@ class PatientDocumentRepositoryImpl(private val httpClient: HttpClient) :
                 }
 
                 if (patchResponse.status == HttpStatusCode.OK) {
-                    Result.success(Unit)
+                    Result.success(
+                        patientMedicalRecordsMaster.copy(
+                            id = generatedId,
+                            fileUrl = documentDetails.downloadUrl,
+                            storagePath = documentDetails.storagePath,
+                            mimeType = mimeType
+                        )
+                    )
                 } else {
                     Result.failure(Exception("Failed to update document ID"))
                 }

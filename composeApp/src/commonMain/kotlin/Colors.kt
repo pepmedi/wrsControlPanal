@@ -7,7 +7,6 @@ val LightBlue = Color(0xFF9AD9FF)
 //val PrimaryAppColor = hexToComposeColor("#7ddced")
 val PrimaryAppColor = hexToComposeColor("#8dd8f8")
 val SecondaryAppColor = hexToComposeColor("#38B6FF")
-val Java20 = Color(0xFFFEFEFE)
 
 fun hexToComposeColor(hex: String): Color {
     val colorInt = hex.removePrefix("#").toLong(16) or 0x00000000FF000000

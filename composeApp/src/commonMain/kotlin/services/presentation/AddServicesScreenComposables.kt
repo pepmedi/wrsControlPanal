@@ -144,7 +144,7 @@ fun AddServicesScreenUI(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceEvenly
                     ) {
-                        //first image
+                        //Service image
                         ImageSelector(
                             imageBitmap = imageBitmap,
                             onImageSelected = { file ->
@@ -159,12 +159,15 @@ fun AddServicesScreenUI(
                             text = "Select Service Image"
                         )
 
-                        //first image
+                        //Service icon
                         ImageSelector(
                             imageBitmap = iconBitMap,
                             onImageSelected = { file ->
                                 scope.launch {
-                                    iconFile = FileCompressor.loadAndCompressImage(file)
+                                    iconFile = FileCompressor.loadAndCompressImage(
+                                        file = file,
+                                        compressionThresholdInKB = 120
+                                    )
                                     iconBitMap = loadAndCompressImage(file)
                                 }
                             },

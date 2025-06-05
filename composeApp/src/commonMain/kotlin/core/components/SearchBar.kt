@@ -27,6 +27,7 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import com.wearespine.`in`.theme.keylineDimen16
 import org.jetbrains.compose.resources.stringResource
 import wrscontrolpanel.composeapp.generated.resources.Res
 import wrscontrolpanel.composeapp.generated.resources.close_hint
@@ -47,7 +48,7 @@ fun SearchBar(
         OutlinedTextField(
             value = searchQuery,
             onValueChange = onSearchQueryChange,
-            shape = RoundedCornerShape(100),
+            shape = RoundedCornerShape(keylineDimen16),
             colors = OutlinedTextFieldDefaults.colors(
                 cursorColor = DarkBlue,
                 focusedBorderColor = SecondaryAppColor
@@ -90,7 +91,7 @@ fun SearchBar(
             modifier = modifier
                 .fillMaxWidth()
                 .background(
-                    shape = RoundedCornerShape(100),
+                    shape = RoundedCornerShape(keylineDimen16),
                     color = DesertWhite
                 )
 

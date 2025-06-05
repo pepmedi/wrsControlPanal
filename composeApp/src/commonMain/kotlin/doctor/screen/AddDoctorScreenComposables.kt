@@ -1,20 +1,24 @@
 package doctor.screen
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -26,7 +30,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.dokar.sonner.TextToastAction
 import com.dokar.sonner.ToastType
@@ -37,6 +43,8 @@ import core.CancelButton
 import core.ImageSelector
 import doctor.domain.DoctorMaster
 import doctor.domain.DoctorSubmissionState
+import doctor.helper.DoctorEducationElement
+import doctor.helper.buildDoctorEducationFormatted
 import doctor.screen.components.TextInputField
 import doctor.viewModal.AddDoctorViewModel
 import hospital.domain.HospitalMaster
@@ -64,9 +72,9 @@ fun AddDoctorScreen(
     val hospitalListState = viewModal.hospitalList.collectAsStateWithLifecycle()
     val servicesListState = viewModal.servicesList.collectAsStateWithLifecycle()
     val slotsMaster = viewModal.slotsList.collectAsStateWithLifecycle()
-
     var doctorName by remember { mutableStateOf("") }
     var doctorExperience by remember { mutableStateOf("") }
+    var doctorCity by remember { mutableStateOf("") }
     var age by remember { mutableStateOf("") }
 
     var qualification by remember { mutableStateOf("") }
@@ -78,6 +86,9 @@ fun AddDoctorScreen(
 
     var doctorInfoImageBitmap by remember { mutableStateOf<ImageBitmap?>(null) }
     var doctorInfoImageFile by remember { mutableStateOf<File?>(null) }
+
+    var doctorHomePageImageBitmap by remember { mutableStateOf<ImageBitmap?>(null) }
+    var doctorHomePageImageFile by remember { mutableStateOf<File?>(null) }
 
     val scope = rememberCoroutineScope()
 
@@ -136,6 +147,7 @@ fun AddDoctorScreen(
 
         if (doctorName.isBlank()) errors.add("Doctor Name is required.")
         if (doctorExperience.isBlank()) errors.add("Experience is required.")
+        if (doctorCity.isBlank()) errors.add("City is required.")
         if (age.isBlank()) errors.add("Age is required.")
         if (doctorProfileText.isBlank()) errors.add("Profile is required.")
         if (doctorCareerPath.isBlank()) errors.add("Career Path is required.")
@@ -147,6 +159,7 @@ fun AddDoctorScreen(
         if (selectedSlots.isEmpty()) errors.add("Slots Are required")
         if (doctorProfileImageFile == null) errors.add("Profile Image is required")
         if (doctorInfoImageFile == null) errors.add("Info Image is required")
+        if (doctorHomePageImageFile == null) errors.add("Home Page Image is required")
 
         if (errors.isNotEmpty()) {
             toasterEvent = ToastEvent(errors.first())
@@ -164,162 +177,244 @@ fun AddDoctorScreen(
                     .padding(paddingValues)
             ) {
 
-                Column(
+                LazyColumn(
                     modifier = Modifier
-                        .fillMaxWidth()
+                        .fillMaxSize()
+                        .padding(paddingValues)
                         .background(Color.White)
-                        .padding(10.dp)
-                        .verticalScroll(rememberScrollState()),
-                    horizontalAlignment = Alignment.CenterHorizontally
+                        .padding(10.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    contentPadding = PaddingValues(bottom = 16.dp)
                 ) {
 
-                    TextInputField(
-                        value = doctorName,
-                        onValueChange = { doctorName = it },
-                        label = "Doctor Name",
-                        icon = Icons.Default.Person,
-                    )
-
-                    TextInputField(
-                        value = age,
-                        onValueChange = { age = it },
-                        label = "Age",
-                    )
-
-                    TextInputField(
-                        value = qualification,
-                        onValueChange = { qualification = it },
-                        label = "Qualification",
-                    )
-
-                    TextInputField(
-                        value = doctorExperience,
-                        onValueChange = { doctorExperience = it },
-                        label = "Doctor Experience",
-                    )
-
-                    TextInputField(
-                        value = speciality,
-                        onValueChange = { speciality = it },
-                        label = "Doctor Speciality",
-                    )
-
-                    TextInputField(
-                        value = doctorProfileText,
-                        onValueChange = { doctorProfileText = it },
-                        label = "Doctor Profile",
-                        minLines = 3,
-                    )
-
-                    TextInputField(
-                        value = doctorCareerPath,
-                        onValueChange = { doctorCareerPath = it },
-                        label = "Career Path",
-                        minLines = 3,
-                    )
-
-                    TextInputField(
-                        value = doctorFocus,
-                        onValueChange = { doctorFocus = it },
-                        label = "Doctor Focus",
-                        minLines = 3,
-                    )
-
-                    TextInputField(
-                        value = selectedHospitals.joinToString(", ") { it.name },
-                        onValueChange = { },
-                        label = "Hospital",
-                        icon = Icons.Default.Home,
-                        enabled = false,
-                        onClick = { showHospitalList = true }
-                    )
-
-                    TextInputField(
-                        value = selectedServices.joinToString(", ") { it.name },
-                        onValueChange = { },
-                        label = "Services",
-                        enabled = false,
-                        onClick = { showServiceList = true }
-                    )
-
-                    TextInputField(
-                        value = selectedSlots.joinToString(", ") { it.name },
-                        onValueChange = { },
-                        label = "Slots",
-                        enabled = false,
-                        onClick = { showSlotsList = true }
-                    )
-
-                    Row {
-
-                        ImageSelector(
-                            text = "Doctor Profile Picture",
-                            imageBitmap = doctorProfileImageBitmap,
-                            onImageSelected = { file ->
-                                scope.launch {
-                                    doctorProfileImageFile =
-                                        FileCompressor.loadAndCompressImage(file)
-                                    doctorProfileImageBitmap = loadAndCompressImage(file)
-                                }
-                            },
-                            errorMessage = { message ->
-                                toasterEvent = ToastEvent(message)
-                            })
-
-                        ImageSelector(
-                            text = "Doctor Information Image",
-                            imageBitmap = doctorInfoImageBitmap,
-                            onImageSelected = { file ->
-                                scope.launch {
-                                    doctorInfoImageFile = FileCompressor.loadAndCompressImage(
-                                        file,
-                                        compressionThreshold = 250
-                                    )
-                                    doctorInfoImageBitmap = loadAndCompressImage(file)
-                                }
-                            },
-                            errorMessage = { message ->
-                                toasterEvent = ToastEvent(message)
-                            })
+                    item {
+                        TextInputField(
+                            value = doctorName,
+                            onValueChange = { doctorName = it },
+                            label = "Doctor Name",
+                            icon = Icons.Default.Person,
+                        )
                     }
 
-                    if (doctorSubmissionState == DoctorSubmissionState.Loading) {
-                        CircularProgressIndicator()
-                    } else {
-                        GradientButton(
+
+                    item {
+                        TextInputField(
+                            value = age,
+                            onValueChange = { age = it },
+                            label = "Age",
+                        )
+                    }
+
+                    item {
+                        TextInputField(
+                            value = qualification,
+                            onValueChange = { qualification = it },
+                            label = "Qualification",
+                        )
+                    }
+
+                    item {
+                        TextInputField(
+                            value = doctorExperience,
+                            onValueChange = { doctorExperience = it },
+                            label = "Doctor Experience",
+                        )
+                    }
+
+                    item {
+                        TextInputField(
+                            value = doctorCity,
+                            onValueChange = { doctorCity = it },
+                            label = "Doctor City",
+                        )
+                    }
+
+                    item {
+                        TextInputField(
+                            value = speciality,
+                            onValueChange = { speciality = it },
+                            label = "Doctor Speciality",
+                        )
+                    }
+
+                    item {
+                        TextInputField(
+                            value = doctorProfileText,
+                            onValueChange = { doctorProfileText = it },
+                            label = "Doctor Profile",
+                            minLines = 3,
+                        )
+                    }
+
+                    item {
+                        TextInputField(
+                            value = doctorCareerPath,
+                            onValueChange = { doctorCareerPath = it },
+                            label = "Career Path",
+                            minLines = 3,
+                        )
+                    }
+
+                    item {
+                        TextInputField(
+                            value = doctorFocus,
+                            onValueChange = { doctorFocus = it },
+                            label = "Doctor Education Details",
+                            minLines = 3,
+                        )
+                    }
+
+                    // Render blog elements as items here instead of RenderBlog (no nested LazyColumn)
+                    val elements = buildDoctorEducationFormatted(doctorFocus)
+                    items(elements) { element ->
+                        when (element) {
+                            is DoctorEducationElement.Text -> Text(
+                                text = element.content,
+                                style = LocalTextStyle.current.copy(
+                                    lineHeight = 20.sp,
+                                    textAlign = TextAlign.Start
+                                ),
+                                modifier = Modifier.padding(vertical = 4.dp)
+                            )
+
+                            is DoctorEducationElement.Divider -> HorizontalDivider(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 5.dp),
+                                thickness = 1.dp,
+                                color = Color.Gray
+                            )
+                        }
+                    }
+
+
+                    item {
+                        TextInputField(
+                            value = selectedHospitals.joinToString(", ") { it.name },
+                            onValueChange = { },
+                            label = "Hospital",
+                            icon = Icons.Default.Home,
+                            enabled = false,
+                            onClick = { showHospitalList = true }
+                        )
+                    }
+
+                    item {
+                        TextInputField(
+                            value = selectedServices.joinToString(", ") { it.name },
+                            onValueChange = { },
+                            label = "Services",
+                            enabled = false,
+                            onClick = { showServiceList = true }
+                        )
+                    }
+
+                    item {
+                        TextInputField(
+                            value = selectedSlots.joinToString(", ") { it.name },
+                            onValueChange = { },
+                            label = "Slots",
+                            enabled = false,
+                            onClick = { showSlotsList = true }
+                        )
+                    }
+
+                    item {
+                        Row(
                             modifier = Modifier.fillMaxWidth(),
-                            onClick = {
-                                if (validateForm()) {
+                            horizontalArrangement = Arrangement.SpaceEvenly
+                        ) {
+
+                            ImageSelector(
+                                text = "Doctor Profile Picture",
+                                imageBitmap = doctorProfileImageBitmap,
+                                onImageSelected = { file ->
                                     scope.launch {
-                                        doctorInfoImageFile?.let { doctorImage ->
-                                            viewModal.addDoctor(
-                                                doctorsMaster = DoctorMaster(
-                                                    id = "",
-                                                    name = doctorName,
-                                                    experience = doctorExperience,
-                                                    profilePic = "",
-                                                    age = age,
-                                                    services = selectedServices.map { it.id },
-                                                    hospital = selectedHospitals.map { it.id },
-                                                    qualification = qualification,
-                                                    reviews = "",
-                                                    careerPath = doctorCareerPath,
-                                                    focus = doctorFocus,
-                                                    profile = doctorProfileText,
-                                                    slots = selectedSlots.map { it.id },
-                                                    updatedAt = getCurrentTimeStamp(),
-                                                    createdAt = getCurrentTimeStamp()
-                                                ),
-                                                doctorProfileImage = doctorImage,
-                                                doctorInfoImage = doctorInfoImageFile!!
+                                        doctorProfileImageFile =
+                                            FileCompressor.loadAndCompressImage(file)
+                                        doctorProfileImageBitmap = loadAndCompressImage(file)
+                                    }
+                                },
+                                errorMessage = { message ->
+                                    toasterEvent = ToastEvent(message)
+                                })
+
+                            ImageSelector(
+                                text = "Doctor Information Image",
+                                imageBitmap = doctorInfoImageBitmap,
+                                onImageSelected = { file ->
+                                    scope.launch {
+                                        doctorInfoImageFile = FileCompressor.loadAndCompressImage(
+                                            file,
+                                            compressionThresholdInKB = 250
+                                        )
+                                        doctorInfoImageBitmap = loadAndCompressImage(file)
+                                    }
+                                },
+                                errorMessage = { message ->
+                                    toasterEvent = ToastEvent(message)
+                                })
+
+                            ImageSelector(
+                                text = "Doctor Home Page Image",
+                                imageBitmap = doctorHomePageImageBitmap,
+                                onImageSelected = { file ->
+                                    scope.launch {
+                                        doctorHomePageImageFile =
+                                            FileCompressor.loadAndCompressImage(
+                                                file,
+                                                compressionThresholdInKB = 250
                                             )
+                                        doctorHomePageImageBitmap = loadAndCompressImage(file)
+                                    }
+                                },
+                                errorMessage = { message ->
+                                    toasterEvent = ToastEvent(message)
+                                })
+                        }
+                    }
+
+                    item {
+                        if (doctorSubmissionState == DoctorSubmissionState.Loading) {
+                            CircularProgressIndicator()
+                        } else {
+                            GradientButton(
+                                modifier = Modifier.fillMaxWidth(),
+                                onClick = {
+                                    if (validateForm()) {
+                                        scope.launch {
+                                            doctorInfoImageFile?.let { doctorImage ->
+                                                viewModal.addDoctor(
+                                                    doctorsMaster = DoctorMaster(
+                                                        id = "",
+                                                        name = doctorName,
+                                                        experience = doctorExperience,
+                                                        profilePic = "",
+                                                        age = age,
+                                                        services = selectedServices.map { it.id },
+                                                        hospital = selectedHospitals.map { it.id },
+                                                        qualification = qualification,
+                                                        reviews = "",
+                                                        city = doctorCity,
+                                                        careerPath = doctorCareerPath,
+                                                        focus = doctorFocus,
+                                                        profile = doctorProfileText,
+                                                        slots = selectedSlots.map { it.id },
+                                                        updatedAt = getCurrentTimeStamp(),
+                                                        createdAt = getCurrentTimeStamp()
+                                                    ),
+                                                    doctorProfileImage = doctorImage,
+                                                    doctorInfoImage = doctorInfoImageFile!!,
+                                                    doctorHomePageImage = doctorHomePageImageFile!!
+                                                )
+                                            }
                                         }
                                     }
-                                }
-                            })
-                    }
+                                })
+                        }
 
-                    CancelButton(onBackClick)
+                        CancelButton(onBackClick)
+                    }
 
                 }
                 Toaster(

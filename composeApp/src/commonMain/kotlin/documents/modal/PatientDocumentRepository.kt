@@ -9,7 +9,7 @@ interface PatientDocumentRepository {
         patientMedicalRecordsMaster: PatientMedicalRecordsMaster,
         document: File,
         mimeType: String
-    ): Result<Unit>
+    ): Result<PatientMedicalRecordsMaster>
 
     suspend fun getAllPatientDocument(): AppResult<List<PatientMedicalRecordsMaster>, DataError.Remote>
 }

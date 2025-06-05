@@ -1,6 +1,5 @@
 package controlPanalUser.presentation
 
-import Java20
 import PrimaryAppColor
 import SecondaryAppColor
 import androidx.compose.animation.animateContentSize
@@ -48,6 +47,7 @@ import controlPanalUser.viewModel.PanelUserScreenViewModel
 import controlPanalUser.viewModel.PanelUserUiEvent
 import controlPanalUser.viewModel.PanelUserUiState
 import org.koin.compose.viewmodel.koinViewModel
+import theme.AppColor.Java20
 import util.Util.toNameFormat
 
 @Composable

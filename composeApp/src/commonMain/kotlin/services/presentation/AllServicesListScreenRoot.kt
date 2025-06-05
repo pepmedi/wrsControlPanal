@@ -169,6 +169,7 @@ fun AllServicesListScreen(
                             onUpdateClick = {
                                 currentServiceId = service.id
                                 showUpdateServiceScreen = true
+                                expandedCardId = null
                             },
                             isExpanded = expandedCardId == service.id,
                             onExpand = { expandedCardId = service.id },

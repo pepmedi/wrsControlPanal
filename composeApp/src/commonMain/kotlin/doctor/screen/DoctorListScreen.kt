@@ -22,7 +22,6 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material.Icon
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -30,6 +29,7 @@ import androidx.compose.material.ripple
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -40,7 +40,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
@@ -48,10 +47,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
+import com.wearespine.`in`.theme.keylineDimen8
 import component.AppCircularProgressIndicator
+import component.SlideInBottomSheetV2
 import component.SlideInScreen
 import core.components.SearchBar
 import doctor.domain.DoctorMaster
+import doctor.screen.components.UpdateDoctorDatesScreen
 import doctor.screen.components.UpdateDoctorDetailsScreenRoot
 import doctor.viewModal.DoctorListActions
 import doctor.viewModal.DoctorListUiState
@@ -68,7 +70,7 @@ fun DoctorListScreenRoot(
     val uiState by viewModal.state.collectAsStateWithLifecycle()
 
     DoctorListScreen(
-        uiState,
+        uiState = uiState,
         onAction = { action ->
             viewModal.onAction(action)
         })
@@ -87,7 +89,7 @@ fun DoctorListScreen(
     var filteredDoctor by remember { mutableStateOf<List<DoctorMaster>>(emptyList()) }
 
     var showUpdateDoctorScreen by remember { mutableStateOf(false) }
-    var currentDoctorId by remember { mutableStateOf("") }
+    var currentDoctor by remember { mutableStateOf(DoctorMaster()) }
 
     LaunchedEffect(searchQuery, uiState) {
         withContext(Dispatchers.Default) {
@@ -141,8 +143,12 @@ fun DoctorListScreen(
                             onExpand = { expandedCardId = doctor.id },
                             onCollapse = { expandedCardId = null },
                             onUpdateClick = {
-                                currentDoctorId = it
+                                currentDoctor = it
                                 showUpdateDoctorScreen = true
+                            },
+                            onBlockDatesClicked = {
+                                currentDoctor = it
+                                onAction(DoctorListActions.OnShowUpdateDoctorDate(true))
                             }
                         )
                     }
@@ -173,13 +179,24 @@ fun DoctorListScreen(
 
         SlideInScreen(visible = showUpdateDoctorScreen) {
             UpdateDoctorDetailsScreenRoot(
-                doctorId = currentDoctorId, onBackClick = {
+                doctorId = currentDoctor.id,
+                onBackClick = {
                     showUpdateDoctorScreen = false
                 },
                 onSuccessful = {
                     onAction(DoctorListActions.OnDoctorUpdated(it))
                     toasterEvent(ToastEvent("Doctor Updated Successfully"))
                 })
+        }
+
+        SlideInBottomSheetV2(uiState.showUpdateDoctorDate) {
+            UpdateDoctorDatesScreen(
+                doctor = currentDoctor,
+                preBlockedDates = uiState.doctorList.find { it.id == currentDoctor.id }?.blockedDates
+                    ?: emptyList(),
+                onActions = onAction,
+                isUpdating = uiState.dateBlockUpdating,
+                onCloses = { onAction(DoctorListActions.OnShowUpdateDoctorDate(false)) })
         }
     }
 }
@@ -189,10 +206,11 @@ fun DoctorItem(
     doctor: DoctorMaster,
     modifier: Modifier,
     onDoctorClick: (DoctorMaster) -> Unit,
+    onBlockDatesClicked: (DoctorMaster) -> Unit,
     isExpanded: Boolean,
     onExpand: () -> Unit,
     onCollapse: () -> Unit,
-    onUpdateClick: (String) -> Unit
+    onUpdateClick: (DoctorMaster) -> Unit
 ) {
     Card(
         modifier = modifier
@@ -214,6 +232,7 @@ fun DoctorItem(
         ) {
             val backgroundColor =
                 remember { BackgroundColors.random() }
+
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -239,7 +258,8 @@ fun DoctorItem(
             Text(
                 text = "Qualification : ${doctor.qualification}",
                 fontSize = 14.sp,
-                color = Color.Gray
+                color = Color.Gray,
+                modifier = Modifier.fillMaxWidth()
             )
 
             if (isExpanded) {
@@ -256,7 +276,18 @@ fun DoctorItem(
                         onClick = { onDoctorClick(doctor) },
                         contentPadding = PaddingValues(0.dp)
                     ) {
-                        Text("Info")
+                        Text("Info", modifier = Modifier.padding(keylineDimen8))
+                    }
+
+                    TextButton(
+                        modifier = Modifier.padding(start = 0.dp),
+                        shape = RoundedCornerShape(20.dp),
+                        colors = ButtonDefaults.textButtonColors(containerColor = Color.White),
+                        border = BorderStroke(1.dp, PrimaryAppColor),
+                        onClick = { onBlockDatesClicked(doctor) },
+                        contentPadding = PaddingValues(0.dp)
+                    ) {
+                        Text("Block Dates", modifier = Modifier.padding(keylineDimen8))
                     }
 
                     TextButton(
@@ -264,9 +295,9 @@ fun DoctorItem(
                         shape = RoundedCornerShape(20.dp),
                         colors = ButtonDefaults.textButtonColors(containerColor = Color.White),
                         border = BorderStroke(1.dp, PrimaryAppColor),
-                        onClick = { onUpdateClick(doctor.id) }
+                        onClick = { onUpdateClick(doctor) }
                     ) {
-                        Text("Update")
+                        Text("Update", modifier = Modifier.padding(keylineDimen8))
                     }
                 }
             }

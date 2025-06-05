@@ -14,7 +14,9 @@ import javax.imageio.IIOImage
 
 object FileCompressor {
 
-    suspend fun loadAndCompressImage(file: File, compressionThreshold: Long = 100 * 1024): File? {
+    suspend fun loadAndCompressImage(file: File, compressionThresholdInKB: Long = 100): File? {
+        val compressionThreshold = compressionThresholdInKB * 1024
+
         return withContext(Dispatchers.IO) {
             try {
                 val originalImage: BufferedImage = ImageIO.read(file) ?: return@withContext null

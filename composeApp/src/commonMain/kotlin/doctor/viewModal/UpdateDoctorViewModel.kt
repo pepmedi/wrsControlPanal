@@ -94,6 +94,14 @@ class UpdateDoctorViewModel(
             is UpdateDoctorActions.OnDoctorInfoPicChange -> {
                 _state.update { it.copy(infoPicChange = action.pic) }
             }
+
+            is UpdateDoctorActions.OnDoctorHomePagePicChange -> {
+                _state.update { it.copy(doctorHomePageImage = action.pic) }
+            }
+
+            is UpdateDoctorActions.OnCityChange -> {
+                _state.update { it.copy(doctorDetails = it.doctorDetails.copy(city = action.city)) }
+            }
         }
     }
 
@@ -113,6 +121,7 @@ class UpdateDoctorViewModel(
                         focus = doctorState.focus,
                         profile = doctorState.profile,
                         careerPath = doctorState.careerPath,
+                        city = doctorState.city,
                         hospital = _state.value.selectedHospitals.map { it.id },
                         services = _state.value.selectedServices.map { it.id },
                         slots = _state.value.selectedSlots.map { it.id },
@@ -120,7 +129,8 @@ class UpdateDoctorViewModel(
                         updatedAt = getCurrentTimeStamp()
                     ),
                     profileImageFile = _state.value.profilePicChange,
-                    infoImageFile = _state.value.infoPicChange
+                    infoImageFile = _state.value.infoPicChange,
+                    doctorHomePageImage = _state.value.doctorHomePageImage
                 )
                 .collect { result ->
                     when (result) {
@@ -257,7 +267,8 @@ data class UpdateDoctorUiState(
     val slotsList: List<SlotsMaster> = emptyList(),
     val selectedSlots: List<SlotsMaster> = emptyList(),
     val profilePicChange: File? = null,
-    val infoPicChange: File? = null
+    val infoPicChange: File? = null,
+    val doctorHomePageImage: File? = null
 ) {
     val isFormValid: Boolean
         get() = selectedHospitals.isNotEmpty() && selectedServices.isNotEmpty()
@@ -276,6 +287,7 @@ data class UpdateDoctorUiState(
             doctorDetails.qualification.isEmpty() -> "Qualification fee cannot be empty."
             doctorDetails.experience.isEmpty() -> "Doctor experience cannot be empty."
             doctorDetails.profilePic.isEmpty() -> "Profile picture cannot be empty."
+            doctorDetails.city.isEmpty() -> "City cannot be empty."
             (doctorDetails.doctorInfoPic.isEmpty() || infoPicChange != null) -> "Doctor info picture cannot be empty."
             else -> ""
         }
@@ -287,6 +299,7 @@ sealed interface UpdateDoctorActions {
     data class OnDoctorNameChange(val name: String) : UpdateDoctorActions
     data class OnAgeChange(val age: String) : UpdateDoctorActions
     data class OnExperienceChange(val experience: String) : UpdateDoctorActions
+    data class OnCityChange(val city: String) : UpdateDoctorActions
     data class OnQualificationChange(val qualification: String) : UpdateDoctorActions
     data class OnSpecialityChange(val speciality: String) : UpdateDoctorActions
     data class OnHospitalChange(val hospitals: List<HospitalMaster>) : UpdateDoctorActions
@@ -294,6 +307,7 @@ sealed interface UpdateDoctorActions {
     data class OnSlotsChange(val slots: List<SlotsMaster>) : UpdateDoctorActions
     data class OnProfilePicChange(val pic: File?) : UpdateDoctorActions
     data class OnDoctorInfoPicChange(val pic: File?) : UpdateDoctorActions
+    data class OnDoctorHomePagePicChange(val pic: File?) : UpdateDoctorActions
     data class OnCareerPathChange(val path: String) : UpdateDoctorActions
     data class OnFocusChange(val focus: String) : UpdateDoctorActions
     data class OnProfileTextChange(val text: String) : UpdateDoctorActions

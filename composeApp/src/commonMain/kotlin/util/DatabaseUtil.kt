@@ -19,7 +19,8 @@ import kotlinx.serialization.json.jsonPrimitive
 
 object DatabaseUtil {
     private const val PROJECT_ID = "we-are-spine"
-    const val DATABASE_URL = "https://firestore.googleapis.com/v1/projects/$PROJECT_ID/databases/(default)/documents"
+    const val DATABASE_URL =
+        "https://firestore.googleapis.com/v1/projects/$PROJECT_ID/databases/(default)/documents"
     const val STORAGE_BUCKET = "we-are-spine.firebasestorage.app"
     const val DATABASE_QUERY_URL =
         "https://firestore.googleapis.com/v1/projects/$PROJECT_ID/databases/(default)/documents:runQuery"
@@ -31,11 +32,11 @@ sealed class DatabaseValue {
     data class StringValue(val stringValue: String) : DatabaseValue()
 
     @Serializable
-    data class ArrayValue(val values: List<StringValue>) : DatabaseValue()
+    data class ArrayValue(val values: List<StringValue> = emptyList()) : DatabaseValue()
 }
 
 @Serializable
-data class DatabaseRequest(val fields: Map<String,DatabaseValue>)
+data class DatabaseRequest(val fields: Map<String, DatabaseValue>)
 
 @Serializable
 data class DatabaseResponse(val name: String)
@@ -101,8 +102,7 @@ object DatabaseValueSerializer : KSerializer<DatabaseValue> {
                 "arrayValue" in element -> {
                     val arrayObj = element["arrayValue"]?.jsonObject
                         ?: throw SerializationException("arrayValue must be a JSON object")
-                    val valuesArray = arrayObj["values"]?.jsonArray
-                        ?: throw SerializationException("arrayValue must contain a values array")
+                    val valuesArray = arrayObj["values"]?.jsonArray ?: JsonArray(emptyList())
                     val values = valuesArray.map { jsonElem ->
                         // Expect each element to be an object with key "stringValue"
                         val obj = jsonElem.jsonObject

@@ -116,13 +116,19 @@ class AddDoctorViewModel(
         }
     }
 
-    fun addDoctor(doctorsMaster: DoctorMaster, doctorProfileImage: File, doctorInfoImage: File) {
+    fun addDoctor(
+        doctorsMaster: DoctorMaster,
+        doctorProfileImage: File,
+        doctorInfoImage: File,
+        doctorHomePageImage: File
+    ) {
         viewModelScope.launch {
             _doctorSubmissionState.value = DoctorSubmissionState.Loading // Show loading
             doctorRepository.addDoctorToDatabase(
                 doctor = doctorsMaster,
                 profileImageFile = doctorProfileImage,
-                infoImageFile = doctorInfoImage
+                infoImageFile = doctorInfoImage,
+                doctorHomePageImage = doctorHomePageImage
             )
                 .collect { result ->
                     _doctorSubmissionState.value = when (result) {

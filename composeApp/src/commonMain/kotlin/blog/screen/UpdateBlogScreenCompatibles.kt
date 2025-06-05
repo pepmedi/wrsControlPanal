@@ -2,18 +2,14 @@ package blog.screen
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.material3.Divider
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.Text
@@ -32,6 +28,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import blog.domain.BlogMaster
+import blog.helper.BlogElement
+import blog.helper.buildFormattedBlog
 import blog.viewModel.UpdateBlogAction
 import blog.viewModel.UpdateBlogUiState
 import blog.viewModel.UpdateBlogViewModel
@@ -47,12 +45,10 @@ import core.ImageSelector
 import doctor.screen.components.TextInputField
 import kotlinx.coroutines.launch
 import org.koin.compose.viewmodel.koinViewModel
-import util.BlogElement
 import util.FileCompressor
 import util.FileUtil.loadAndCompressImage
 import util.ToastEvent
 import util.Util.toNameFormat
-import util.buildFormattedBlog
 
 @Composable
 fun UpdateBlogScreenRoot(
@@ -181,6 +177,8 @@ fun UpdateBlogScreen(
                         thickness = 1.dp,
                         color = Color.Gray
                     )
+
+                    is BlogElement.Image -> {}
                 }
             }
 
@@ -243,28 +241,5 @@ fun UpdateBlogScreen(
             },
             onSubmit = { onAction(UpdateBlogAction.OnDoctorChange(it)) }
         )
-    }
-}
-
-@Composable
-fun RenderBlog(elements: List<BlogElement>) {
-    LazyColumn(modifier = Modifier.fillMaxSize().padding(16.dp)) {
-        items(elements) { element ->
-            when (element) {
-                is BlogElement.Text -> Text(
-                    text = element.content,
-                    style = LocalTextStyle.current.copy(lineHeight = 20.sp),
-                    modifier = Modifier.padding(vertical = 4.dp)
-                )
-
-                BlogElement.Divider -> HorizontalDivider(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 8.dp),
-                    thickness = 1.dp,
-                    color = Color.Gray
-                )
-            }
-        }
     }
 }

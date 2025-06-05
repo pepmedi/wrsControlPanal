@@ -1,5 +1,6 @@
 package theme
 
+import PrimaryAppColor
 import SecondaryAppColor
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
@@ -35,54 +36,6 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
-
-//// TODO :: Create all button variants
-//@Composable
-//fun LoadingButton(
-//    onClick: () -> Unit,
-//    modifier: Modifier = Modifier,
-//    text: String,
-//    isLoading: Boolean = false,
-//    enabled: Boolean = true,
-//    buttonTextStyle: TextStyle = ButtonTextMedium().copy(color = Java20),
-//    buttonContainerColor: Color = Java500,
-//) {
-//    val keyboardController = LocalSoftwareKeyboardController.current
-//
-//    Button(
-//        onClick = {
-//            keyboardController?.hide()
-//            onClick()
-//        },
-//        modifier = modifier
-//            .height(keylineDimen48),
-//        shape = AppShapes.medium,
-//        interactionSource = remember { MutableInteractionSource() },
-//        enabled = enabled && !isLoading,
-//        colors = ButtonDefaults.buttonColors( // TODO :: Change button colors
-//            containerColor = buttonContainerColor,
-//            contentColor = MaterialTheme.colorScheme.onPrimary,
-//            disabledContainerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.3f),
-//            disabledContentColor = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.3f)
-//        )
-//    ) {
-//        if (isLoading) {
-//            CircularProgressIndicator(
-//                modifier = Modifier
-//                    .size(keylineDimen20),
-//                color = MaterialTheme.colorScheme.onPrimary,
-//                strokeWidth = 2.dp
-//            )
-//        } else {
-//            Text(
-//                text = text,
-//                style = buttonTextStyle,
-//                maxLines = 1,
-//                overflow = TextOverflow.Ellipsis
-//            )
-//        }
-//    }
-//}
 
 enum class ButtonViewState {
     DEFAULT,
@@ -155,7 +108,7 @@ private fun ButtonType.getTextStyle() =
 
 private fun ButtonType.getBackgroundTint() =
     when (this) {
-        ButtonType.DEFAULT, ButtonType.LARGE, ButtonType.EXTRA_LARGE, ButtonType.SMALL, ButtonType.EXTRA_SMALL ->  SecondaryAppColor //AppColor.Java500
+        ButtonType.DEFAULT, ButtonType.LARGE, ButtonType.EXTRA_LARGE, ButtonType.SMALL, ButtonType.EXTRA_SMALL -> SecondaryAppColor //AppColor.Java500
         ButtonType.OUTLINE, ButtonType.LARGE_OUTLINE, ButtonType.EXTRA_LARGE_OUTLINE, ButtonType.SMALL_OUTLINE, ButtonType.EXTRA_SMALL_OUTLINE -> AppColor.white
         ButtonType.SECONDARY, ButtonType.LARGE_SECONDARY, ButtonType.EXTRA_LARGE_SECONDARY, ButtonType.SMALL_SECONDARY, ButtonType.EXTRA_SMALL_SECONDARY -> AppColor.Java100
         ButtonType.SECONDARY_OUTLINE, ButtonType.LARGE_SECONDARY_OUTLINE, ButtonType.EXTRA_LARGE_SECONDARY_OUTLINE, ButtonType.SMALL_SECONDARY_OUTLINE, ButtonType.EXTRA_SMALL_SECONDARY_OUTLINE -> AppColor.Java20
@@ -174,7 +127,7 @@ private fun ButtonType.getBorderStroke(enabled: Boolean) =
         ButtonType.DEFAULT, ButtonType.LARGE, ButtonType.EXTRA_LARGE, ButtonType.SMALL, ButtonType.EXTRA_SMALL, ButtonType.SECONDARY, ButtonType.LARGE_SECONDARY, ButtonType.EXTRA_LARGE_SECONDARY, ButtonType.SMALL_SECONDARY, ButtonType.EXTRA_SMALL_SECONDARY -> null
         ButtonType.OUTLINE, ButtonType.LARGE_OUTLINE, ButtonType.EXTRA_LARGE_OUTLINE, ButtonType.SMALL_OUTLINE, ButtonType.EXTRA_SMALL_OUTLINE, ButtonType.SECONDARY_OUTLINE, ButtonType.LARGE_SECONDARY_OUTLINE, ButtonType.EXTRA_LARGE_SECONDARY_OUTLINE, ButtonType.SMALL_SECONDARY_OUTLINE, ButtonType.EXTRA_SMALL_SECONDARY_OUTLINE -> BorderStroke(
             1.dp,
-            if (enabled) AppColor.Java500 else AppColor.Java300
+            if (enabled) PrimaryAppColor else AppColor.Java300
         )
     }
 
@@ -283,6 +236,8 @@ fun AppButton(
     rounded: Boolean = false,
     iconResource: DrawableResource? = null,
     iconTint: Color? = null,
+    buttonBackgroundColor: Color? = null,
+    textColor: Color? = null,
     viewState: ButtonViewState = ButtonViewState.DEFAULT,
     onClick: () -> Unit,
 ) = ComposeButton(
@@ -296,9 +251,9 @@ fun AppButton(
     textStyle = buttonType.getTextStyle().copy(color = buttonType.getTextColor()),
     height = buttonType.getHeight(),
     cornerRadius = buttonType.getCornerRadius(rounded),
-    buttonTint = buttonType.getBackgroundTint(),
-    textColor = buttonType.getTextColor(),
-    disabledBackgroundTint = AppColor.Java300,
+    buttonTint = buttonBackgroundColor ?: buttonType.getBackgroundTint(),
+    textColor = textColor ?: buttonType.getTextColor(),
+    disabledBackgroundTint = PrimaryAppColor.copy(alpha = 0.3f),//AppColor.Java300,
     disabledTextColor = AppColor.Java20,
     viewState = viewState,
     rippleTheme = buttonType.getRippleTheme(),
@@ -311,9 +266,9 @@ private val primaryButtonGroupRippleTheme = RippleConfiguration(
         pressedAlpha = 1f,
         focusedAlpha = 1f,
         draggedAlpha = 1f,
-        hoveredAlpha = 1f
+        hoveredAlpha = 0.1f
     ),
-    color = AppColor.Java300,
+    color = PrimaryAppColor,
 )
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -322,9 +277,9 @@ private val secondaryButtonGroupRippleTheme = RippleConfiguration(
         pressedAlpha = 1f,
         focusedAlpha = 1f,
         draggedAlpha = 1f,
-        hoveredAlpha = 1f
+        hoveredAlpha = 0.1f
     ),
-    color = AppColor.Java300,
+    color = PrimaryAppColor,
 )
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -333,7 +288,7 @@ private val outlineButtonGroupRippleTheme = RippleConfiguration(
         pressedAlpha = 1f,
         focusedAlpha = 1f,
         draggedAlpha = 1f,
-        hoveredAlpha = 1f
+        hoveredAlpha = 0.1f
     ),
-    color = AppColor.Java400,
+    color = PrimaryAppColor,
 )
