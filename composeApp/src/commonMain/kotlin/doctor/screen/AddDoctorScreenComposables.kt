@@ -43,6 +43,8 @@ import core.CancelButton
 import core.ImageSelector
 import doctor.domain.DoctorMaster
 import doctor.domain.DoctorSubmissionState
+import doctor.helper.DoctorEducationElement
+import doctor.helper.buildDoctorEducationFormatted
 import doctor.screen.components.TextInputField
 import doctor.viewModal.AddDoctorViewModel
 import hospital.domain.HospitalMaster
@@ -53,11 +55,9 @@ import kotlinx.coroutines.launch
 import org.koin.compose.viewmodel.koinViewModel
 import services.domain.ServicesMaster
 import slots.domain.SlotsMaster
-import util.DoctorEducationElement
 import util.FileCompressor
 import util.FileUtil.loadAndCompressImage
 import util.ToastEvent
-import util.buildDoctorEducationFormatted
 import util.getCurrentTimeStamp
 import java.io.File
 
@@ -346,7 +346,7 @@ fun AddDoctorScreen(
                                     scope.launch {
                                         doctorInfoImageFile = FileCompressor.loadAndCompressImage(
                                             file,
-                                            compressionThreshold = 250
+                                            compressionThresholdInKB = 250
                                         )
                                         doctorInfoImageBitmap = loadAndCompressImage(file)
                                     }
@@ -363,7 +363,7 @@ fun AddDoctorScreen(
                                         doctorHomePageImageFile =
                                             FileCompressor.loadAndCompressImage(
                                                 file,
-                                                compressionThreshold = 250
+                                                compressionThresholdInKB = 250
                                             )
                                         doctorHomePageImageBitmap = loadAndCompressImage(file)
                                     }

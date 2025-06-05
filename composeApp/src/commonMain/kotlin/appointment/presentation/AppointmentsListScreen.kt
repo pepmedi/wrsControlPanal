@@ -261,7 +261,7 @@ fun BookingCard(
             ) { if (isExpanded) onCollapse() else onExpand() },
 
         colors = CardDefaults.cardColors(containerColor = Color.White),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp, pressedElevation = 1.dp)
     ) {
         Column(modifier = Modifier.padding(12.dp).animateContentSize()) {
             Row(modifier = Modifier.fillMaxWidth()) {

@@ -43,6 +43,7 @@ class MedicalRecordsRepositoryImpl(private val httpClient: HttpClient) : Medical
                                 medicalRecordTypeId = (fields["medicalRecordTypeId"] as? DatabaseValue.StringValue)?.stringValue.orEmpty(),
                                 medicalRecordFor = (fields["medicalRecordFor"] as? DatabaseValue.StringValue)?.stringValue.orEmpty(),
                                 mimeType = (fields["mimeType"] as? DatabaseValue.StringValue)?.stringValue.orEmpty(),
+                                fileSize = (fields["fileSize"] as? DatabaseValue.StringValue)?.stringValue.orEmpty(),
                                 isActive = (fields["isActive"] as? DatabaseValue.StringValue)?.stringValue.orEmpty(),
                                 createdAt = (fields["createdAt"] as? DatabaseValue.StringValue)?.stringValue.orEmpty(),
                                 updatedAt = (fields["updatedAt"] as? DatabaseValue.StringValue)?.stringValue.orEmpty()

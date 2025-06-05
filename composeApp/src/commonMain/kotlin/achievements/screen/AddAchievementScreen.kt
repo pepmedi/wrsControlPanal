@@ -16,7 +16,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.LocationOn
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -37,8 +36,6 @@ import com.dokar.sonner.Toaster
 import com.dokar.sonner.rememberToasterState
 import com.wearespine.`in`.theme.keylineDimen16
 import com.wearespine.`in`.theme.keylineDimen8
-import component.GradientButton
-import core.CancelButton
 import core.ImageSelector
 import doctor.screen.components.TextInputField
 import kotlinx.coroutines.launch

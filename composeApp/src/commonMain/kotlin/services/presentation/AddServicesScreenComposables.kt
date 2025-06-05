@@ -166,7 +166,7 @@ fun AddServicesScreenUI(
                                 scope.launch {
                                     iconFile = FileCompressor.loadAndCompressImage(
                                         file = file,
-                                        compressionThreshold = 120
+                                        compressionThresholdInKB = 120
                                     )
                                     iconBitMap = loadAndCompressImage(file)
                                 }
