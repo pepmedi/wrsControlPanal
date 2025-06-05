@@ -1,4 +1,4 @@
-package updateInfo.presentation
+package updateInfo.viewModel
 
 import androidx.lifecycle.ViewModel
 

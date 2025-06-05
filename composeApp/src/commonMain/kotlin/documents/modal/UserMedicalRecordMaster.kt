@@ -6,8 +6,9 @@ data class UserMedicalRecordMaster(
     val fileUrl: String = "",
     val userId: String = "",
     val medicalRecordTypeId: String = "",
-    val medicalRecordFor: String = "", // like prescription, report, etc.
+    val medicalRecordFor: String = "",
     val storagePath: String = "",
+    val fileSize: String = "",
     val mimeType: String = "",
     val isActive: String = "", // 0 -> active, 1 -> inactive
     val createdAt: String = "",

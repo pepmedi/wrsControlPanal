@@ -28,6 +28,8 @@ import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import blog.helper.BlogElement
+import blog.helper.buildFormattedBlog
 import com.dokar.sonner.TextToastAction
 import com.dokar.sonner.ToastType
 import com.dokar.sonner.Toaster
@@ -44,11 +46,9 @@ import services.domain.ServicesMaster
 import services.viewModel.UpdateServicesAction
 import services.viewModel.UpdateServicesUiState
 import services.viewModel.UpdateServicesViewModel
-import util.BlogElement
 import util.FileCompressor
 import util.FileUtil.loadAndCompressImage
 import util.ToastEvent
-import util.buildFormattedBlog
 import java.io.File
 
 @Composable
@@ -175,13 +175,19 @@ fun UpdateServicesScreenUI(
                 }
 
                 // Render blog elements inside LazyColumn items, no nested LazyColumn!
-                items(buildFormattedBlog(uiState.serviceDescription)) { element ->
+                items(
+                    buildFormattedBlog(
+                        uiState.serviceDescription,
+                        imageList = emptyList()
+                    )
+                ) { element ->
                     when (element) {
                         is BlogElement.Text -> Text(
                             text = element.content,
                             style = LocalTextStyle.current.copy(lineHeight = 20.sp),
                             modifier = Modifier.padding(vertical = 4.dp)
                         )
+
                         BlogElement.Divider -> HorizontalDivider(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -189,6 +195,8 @@ fun UpdateServicesScreenUI(
                             thickness = 1.dp,
                             color = Color.Gray
                         )
+
+                        is BlogElement.Image -> {}
                     }
                 }
 
@@ -201,9 +209,9 @@ fun UpdateServicesScreenUI(
                             imageBitmap = imageBitmap,
                             onImageSelected = { file ->
                                 scope.launch {
-                                    onAction(UpdateServicesAction.OnImageChange(file))
                                     imageFile = FileCompressor.loadAndCompressImage(file)
                                     imageBitmap = loadAndCompressImage(file)
+                                    onAction(UpdateServicesAction.OnImageChange(imageFile))
                                 }
                             },
                             errorMessage = { message -> toasterEvent(ToastEvent(message)) },
@@ -215,9 +223,9 @@ fun UpdateServicesScreenUI(
                             imageBitmap = iconBitMap,
                             onImageSelected = { file ->
                                 scope.launch {
-                                    onAction(UpdateServicesAction.OnIconChange(file))
                                     iconFile = FileCompressor.loadAndCompressImage(file)
                                     iconBitMap = loadAndCompressImage(file)
+                                    onAction(UpdateServicesAction.OnIconChange(iconFile))
                                 }
                             },
                             errorMessage = { message -> toasterEvent(ToastEvent(message)) },

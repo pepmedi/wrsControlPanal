@@ -37,6 +37,8 @@ import component.GradientButton
 import core.CancelButton
 import core.ImageSelector
 import doctor.domain.DoctorMaster
+import doctor.helper.DoctorEducationElement
+import doctor.helper.buildDoctorEducationFormatted
 import doctor.viewModal.UpdateDoctorActions
 import doctor.viewModal.UpdateDoctorUiState
 import doctor.viewModal.UpdateDoctorViewModel
@@ -45,11 +47,9 @@ import hospital.presentation.components.ServicesListDialog
 import hospital.presentation.components.SlotsListDialog
 import kotlinx.coroutines.launch
 import org.koin.compose.viewmodel.koinViewModel
-import util.DoctorEducationElement
 import util.FileCompressor
 import util.FileUtil.loadAndCompressImage
 import util.ToastEvent
-import util.buildDoctorEducationFormatted
 import java.io.File
 
 @Composable
@@ -349,7 +349,7 @@ fun UpdateDoctorDetailsScreen(
                                         doctorHomePageImageFile =
                                             FileCompressor.loadAndCompressImage(
                                                 file,
-                                                compressionThreshold = 250
+                                                compressionThresholdInKB = 250
                                             )
                                         doctorHomePageImageBitmap = loadAndCompressImage(file)
                                         onAction(
